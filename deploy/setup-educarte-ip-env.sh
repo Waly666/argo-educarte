@@ -24,7 +24,8 @@ else
   JWT_SECRET="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
 fi
 
-mkdir -p "$ROOT/data/uploads" "$ROOT/data/backups" "$ROOT/apk"
+mkdir -p "$ROOT/data/uploads"/{aula-virtual-apk,aula-virtual-logo,aula-virtual-hero,aula-virtual-blog,aula-virtual-materiales,aula-virtual-zip} \
+  "$ROOT/data/backups" "$ROOT/apk"
 
 cat > "$ENV_FILE" <<EOF
 # Educarte — generado por setup-educarte-ip-env.sh ($(date -Iseconds))

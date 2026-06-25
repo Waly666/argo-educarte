@@ -124,7 +124,10 @@ function buildApk(subdir, maxMb = 150) {
   const dest = path.join(BASE, subdir);
   ensureDir(dest);
   const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, dest),
+    destination: (_req, _file, cb) => {
+      ensureDir(dest);
+      cb(null, dest);
+    },
     filename: (_req, file, cb) => {
       const safe = String(file.originalname || 'aula-virtual.apk').replace(/[^\w.\-]+/g, '_');
       const name = safe.toLowerCase().endsWith('.apk') ? safe : `${safe}.apk`;
