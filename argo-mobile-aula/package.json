@@ -7,8 +7,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "doctor": "npx expo-doctor",
-    "build:apk": "pnpm dlx eas-cli@18.13.0 build --platform android --profile preview --non-interactive",
-    "build:apk:prod": "pnpm dlx eas-cli@18.13.0 build --platform android --profile production --non-interactive",
+    "build:apk": "node scripts/eas-build-apk.mjs preview",
+    "build:apk:prod": "node scripts/eas-build-apk.mjs production",
     "ios": "expo run:ios"
   },
   "dependencies": {

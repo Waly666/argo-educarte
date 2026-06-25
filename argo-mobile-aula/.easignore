@@ -4,5 +4,8 @@ node_modules/
 android/
 ios/
 *.zip
+*.apk
 .env
 build-info.json
+eas-archive-test/
+eas-archive-vcs-off/

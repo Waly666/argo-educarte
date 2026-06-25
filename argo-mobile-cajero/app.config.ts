@@ -35,7 +35,7 @@ const splashPlugin = {
 const config: ExpoConfig = {
   owner: 'nis00227',
   name: 'Educarte Cajero',
-  slug: 'argo-cajero-educarte',
+  slug: 'argo-educarte',
   version: '0.1.2',
   orientation: 'portrait',
   icon: ICON,

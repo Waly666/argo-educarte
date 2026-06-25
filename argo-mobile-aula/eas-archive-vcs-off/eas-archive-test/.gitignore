@@ -1,0 +1,42 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Variables de entorno (secretos)
+.env
+**/.env
+.env.*
+
+# Build / caché
+argo-frontend/dist/
+argo-frontend/.angular/
+**/dist/
+*.log
+
+# Subidas locales (certificados, firmas, recibos)
+argo-backend/uploads/*
+!argo-backend/uploads/.gitkeep
+
+# Sistema
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Cursor / assets temporales de chat (opcional; no incluir assets/ del móvil)
+/assets/
+!.gitkeep
+.cursor/
+
+# Sitio marketing: videos pesados (subir manualmente al VPS o usar CDN)
+argo-sitio/public/videos/*.mp4
+argo-sitio/public/imagenes/*.mp4
+
+# APK del portal (copia de build; origen en /apk)
+argo-aula-virtual/public/apk/*.apk
+
+# APK locales (generar con EAS; no versionar)
+argo-mobile-aula/*.apk
+argo-mobile-cajero/*.apk

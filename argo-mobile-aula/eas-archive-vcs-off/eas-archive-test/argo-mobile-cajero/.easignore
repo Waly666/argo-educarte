@@ -1,0 +1,11 @@
+../argo-backend/
+../argo-frontend/
+../argo-sitio/
+../excel/
+../data/
+../deploy/
+node_modules/
+.expo/
+.expo-check-bundle/
+android/
+ios/
