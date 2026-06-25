@@ -6,6 +6,16 @@ node_modules/
 .env
 **/.env
 .env.*
+deploy/.env
+deploy/.env.bak
+
+# Datos persistentes VPS (no versionar)
+data/uploads/*
+!data/uploads/.gitkeep
+data/backups/*
+!data/backups/.gitkeep
+data/sitio-videos/*
+!data/sitio-videos/.gitkeep
 
 # Build / caché
 argo-frontend/dist/
