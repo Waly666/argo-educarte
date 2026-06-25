@@ -34,9 +34,11 @@ Thumbs.db
 argo-sitio/public/videos/*.mp4
 argo-sitio/public/imagenes/*.mp4
 
-# APK del portal (copia de build; origen en /apk)
+# APK del portal (copia de build; publicar vía ERP al desplegar)
 argo-aula-virtual/public/apk/*.apk
 
-# APK locales (generar con EAS; no versionar)
+# APK locales — generar con EAS; subir al VPS/portal desde el ERP (no versionar)
+apk/*.apk
 argo-mobile-aula/*.apk
 argo-mobile-cajero/*.apk
+**/*.apk
