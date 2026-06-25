@@ -79,6 +79,45 @@
   margin-bottom: 0.5rem;
 }
 
+.ple-apk-upload {
+  padding: 0.85rem 1rem;
+  border: 1px dashed rgba(78, 163, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.ple-apk-upload__title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ple-apk-upload__hint {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.ple-apk-upload__current {
+  margin: 0;
+  font-size: 0.86rem;
+  word-break: break-all;
+}
+
+.ple-apk-upload__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ple-apk-upload__file {
+  cursor: pointer;
+  margin: 0;
+}
+
 .ple-icon-input {
   width: 3rem;
   text-align: center;

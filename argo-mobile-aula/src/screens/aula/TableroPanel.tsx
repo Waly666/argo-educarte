@@ -132,7 +132,7 @@ export default function TableroPanel() {
               Hola, {primerNombre}
             </ScaledText>
             <ScaledText baseSize={13} style={styles.heroSub}>
-              Sigue aprendiendo y alcanza tu certificación
+              Sigue tu formación con Educarte
             </ScaledText>
           </View>
         </View>

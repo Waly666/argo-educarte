@@ -46,99 +46,104 @@ export type ThemeColors = {
   starGlow: string;
 };
 
-/** Portal público — estilo finstruvial.edu.co (starfield oscuro). */
-export const FINSTRUVIAL_PUBLIC: ThemeColors = {
-  primary: '#3b82f6',
-  primaryDark: '#1d4ed8',
-  accent: '#22d3ee',
-  brand: '#c2410c',
-  bg: '#0b1224',
-  bgSoft: '#101b3c',
-  card: '#121c33',
-  cardElevated: '#1a2744',
-  text: '#eef3ff',
-  textSoft: '#9fb0d0',
-  border: 'rgba(148, 163, 184, 0.28)',
+/** Portal público — tema Educarte (índigo + teal, hero oscuro como el sitio web). */
+export const EDUCARTE_PUBLIC: ThemeColors = {
+  primary: '#6366F1',
+  primaryDark: '#4338CA',
+  accent: '#14B8A6',
+  brand: '#6366F1',
+  bg: '#07051a',
+  bgSoft: '#12102e',
+  card: '#1a2744',
+  cardElevated: '#1e1b4b',
+  text: '#f8fafc',
+  textSoft: 'rgba(226, 232, 240, 0.86)',
+  border: 'rgba(99, 102, 241, 0.28)',
   borderLight: 'rgba(148, 163, 184, 0.14)',
-  headerBg: 'rgba(11, 18, 36, 0.96)',
-  headerBorder: 'rgba(56, 189, 248, 0.18)',
-  headerTitle: '#eef3ff',
-  headerSubtitle: '#9fb0d0',
+  headerBg: 'rgba(7, 5, 26, 0.96)',
+  headerBorder: 'rgba(99, 102, 241, 0.22)',
+  headerTitle: '#f8fafc',
+  headerSubtitle: 'rgba(226, 232, 240, 0.72)',
   ok: '#34d399',
   okSoft: 'rgba(52, 211, 153, 0.14)',
   warn: '#fbbf24',
   warnSoft: 'rgba(251, 191, 36, 0.14)',
   danger: '#f87171',
   dangerSoft: 'rgba(248, 113, 113, 0.14)',
-  accentSoft: 'rgba(34, 211, 238, 0.12)',
-  inputBg: '#0f1729',
-  inputText: '#eef3ff',
-  inputPlaceholder: '#64748b',
-  tabBar: '#0b1224',
-  tabBarActive: '#22d3ee',
-  overlay: 'rgba(7, 13, 38, 0.72)',
+  accentSoft: 'rgba(20, 184, 166, 0.14)',
+  inputBg: '#12102e',
+  inputText: '#f8fafc',
+  inputPlaceholder: '#94a3b8',
+  tabBar: '#07051a',
+  tabBarActive: '#14B8A6',
+  overlay: 'rgba(7, 5, 26, 0.72)',
   gold: '#fbbf24',
   goldSoft: 'rgba(251, 191, 36, 0.14)',
-  violet: '#a78bfa',
-  violetSoft: 'rgba(167, 139, 250, 0.14)',
-  foroSoft: 'rgba(34, 211, 238, 0.12)',
-  gradient: ['#101b3c', '#0b1224'],
-  gradientHero: ['#101b3c', '#0a1130', '#070d26'],
+  violet: '#6366F1',
+  violetSoft: 'rgba(99, 102, 241, 0.18)',
+  foroSoft: 'rgba(20, 184, 166, 0.12)',
+  gradient: ['#12102e', '#07051a'],
+  gradientHero: ['#07051a', '#1e1b4b', '#312e81'],
   gradientGold: ['#422006', '#1a2744'],
-  gradientViolet: ['#312e81', '#1a2744'],
-  gradientForo: ['#0e7490', '#1a2744'],
-  gradientPrimary: ['#3b82f6', '#1d4ed8'],
-  gradientAccent: ['#34d399', '#14b8a6'],
-  gradientDashHero: ['#ffffff', '#f5f3ff', '#ecfdf5'],
-  starGlow: 'rgba(34, 211, 238, 0.22)',
+  gradientViolet: ['#312e81', '#1e1b4b'],
+  gradientForo: ['#0f766e', '#1a2744'],
+  gradientPrimary: ['#6366F1', '#4338CA'],
+  gradientAccent: ['#14B8A6', '#0d9488'],
+  gradientDashHero: ['#07051a', '#1e1b4b', '#4338CA'],
+  starGlow: 'rgba(99, 102, 241, 0.35)',
 };
 
-/** Panel del estudiante — academia moderna (navy + teal, contraste claro al portal público). */
-export const FINSTRUVIAL_DASHBOARD: ThemeColors = {
-  primary: '#2563eb',
-  primaryDark: '#1e3a8a',
-  accent: '#0d9488',
-  brand: '#ea580c',
-  bg: '#eef2f7',
-  bgSoft: '#e2e8f0',
+/** Panel del estudiante — claro con acentos Educarte. */
+export const EDUCARTE_DASHBOARD: ThemeColors = {
+  primary: '#6366F1',
+  primaryDark: '#4338CA',
+  accent: '#14B8A6',
+  brand: '#6366F1',
+  bg: '#F8FAFC',
+  bgSoft: '#EEF2FF',
   card: '#ffffff',
   cardElevated: '#ffffff',
-  text: '#0f172a',
-  textSoft: '#64748b',
-  border: '#dbe3ef',
-  borderLight: '#edf2f7',
-  headerBg: '#0f172a',
-  headerBorder: 'rgba(255,255,255,0.08)',
+  text: '#0F172A',
+  textSoft: '#64748B',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
+  headerBg: '#4338CA',
+  headerBorder: 'rgba(255,255,255,0.1)',
   headerTitle: '#f8fafc',
-  headerSubtitle: 'rgba(248, 250, 252, 0.72)',
+  headerSubtitle: 'rgba(248, 250, 252, 0.78)',
   ok: '#059669',
-  okSoft: '#ecfdf5',
+  okSoft: '#ECFDF5',
   warn: '#d97706',
-  warnSoft: '#fffbeb',
+  warnSoft: '#FFFBEB',
   danger: '#dc2626',
-  dangerSoft: '#fef2f2',
-  accentSoft: '#ccfbf1',
+  dangerSoft: '#FEF2F2',
+  accentSoft: '#CCFBF1',
   inputBg: '#ffffff',
-  inputText: '#0f172a',
+  inputText: '#0F172A',
   inputPlaceholder: '#94a3b8',
   tabBar: '#ffffff',
-  tabBarActive: '#2563eb',
+  tabBarActive: '#6366F1',
   overlay: 'rgba(15, 23, 42, 0.45)',
   gold: '#b45309',
-  goldSoft: '#fef3c7',
-  violet: '#6366f1',
-  violetSoft: '#eef2ff',
-  foroSoft: '#ecfeff',
-  gradient: ['#eef2ff', '#eef2f7'],
-  gradientHero: ['#1e3a8a', '#2563eb'],
-  gradientGold: ['#fef3c7', '#fffbeb'],
-  gradientViolet: ['#eef2ff', '#f5f3ff'],
-  gradientForo: ['#ecfeff', '#f0fdfa'],
-  gradientPrimary: ['#2563eb', '#1d4ed8'],
-  gradientAccent: ['#14b8a6', '#0d9488'],
-  gradientDashHero: ['#0f172a', '#1e3a8a', '#2563eb'],
-  starGlow: 'rgba(37, 99, 235, 0.2)',
+  goldSoft: '#FEF3C7',
+  violet: '#6366F1',
+  violetSoft: '#EEF2FF',
+  foroSoft: '#ECFEFF',
+  gradient: ['#EEF2FF', '#F8FAFC'],
+  gradientHero: ['#4338CA', '#6366F1'],
+  gradientGold: ['#FEF3C7', '#FFFBEB'],
+  gradientViolet: ['#EEF2FF', '#F5F3FF'],
+  gradientForo: ['#ECFEFF', '#F0FDFA'],
+  gradientPrimary: ['#6366F1', '#4338CA'],
+  gradientAccent: ['#14B8A6', '#0D9488'],
+  gradientDashHero: ['#4338CA', '#6366F1', '#14B8A6'],
+  starGlow: 'rgba(99, 102, 241, 0.25)',
 };
+
+/** @deprecated alias */
+export const FINSTRUVIAL_PUBLIC = EDUCARTE_PUBLIC;
+/** @deprecated alias */
+export const FINSTRUVIAL_DASHBOARD = EDUCARTE_DASHBOARD;
 
 function mergePortalColors(base: ThemeColors, tema?: PortalTemaConfig): ThemeColors {
   if (!tema) return base;
@@ -151,18 +156,23 @@ function mergePortalColors(base: ThemeColors, tema?: PortalTemaConfig): ThemeCol
     card: tema.colorSuperficie || base.card,
     text: tema.colorTexto || base.text,
     textSoft: tema.colorTextoSecundario || base.textSoft,
+    brand: tema.colorPrimario || base.brand,
     gradientPrimary: [tema.colorPrimario || base.primary, tema.colorPrimarioOscuro || base.primaryDark],
+    gradientHero: [
+      tema.colorPrimarioOscuro || base.gradientHero[0],
+      tema.colorPrimario || base.gradientHero[1],
+      base.gradientHero[2] || base.bg,
+    ],
   };
 }
 
 export type ThemeVariant = 'public' | 'dashboard';
 
 export function themeForVariant(variant: ThemeVariant, tema?: PortalTemaConfig): ThemeColors {
-  const base = variant === 'dashboard' ? FINSTRUVIAL_DASHBOARD : FINSTRUVIAL_PUBLIC;
+  const base = variant === 'dashboard' ? EDUCARTE_DASHBOARD : EDUCARTE_PUBLIC;
   return mergePortalColors(base, variant === 'public' ? tema : undefined);
 }
 
-/** @deprecated use themeForVariant */
 export function themeFromPortal(tema?: PortalTemaConfig) {
   return themeForVariant('public', tema);
 }

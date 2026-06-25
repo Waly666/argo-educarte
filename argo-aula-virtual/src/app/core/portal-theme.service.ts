@@ -2,7 +2,11 @@ import { DOCUMENT } from '@angular/common';
 import { inject, Injectable } from '@angular/core';
 
 import { PortalConfig } from './models';
-import { buildPortalThemeCssVars, isEducarteTema } from './portal-theme-css.util';
+import {
+  buildPortalThemeCssVars,
+  isEducarteTema,
+  PORTAL_TEMA_EDUCARTE,
+} from './portal-theme-css.util';
 import { resolveUploadUrl } from './upload-url.util';
 
 @Injectable({ providedIn: 'root' })
@@ -10,16 +14,15 @@ export class PortalThemeService {
   private doc = inject(DOCUMENT);
 
   apply(config: PortalConfig | null) {
-    const tema = config?.site?.tema;
+    const tema = config?.site?.tema ?? PORTAL_TEMA_EDUCARTE;
     const root = this.doc.documentElement;
-    if (!tema) return;
 
     const vars = buildPortalThemeCssVars(tema);
     for (const [key, val] of Object.entries(vars)) {
       if (val) root.style.setProperty(key, val);
     }
 
-    if (isEducarteTema(tema)) {
+    if (isEducarteTema(tema) || !config?.site?.tema) {
       root.dataset['portalSkin'] = 'educarte';
     } else {
       delete root.dataset['portalSkin'];

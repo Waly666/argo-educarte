@@ -44,17 +44,19 @@ export const EDUCARTE_DERIVED_CSS_VARS: Record<string, string> = {
   '--av-dark-body': '#64748B',
   '--av-footer-muted': 'rgba(226, 232, 240, 0.85)',
   '--av-footer-text': '#F8FAFC',
-  '--av-starfield-glow': 'transparent',
-  '--av-starfield-top': '#EEF2FF',
-  '--av-starfield-mid': '#F8FAFC',
-  '--av-starfield-bottom': '#E0E7FF',
-  '--av-starfield-bg': '#F1F5F9',
-  '--av-starfield-accent-glow': 'transparent',
-  '--av-starfield-accent-glow-radial': 'none',
-  '--av-starfield-decor-opacity': '0',
-  '--av-starfield-section-lead': '#64748B',
+  '--av-starfield-glow': 'rgba(99, 102, 241, 0.42)',
+  '--av-starfield-top': '#12102e',
+  '--av-starfield-mid': '#1e1b4b',
+  '--av-starfield-bottom': '#07051a',
+  '--av-starfield-bg':
+    'radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.42) 0%, transparent 58%), linear-gradient(155deg, #12102e 0%, #1e1b4b 55%, #07051a 100%)',
+  '--av-starfield-accent-glow': 'rgba(20, 184, 166, 0.18)',
+  '--av-starfield-accent-glow-radial':
+    'radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(99, 102, 241, 0.08) 38%, transparent 68%)',
+  '--av-starfield-decor-opacity': '1',
+  '--av-starfield-section-lead': 'rgba(226, 232, 240, 0.86)',
   '--av-hero-bg':
-    'linear-gradient(155deg, #07051a 0%, #12102e 24%, #1e1b4b 50%, #312e81 72%, #1a2744 100%)',
+    'radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.48) 0%, transparent 58%), radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.32) 0%, transparent 54%), linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%)',
   '--av-hero-grad-start': '#4338CA',
   '--av-hero-grad-end': '#07051a',
   '--av-page-hero-bg':
@@ -100,6 +102,8 @@ export const EDUCARTE_DERIVED_CSS_VARS: Record<string, string> = {
   '--av-section-light-link': '#4338CA',
   '--av-link-primary': '#6366F1',
   '--av-radius': '20px',
+  '--av-app-phone-screen-bg': 'linear-gradient(180deg, #312e81 0%, #1e1b4b 42%, #07051a 100%)',
+  '--av-app-phone-bezel-bg': 'linear-gradient(145deg, #4338CA 0%, #312e81 38%, #1e1b4b 72%, #07051a 100%)',
 };
 export const FINSTRUVIAL_DERIVED_CSS_VARS: Record<string, string> = {
   '--av-brand': '#c2410c',

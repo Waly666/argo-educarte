@@ -14,6 +14,7 @@
       }
       <span class="av-chip">Portal :4202</span>
       <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual/sitio">Editor sitio web</a>
+      <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual" [queryParams]="{ tab: 'appmovil' }">Subir APK</a>
       <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual/blog">Blog</a>
       <a class="av-btn av-btn--ghost" [href]="portalUrl" target="_blank" rel="noopener">Abrir portal ↗</a>
     </div>
@@ -32,6 +33,7 @@
       }
     </button>
     <button type="button" [class.active]="tab() === 'empresa'" (click)="setTab('empresa')">Datos empresa</button>
+    <button type="button" [class.active]="tab() === 'appmovil'" (click)="setTab('appmovil')">App móvil (APK)</button>
     <button type="button" [class.active]="tab() === 'portal'" (click)="setTab('portal')">Textos portal</button>
   </nav>
 
@@ -456,6 +458,19 @@
     </section>
   }
 
+  @if (tab() === 'appmovil') {
+    <section class="av-panel av-panel--wide">
+      @if (portalForm.landing; as landing) {
+        <argo-portal-apk-upload
+          [landing]="landing"
+          [portalUrl]="portalUrl"
+          (avNotice)="toast($event.message, !!$event.error)"
+          (portalConfigUpdated)="applyPortalConfigFromEditor($event)"
+        />
+      }
+    </section>
+  }
+
   @if (tab() === 'portal') {
     <section class="av-panel av-panel--wide av-panel--portal">
       <h2>Textos del portal público</h2>
@@ -477,7 +492,11 @@
 
       @if (portalForm.landing; as landing) {
         <h3 class="av-subtitle">Secciones del landing</h3>
-        <argo-portal-landing-editor [landing]="landing" />
+        <argo-portal-landing-editor
+          [landing]="landing"
+          (avNotice)="toast($event.message, !!$event.error)"
+          (portalConfigUpdated)="applyPortalConfigFromEditor($event)"
+        />
       }
 
       <button type="button" class="av-btn av-btn--primary" [disabled]="saving()" (click)="guardarPortal()">

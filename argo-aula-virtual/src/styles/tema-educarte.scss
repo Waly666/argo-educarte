@@ -125,7 +125,8 @@ html[data-portal-skin='educarte'] {
       inset 0 -5px 0 rgba(99, 102, 241, 0.12);
 
     .starfield-bg {
-      display: none;
+      display: block;
+      opacity: 1;
     }
 
     &::before {
@@ -280,11 +281,35 @@ html[data-portal-skin='educarte'] {
     color: var(--av-primary-dark);
   }
 
-  /* —— Secciones oscuras → claras con aire —— */
-  .section-starfield,
-  .section-carreras {
+  /* —— Secciones oscuras genéricas (beneficios, etc.) —— */
+  .section-starfield:not(#carreras-tecnicas):not(#app-mobile):not(#somos-mejor-opcion),
+  .section-carreras:not(#carreras-tecnicas) {
     background: var(--av-starfield-bg);
     color: var(--av-text);
+  }
+
+  #carreras-tecnicas.section-carreras {
+    background-color: #07051a;
+  }
+
+  #somos-mejor-opcion {
+    background: #fff;
+    color: #0f172a;
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+
+    .starfield-bg {
+      display: none;
+    }
+
+    .starfield-head h2,
+    .starfield-head .title-reveal--h2 {
+      color: #0f172a;
+    }
+
+    .starfield-head .section-lead {
+      color: #475569;
+    }
   }
 
   .starfield-head h2,
@@ -294,10 +319,22 @@ html[data-portal-skin='educarte'] {
     color: var(--av-text);
   }
 
+  #carreras-tecnicas .carreras-head h2,
+  #carreras-tecnicas .carreras-head .title-reveal--h2,
+  #app-mobile .starfield-head h2,
+  #app-mobile h2 {
+    color: #fff;
+  }
+
   .starfield-head .section-lead,
   .starfield-head .fund-section__lead,
   .carreras-head .section-lead {
     color: var(--av-dim);
+  }
+
+  #carreras-tecnicas .carreras-head .section-lead,
+  #app-mobile .section-lead {
+    color: rgba(226, 232, 240, 0.86);
   }
 
   .starfield-head .kicker,
@@ -305,6 +342,13 @@ html[data-portal-skin='educarte'] {
     color: var(--av-primary-dark);
     background: rgba(99, 102, 241, 0.1);
     border-color: rgba(99, 102, 241, 0.22);
+  }
+
+  #carreras-tecnicas .carreras-head .kicker,
+  #app-mobile .kicker {
+    color: #a7f3d0;
+    background: rgba(20, 184, 166, 0.14);
+    border-color: rgba(20, 184, 166, 0.32);
   }
 
   /* —— Secciones claras —— */
@@ -604,10 +648,61 @@ html[data-portal-skin='educarte'] {
     }
   }
 
-  /* —— App móvil —— */
+  /* —— App móvil + Líneas de formación: fondo oscuro Educarte (como el hero) —— */
+  #carreras-tecnicas,
+  #app-mobile {
+    position: relative;
+    overflow: hidden;
+    background-color: #07051a;
+    background-image:
+      var(--av-educarte-hero-weave),
+      radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.42) 0%, transparent 58%),
+      radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.28) 0%, transparent 54%),
+      radial-gradient(ellipse 42% 38% at 52% 48%, rgba(245, 158, 11, 0.06) 0%, transparent 68%),
+      linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%);
+    color: #f8fafc;
+    border-top: 1px solid rgba(99, 102, 241, 0.18);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+
+    .starfield-bg {
+      opacity: 1;
+    }
+  }
+
+  #app-mobile {
+    .app-mobile-note,
+    .app-mobile-feature p {
+      color: rgba(226, 232, 240, 0.78);
+    }
+
+    .app-phone__bezel {
+      background: linear-gradient(145deg, #4338ca 0%, #312e81 38%, #1e1b4b 72%, #07051a 100%);
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(99, 102, 241, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .app-phone__screen {
+      background:
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(99, 102, 241, 0.35) 0%, transparent 62%),
+        linear-gradient(180deg, #312e81 0%, #1e1b4b 42%, #07051a 100%);
+      border-color: rgba(99, 102, 241, 0.28);
+    }
+
+    .app-phone__logo {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .app-phone__menu li {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(99, 102, 241, 0.22);
+    }
+  }
+
   .section-app-mobile {
-    background: #EEF2FF;
-    color: var(--av-text);
+    color: #f8fafc;
   }
 
   .app-mobile-download {

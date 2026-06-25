@@ -13,13 +13,14 @@ import { mergePortalLanding, PORTAL_LANDING_DEFAULTS } from '../../core/constant
 import { readVistaLista, saveVistaLista, VistaLista } from '../../core/utils/vista-lista.helpers';
 import { environment } from '../../../environments/environment';
 import { PortalLandingEditorComponent } from './portal-landing-editor.component';
+import { PortalApkUploadComponent } from './portal-apk-upload.component';
 
-type TabAula = 'cursos' | 'usuarios' | 'empresa' | 'portal';
+type TabAula = 'cursos' | 'usuarios' | 'empresa' | 'portal' | 'appmovil';
 
 @Component({
   selector: 'argo-aula-virtual-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PortalLandingEditorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PortalLandingEditorComponent, PortalApkUploadComponent],
   templateUrl: './aula-virtual-admin.component.html',
   styleUrls: ['./aula-virtual-admin.component.scss'],
 })
@@ -92,7 +93,7 @@ export class AulaVirtualAdminComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((q) => {
       const t = q.get('tab');
-      if (t === 'cursos' || t === 'usuarios' || t === 'empresa' || t === 'portal') {
+      if (t === 'cursos' || t === 'usuarios' || t === 'empresa' || t === 'portal' || t === 'appmovil') {
         this.tab.set(t);
         if (t === 'usuarios') this.cargarUsuarios();
       }
@@ -304,6 +305,13 @@ export class AulaVirtualAdminComponent implements OnInit {
     });
   }
 
+  applyPortalConfigFromEditor(config: PortalAulaConfig) {
+    Object.assign(this.portalForm, config);
+    if (config.landing) {
+      this.portalForm.landing = mergePortalLanding(config.landing);
+    }
+  }
+
   fmtFecha(iso?: string | null) {
     if (!iso) return '—';
     try {
@@ -313,7 +321,7 @@ export class AulaVirtualAdminComponent implements OnInit {
     }
   }
 
-  private toast(text: string, isErr = false) {
+  toast(text: string, isErr = false) {
     this.msg.set(text);
     this.err.set(isErr);
     setTimeout(() => this.msg.set(null), 4000);

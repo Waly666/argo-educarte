@@ -7,10 +7,14 @@ export function usePortalBranding() {
   const { config, loading: configLoading } = usePortalConfig();
 
   return useMemo(() => {
-    const nombreEmpresa = APP_BRANDING.nombreEmpresa;
+    const nombreEmpresa = config?.nombreCea?.trim() || APP_BRANDING.nombreEmpresa;
     const tituloApp = APP_BRANDING.tituloApp;
     const logoSource = APP_BRANDING.logo;
-    const inicial = nombreEmpresa.charAt(0).toUpperCase() || 'F';
+    const logoUrl =
+      config?.urlLogoAbsoluta?.trim() ||
+      config?.urlLogo?.trim() ||
+      null;
+    const inicial = nombreEmpresa.charAt(0).toUpperCase() || 'E';
 
     return {
       config,
@@ -20,7 +24,7 @@ export function usePortalBranding() {
       tituloApp,
       nombreEmpresa,
       logoSource,
-      logoUrl: null as string | null,
+      logoUrl,
       inicial,
     };
   }, [config, configLoading]);

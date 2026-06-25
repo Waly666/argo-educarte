@@ -294,7 +294,20 @@
         <p class="psb-note">
           Elija una sección abajo para editar sus textos. Los cambios se ven en la vista previa de la derecha.
         </p>
-        <argo-portal-landing-editor [landing]="landing" />
+        <argo-portal-landing-editor
+          [landing]="landing"
+          (avNotice)="avNotice.emit($event)"
+          (portalConfigUpdated)="applyPortalConfig($event)"
+        />
+      }
+
+      @case ('appmovil') {
+        <argo-portal-apk-upload
+          [landing]="landing"
+          [portalUrl]="portalUrl"
+          (avNotice)="avNotice.emit($event)"
+          (portalConfigUpdated)="applyPortalConfig($event)"
+        />
       }
 
       @case ('institucional') {

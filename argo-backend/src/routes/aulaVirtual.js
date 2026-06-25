@@ -9,6 +9,7 @@ const {
   aulaVirtualLogo,
   aulaVirtualHero,
   aulaVirtualBlog,
+  aulaVirtualApk,
   programasVirtual,
 } = require('../middleware/upload');
 const { portalAuthLimiter, buscarAlumnoLimiter } = require('../middleware/security');
@@ -135,6 +136,14 @@ router.post(
   admin.subirImagenHeroPortal,
 );
 router.delete('/admin/portal/hero-imagen', requireAuth, configPortal, admin.quitarImagenHeroPortal);
+router.post(
+  '/admin/portal/apk-aula',
+  requireAuth,
+  configPortal,
+  aulaVirtualApk.single('apk'),
+  admin.subirApkPortal,
+);
+router.delete('/admin/portal/apk-aula', requireAuth, configPortal, admin.quitarApkPortal);
 
 router.get('/admin/blog', requireAuth, configPortal, admin.listarBlogAdmin);
 router.get('/admin/blog/:id', requireAuth, configPortal, admin.obtenerBlogAdmin);

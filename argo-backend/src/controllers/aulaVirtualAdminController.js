@@ -37,6 +37,8 @@ const {
   urlImagenSubida,
 } = require('../services/aulaVirtualBlog');
 const { publicUrl, publicUrlPath, resolvePath } = require('../middleware/upload');
+const { publicUploadUrl } = require('../utils/uploadPublicUrl');
+const { LANDING_DEFAULTS } = require('../constants/aulaVirtualLandingDefaults');
 const { listarUsuariosPortalAdmin, eliminarUsuarioPortal, crearUsuarioPortalAdmin } = require('../services/aulaVirtualUsuarios');
 const { inyectarBridgeEnPaquete, detectarStoragePrefix } = require('../services/aulaVirtualBridge');
 const { detectarIndexHtml, paqueteListo, listarEntradasPaquete } = require('../services/aulaVirtualPaquete');
@@ -258,6 +260,64 @@ exports.quitarImagenHeroPortal = async (req, res, next) => {
     res.json({
       config: await obtenerConfigPortalAdmin(),
       message: 'Imagen del banner eliminada; se usará la imagen por defecto',
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+function quitarApkAnterior(apkUrl) {
+  const rel = String(apkUrl || '').replace(/^\/uploads\//, '').trim();
+  if (!rel.startsWith('aula-virtual-apk/')) return;
+  const p = resolvePath(rel);
+  if (p && fs.existsSync(p)) fs.unlinkSync(p);
+}
+
+async function guardarApkAppMobile(apkUrl, apkNombre, usuario) {
+  const aula = await obtenerConfigAula();
+  const landing = mergeLanding(aula.landing);
+  landing.appMobile = {
+    ...landing.appMobile,
+    apkUrl: String(apkUrl || '').trim(),
+    apkNombre: String(apkNombre || '').trim() || 'aula-virtual.apk',
+  };
+  await guardarConfigAula({ landing }, usuario);
+}
+
+exports.subirApkPortal = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Seleccione un archivo APK de la app aula virtual' });
+    }
+    const aula = await obtenerConfigAula();
+    const landing = mergeLanding(aula.landing);
+    quitarApkAnterior(landing.appMobile?.apkUrl);
+
+    const rel = publicUrl('aula-virtual-apk', req.file.filename);
+    const apkUrl = publicUploadUrl(rel);
+    const rawName = String(req.file.originalname || 'aula-virtual.apk').replace(/[^\w.\-]+/g, '_');
+    const apkNombre = rawName.toLowerCase().endsWith('.apk') ? rawName : `${rawName}.apk`;
+
+    await guardarApkAppMobile(apkUrl, apkNombre, req.user);
+    res.json({
+      config: await obtenerConfigPortalAdmin(),
+      message: 'APK publicado. El botón de descarga del portal ya apunta a este archivo.',
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.quitarApkPortal = async (req, res, next) => {
+  try {
+    const aula = await obtenerConfigAula();
+    const landing = mergeLanding(aula.landing);
+    quitarApkAnterior(landing.appMobile?.apkUrl);
+    const defs = LANDING_DEFAULTS.appMobile || {};
+    await guardarApkAppMobile(defs.apkUrl || '/apk/aula-virtual-educarte.apk', defs.apkNombre || 'aula-virtual-educarte.apk', req.user);
+    res.json({
+      config: await obtenerConfigPortalAdmin(),
+      message: 'APK restaurado al enlace por defecto del portal',
     });
   } catch (e) {
     next(e);

@@ -119,6 +119,38 @@ function buildImagen(subdir, maxMb = 5) {
   });
 }
 
+/** APK app móvil aula virtual (sección App Mobile del portal). */
+function buildApk(subdir, maxMb = 150) {
+  const dest = path.join(BASE, subdir);
+  ensureDir(dest);
+  const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, dest),
+    filename: (_req, file, cb) => {
+      const safe = String(file.originalname || 'aula-virtual.apk').replace(/[^\w.\-]+/g, '_');
+      const name = safe.toLowerCase().endsWith('.apk') ? safe : `${safe}.apk`;
+      cb(null, `${Date.now()}_${Math.round(Math.random() * 1e6)}_${name}`);
+    },
+  });
+  return multer({
+    storage,
+    limits: { fileSize: maxMb * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      const ext = path.extname(file.originalname || '').toLowerCase();
+      const mime = String(file.mimetype || '').toLowerCase();
+      const ok =
+        ext === '.apk' ||
+        mime === 'application/vnd.android.package-archive' ||
+        mime === 'application/octet-stream';
+      if (!ok) {
+        const err = new Error('Solo se permiten archivos .apk');
+        err.status = 400;
+        return cb(err);
+      }
+      cb(null, true);
+    },
+  });
+}
+
 const memory = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024 },
@@ -139,6 +171,7 @@ module.exports = {
   aulaVirtualLogo: buildImagen('aula-virtual-logo', 3),
   aulaVirtualHero: buildImagen('aula-virtual-hero', 8),
   aulaVirtualBlog: buildImagen('aula-virtual-blog', 8),
+  aulaVirtualApk: buildApk('aula-virtual-apk', 150),
   evidenciasCap: buildEvidenciaCap(),
   memory,
   baseDir: BASE,

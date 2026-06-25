@@ -365,6 +365,16 @@ export class AulaVirtualAdminService {
     return this.http.delete<{ config: PortalAulaConfig; message: string }>(`${this.base}/portal/hero-imagen`);
   }
 
+  subirApkAulaPortal(file: File): Observable<{ config: PortalAulaConfig; message: string }> {
+    const fd = new FormData();
+    fd.append('apk', file);
+    return this.http.post<{ config: PortalAulaConfig; message: string }>(`${this.base}/portal/apk-aula`, fd);
+  }
+
+  quitarApkAulaPortal(): Observable<{ config: PortalAulaConfig; message: string }> {
+    return this.http.delete<{ config: PortalAulaConfig; message: string }>(`${this.base}/portal/apk-aula`);
+  }
+
   matricularAlumno(
     idPrograma: string | number,
     body: {

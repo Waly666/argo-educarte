@@ -1,5 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ImageBackground,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +19,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { QuickAction } from '../components/QuickAction';
 import { ScaledText } from '../components/ScaledText';
 import { SectionHeader } from '../components/SectionHeader';
-import { StarfieldHero } from '../components/StarfieldHero';
+import { APP_BRANDING } from '../config/appBranding';
 import { usePortalBranding } from '../hooks/usePortalBranding';
 import { usePortalConfig } from '../context/PortalConfigContext';
 import { useTheme } from '../context/ThemeContext';
@@ -30,6 +38,7 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const [destacados, setDestacados] = useState<CursoVirtual[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [heroRemoteFailed, setHeroRemoteFailed] = useState(false);
 
   const load = useCallback(async () => {
     await Promise.all([
@@ -64,11 +73,22 @@ export default function WelcomeScreen() {
     }
   }
 
-  const heroImg = resolveUploadUrl(config?.site?.tema?.urlHeroAbsoluta) || resolveUploadUrl(config?.site?.tema?.urlHero);
-  const heroTitle = config?.heroTitulo?.trim() || 'Formación virtual certificada';
-  const heroSub =
-    config?.heroSubtitulo?.trim() ||
-    'Cursos en seguridad vial y tránsito. Estudie en línea y certifique su formación con FINSTRUVIAL.';
+  const heroRemote =
+    resolveUploadUrl(config?.site?.tema?.urlHeroAbsoluta) || resolveUploadUrl(config?.site?.tema?.urlHero);
+  const heroTitle = config?.heroTitulo?.trim() || APP_BRANDING.heroTitulo;
+  const heroSub = config?.heroSubtitulo?.trim() || APP_BRANDING.heroSubtitulo;
+
+  const heroSource = useMemo((): ImageSourcePropType => {
+    if (heroRemote && !heroRemoteFailed) {
+      return { uri: heroRemote };
+    }
+    return APP_BRANDING.heroLocal;
+  }, [heroRemote, heroRemoteFailed]);
+
+  const heroColors =
+    c.gradientHero.length >= 3
+      ? (c.gradientHero as [string, string, string])
+      : ([c.gradientHero[0], c.gradientHero[1], c.bg] as [string, string, string]);
 
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -81,48 +101,62 @@ export default function WelcomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary]} />
         }
       >
-        <StarfieldHero minHeight={280} includeSafeTop={false} roundedBottom={false}>
-          <ScaledText baseSize={11} style={[styles.kicker, { color: c.accent }]}>
-            {nombreEmpresa}
-          </ScaledText>
-          <ScaledText baseSize={26} style={[styles.heroTitle, { color: c.text }]}>
-            {heroTitle}
-          </ScaledText>
-          <ScaledText baseSize={15} style={[styles.heroLead, { color: c.textSoft }]}>
-            {heroSub}
-          </ScaledText>
-          <View style={styles.heroCtas}>
-            <PrimaryButton label="Iniciar sesión" onPress={() => nav.navigate('Login')} icon="log-in-outline" size="lg" />
-            <PrimaryButton
-            label="Cursos"
-            variant="light"
-            onPress={() => nav.navigate('Catalogo')}
-            icon="library-outline"
-            size="lg"
-            />
-          </View>
-          {heroImg ? (
-            <View style={[styles.heroImgWrap, shadow.lg]}>
-              <Image source={{ uri: heroImg }} style={styles.heroImg} resizeMode="cover" />
+        <View style={styles.heroBlock}>
+          <ImageBackground
+            source={heroSource}
+            style={styles.heroImageBand}
+            imageStyle={styles.heroImage}
+            resizeMode="cover"
+            onError={() => setHeroRemoteFailed(true)}
+          >
+            <LinearGradient colors={['rgba(7,5,26,0.15)', 'rgba(7,5,26,0.92)']} style={StyleSheet.absoluteFillObject} />
+            <View style={styles.heroBadgeRow}>
+              <View style={[styles.heroBadge, { backgroundColor: `${c.primary}33`, borderColor: `${c.primary}55` }]}>
+                <ScaledText baseSize={10} style={{ color: c.accent, fontWeight: '700', letterSpacing: 0.8 }}>
+                  AULA VIRTUAL
+                </ScaledText>
+              </View>
             </View>
-          ) : null}
-        </StarfieldHero>
+          </ImageBackground>
 
-        <View style={[styles.infoRow, { marginTop: -space.xl }]}>
+          <LinearGradient colors={heroColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroPanel}>
+            <ScaledText baseSize={11} style={[styles.kicker, { color: c.accent }]}>
+              {nombreEmpresa}
+            </ScaledText>
+            <ScaledText baseSize={26} style={[styles.heroTitle, { color: c.text }]}>
+              {heroTitle}
+            </ScaledText>
+            <ScaledText baseSize={15} style={[styles.heroLead, { color: c.textSoft }]}>
+              {heroSub}
+            </ScaledText>
+            <View style={styles.heroCtas}>
+              <PrimaryButton label="Iniciar sesión" onPress={() => nav.navigate('Login')} icon="log-in-outline" size="lg" />
+              <PrimaryButton
+                label="Explorar cursos"
+                variant="light"
+                onPress={() => nav.navigate('Catalogo')}
+                icon="library-outline"
+                size="lg"
+              />
+            </View>
+          </LinearGradient>
+        </View>
+
+        <View style={[styles.infoRow, { marginTop: space.lg }]}>
           <HeroInfoCard
-            icon="school-outline"
-            title="Certificación"
-            text="Programas avalados para conductores e instituciones."
+            icon="heart-outline"
+            title="Impacto social"
+            text="Proyectos y formación para comunidades del Cauca y Colombia."
           />
           <HeroInfoCard
             icon="phone-portrait-outline"
             title="100% en línea"
-            text="Estudie desde su celular, a su ritmo."
+            text="Estudie desde su celular, a su ritmo y con acompañamiento."
           />
           <HeroInfoCard
             icon="ribbon-outline"
-            title="Consulta"
-            text="Verifique certificados en línea al instante."
+            title="Certificados"
+            text="Consulte y descargue sus certificados al instante."
           />
         </View>
 
@@ -181,10 +215,10 @@ export default function WelcomeScreen() {
 
           <View style={[styles.footerBand, { backgroundColor: c.cardElevated, borderColor: c.border }]}>
             <ScaledText baseSize={15} style={{ color: c.text, fontWeight: '700', textAlign: 'center' }}>
-              ¿Listo para certificarse?
+              ¿Listo para aprender con Educarte?
             </ScaledText>
             <ScaledText baseSize={13} style={{ color: c.textSoft, textAlign: 'center', marginTop: 6, marginBottom: space.md }}>
-              Acceda al aula virtual y continúe su formación profesional.
+              Ingrese al aula virtual y continúe su formación donde la dejó.
             </ScaledText>
             <PrimaryButton label="Ver todos los cursos" variant="accent" onPress={() => nav.navigate('Catalogo')} fullWidth icon="library-outline" />
           </View>
@@ -198,6 +232,38 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
+  heroBlock: {
+    overflow: 'hidden',
+    borderBottomLeftRadius: radius.xl,
+    borderBottomRightRadius: radius.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(99, 102, 241, 0.22)',
+  },
+  heroImageBand: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'flex-end',
+  },
+  heroImage: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  heroBadgeRow: {
+    paddingHorizontal: space.lg,
+    paddingBottom: space.sm,
+  },
+  heroBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: space.sm,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+  },
+  heroPanel: {
+    paddingHorizontal: space.lg,
+    paddingTop: space.lg,
+    paddingBottom: space.xxl,
+  },
   kicker: {
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -216,22 +282,13 @@ const styles = StyleSheet.create({
   },
   heroCtas: {
     gap: space.sm,
-    marginBottom: space.lg,
   },
-  heroImgWrap: {
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.25)',
-  },
-  heroImg: { width: '100%', height: 168 },
   infoRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: space.sm,
     paddingHorizontal: space.lg,
     marginBottom: space.lg,
-    zIndex: 2,
   },
   body: {
     paddingHorizontal: space.lg,

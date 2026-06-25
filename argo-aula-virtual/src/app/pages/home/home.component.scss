@@ -237,8 +237,7 @@
   overflow: visible;
   padding: 4.2rem 0 3.25rem;
   border-bottom: none;
-  color: var(--av-text);
-  background: var(--av-hero-bg);
+  color: #f8fafc;
 
   &.section-starfield {
     padding: 4.2rem 0 3.25rem;
@@ -1424,6 +1423,16 @@ blockquote {
 }
 
 /* —— App Mobile —— */
+.section-app-mobile,
+.section-carreras {
+  position: relative;
+}
+
+.section-carreras:not(#carreras-tecnicas),
+.section-app-mobile:not(#app-mobile) {
+  background: var(--av-starfield-bg);
+}
+
 .section-app-mobile {
   overflow: hidden;
 }

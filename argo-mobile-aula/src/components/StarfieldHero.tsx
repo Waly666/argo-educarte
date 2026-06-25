@@ -15,7 +15,7 @@ type Props = {
   includeSafeTop?: boolean;
 };
 
-/** Hero estilo finstruvial.edu.co — gradiente navy + brillo cyan + estrellas. */
+/** Hero Educarte — gradiente índigo oscuro con brillo suave. */
 export function StarfieldHero({
   children,
   minHeight = 220,
@@ -28,12 +28,12 @@ export function StarfieldHero({
 
   const stars = useMemo(
     () =>
-      Array.from({ length: 28 }, (_, i) => ({
+      Array.from({ length: 20 }, (_, i) => ({
         key: i,
         left: `${(i * 17 + 7) % 100}%`,
         top: `${(i * 23 + 11) % 85}%`,
-        size: i % 3 === 0 ? 2.5 : 1.5,
-        opacity: 0.25 + (i % 5) * 0.12,
+        size: i % 3 === 0 ? 2 : 1.5,
+        opacity: 0.18 + (i % 5) * 0.1,
       })),
     [],
   );
@@ -85,16 +85,16 @@ const styles = StyleSheet.create({
     paddingBottom: space.xxl,
     overflow: 'hidden',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(56, 189, 248, 0.12)',
+    borderBottomColor: 'rgba(99, 102, 241, 0.18)',
   },
   glow: {
     position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    top: -80,
-    right: -60,
-    opacity: 0.55,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    top: -70,
+    right: -50,
+    opacity: 0.5,
   },
   star: {
     position: 'absolute',
@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
   },
   decoRing: {
     position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     borderWidth: 1,
-    borderColor: 'rgba(34, 211, 238, 0.12)',
-    bottom: -40,
-    left: -50,
+    borderColor: 'rgba(20, 184, 166, 0.14)',
+    bottom: -36,
+    left: -40,
   },
 });

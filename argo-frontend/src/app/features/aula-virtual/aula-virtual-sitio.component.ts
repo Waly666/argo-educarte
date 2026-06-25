@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 
 import { AulaVirtualAdminService, PortalAulaConfig } from '../../core/services/aula-virtual-admin.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -17,7 +17,7 @@ import {
 } from '../../core/utils/portal-diseno.helpers';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { PortalPlantillaGaleriaComponent } from './portal-plantilla-galeria.component';
-import { PortalSiteBuilderComponent } from './portal-site-builder.component';
+import { PortalSiteBuilderComponent, BuilderPanel } from './portal-site-builder.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -31,6 +31,10 @@ export class AulaVirtualSitioComponent implements OnInit {
   private svc = inject(AulaVirtualAdminService);
   private auth = inject(AuthService);
   private confirm = inject(ConfirmDialogService);
+  private route = inject(ActivatedRoute);
+
+  /** Panel inicial del editor (ej. ?panel=appmovil para subir APK). */
+  builderInitialPanel = signal<BuilderPanel | null>(null);
 
   /** Exportar / importar / galería: solo usuario soporte maestro (break-glass). */
   readonly puedeDisenoPortal = computed(() => this.auth.isSoporteMaestro());
@@ -62,6 +66,13 @@ export class AulaVirtualSitioComponent implements OnInit {
   err = signal(false);
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((q) => {
+      const panel = q.get('panel');
+      if (panel === 'appmovil') {
+        this.builderInitialPanel.set('appmovil');
+      }
+    });
+
     this.svc.obtenerPortal().subscribe({
       next: (p) => {
         Object.assign(this.portalForm, p);

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -15,6 +15,7 @@ import { AulaVirtualAdminService, PortalAulaConfig } from '../../core/services/a
 import { mergePortalLanding } from '../../core/constants/portal-landing-defaults';
 import { PortalLandingEditorComponent } from './portal-landing-editor.component';
 import { PortalFundacionEditorComponent } from './portal-fundacion-editor.component';
+import { PortalApkUploadComponent } from './portal-apk-upload.component';
 import { PortalSitePreviewComponent } from './portal-site-preview.component';
 import { buildPortalThemeCssVars } from '../../core/utils/portal-theme-css.util';
 import { environment } from '../../../environments/environment';
@@ -25,6 +26,7 @@ export type BuilderPanel =
   | 'apariencia'
   | 'inicio'
   | 'contenido'
+  | 'appmovil'
   | 'institucional'
   | 'blog'
   | 'empresa'
@@ -63,16 +65,18 @@ interface GuiaPaso {
     RouterLink,
     PortalLandingEditorComponent,
     PortalFundacionEditorComponent,
+    PortalApkUploadComponent,
     PortalSitePreviewComponent,
   ],
   templateUrl: './portal-site-builder.component.html',
   styleUrl: './portal-site-builder.component.scss',
 })
-export class PortalSiteBuilderComponent {
+export class PortalSiteBuilderComponent implements OnInit {
   private svc = inject(AulaVirtualAdminService);
 
   @Input({ required: true }) portalForm!: PortalAulaConfig;
   @Input({ required: true }) portalUrl!: string;
+  @Input() initialPanel: BuilderPanel | null = null;
   @Output() avNotice = new EventEmitter<{ message: string; error?: boolean }>();
 
   heroUploading = signal(false);
@@ -102,6 +106,7 @@ export class PortalSiteBuilderComponent {
     {
       title: 'Más páginas',
       items: [
+        { id: 'appmovil', icon: '📱', label: 'App móvil (APK)' },
         { id: 'institucional', icon: '🏛️', label: 'Quiénes somos' },
         { id: 'blog', icon: '📰', label: 'Blog' },
       ],
@@ -118,6 +123,28 @@ export class PortalSiteBuilderComponent {
   panel = signal<BuilderPanel>('panel');
   previewVisible = signal(true);
   aparienciaAvanzada = signal(false);
+
+  ngOnInit() {
+    const p = this.initialPanel;
+    if (p && this.isBuilderPanel(p)) {
+      this.panel.set(p);
+    }
+  }
+
+  private isBuilderPanel(value: string): value is BuilderPanel {
+    return [
+      'panel',
+      'paginas',
+      'apariencia',
+      'inicio',
+      'contenido',
+      'appmovil',
+      'institucional',
+      'blog',
+      'empresa',
+      'marca',
+    ].includes(value);
+  }
 
   get landing() {
     if (!this.portalForm.landing) {
@@ -156,6 +183,10 @@ export class PortalSiteBuilderComponent {
       contenido: {
         title: 'Textos de la página principal',
         help: 'Edite frases, preguntas frecuentes, testimonios y demás textos que aparecen en el inicio del sitio.',
+      },
+      appmovil: {
+        title: 'App móvil — publicar APK',
+        help: 'Suba el APK de Android para la sección App Mobile del inicio. Se publica al instante, sin GitHub ni redeploy.',
       },
       institucional: {
         title: 'Página «Quiénes somos»',
@@ -336,7 +367,7 @@ export class PortalSiteBuilderComponent {
       });
   }
 
-  private applyPortalConfig(config: PortalAulaConfig) {
+  applyPortalConfig(config: PortalAulaConfig) {
     Object.assign(this.portalForm, config);
     this.portalForm.landing = mergePortalLanding(config.landing);
     this.portalForm.site = mergePortalSiteDefaults(config.site);

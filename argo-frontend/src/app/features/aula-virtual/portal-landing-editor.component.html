@@ -288,10 +288,10 @@
         <div class="av-field"><label>Texto botón descarga</label><input [(ngModel)]="landing.appMobile.btnDescargar" /></div>
         <div class="av-field"><label>Nota instalación</label><input [(ngModel)]="landing.appMobile.notaInstalacion" /></div>
       </div>
-      <div class="av-grid2">
-        <div class="av-field"><label>URL APK</label><input [(ngModel)]="landing.appMobile.apkUrl" placeholder="/apk/aula-virtual-finstruvial.apk" /></div>
-        <div class="av-field"><label>Nombre archivo APK</label><input [(ngModel)]="landing.appMobile.apkNombre" /></div>
-      </div>
+      <p class="av-muted">
+        Para subir el APK use la pestaña <strong>App móvil (APK)</strong> en Aula virtual o el menú
+        <strong>App móvil (APK)</strong> en el Editor del sitio.
+      </p>
       @for (item of landing.appMobile.features; track $index; let i = $index) {
         <div class="ple-card">
           <div class="ple-card-head"><strong>Característica {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeAppMobileFeature(i)">Quitar</button></div>

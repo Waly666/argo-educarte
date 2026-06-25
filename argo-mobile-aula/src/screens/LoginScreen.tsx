@@ -20,9 +20,9 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { ScaledText } from '../components/ScaledText';
 import { StarfieldHero } from '../components/StarfieldHero';
 import { SurfaceCard } from '../components/SurfaceCard';
-import { APP_BRANDING } from '../config/appBranding';
 import { useAuth } from '../context/AuthContext';
 import { usePortalConfig } from '../context/PortalConfigContext';
+import { usePortalBranding } from '../hooks/usePortalBranding';
 import { useTheme } from '../context/ThemeContext';
 import { pingHealth } from '../api/client';
 import { getApiBaseUrl, SERVIDOR_API_STORAGE_KEY } from '../config/apiBase';
@@ -36,6 +36,7 @@ export default function LoginScreen() {
   const nav = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { signIn, setServidor } = useAuth();
   const { config } = usePortalConfig();
+  const { tituloApp, nombreEmpresa } = usePortalBranding();
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -117,10 +118,10 @@ export default function LoginScreen() {
           </Pressable>
           <PortalLogo width={120} height={56} hideLetterFallback />
           <ScaledText baseSize={14} style={[styles.brandAula, { color: c.accent }]}>
-            {APP_BRANDING.tituloApp}
+            {tituloApp}
           </ScaledText>
           <ScaledText baseSize={16} style={[styles.brandEmpresa, { color: c.text }]}>
-            {APP_BRANDING.nombreEmpresa}
+            {nombreEmpresa}
           </ScaledText>
         </StarfieldHero>
 
@@ -199,7 +200,7 @@ export default function LoginScreen() {
             <IconInput
               value={servidor}
               onChangeText={setServidorLocal}
-              placeholder="https://app.finstruvial.edu.co"
+              placeholder="https://app.educarte.edu.co"
               icon="globe-outline"
               keyboardType="email-address"
               autoCapitalize="none"

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import {
@@ -7,6 +7,7 @@ import {
   PORTAL_LANDING_DEFAULTS,
   PortalLandingConfig,
 } from '../../core/constants/portal-landing-defaults';
+import { PortalAulaConfig } from '../../core/services/aula-virtual-admin.service';
 
 @Component({
   selector: 'argo-portal-landing-editor',
@@ -17,6 +18,8 @@ import {
 })
 export class PortalLandingEditorComponent {
   @Input({ required: true }) landing!: PortalLandingConfig;
+  @Output() portalConfigUpdated = new EventEmitter<PortalAulaConfig>();
+  @Output() avNotice = new EventEmitter<{ message: string; error?: boolean }>();
 
   bloque = signal<string | null>('general');
 
@@ -97,9 +100,9 @@ export class PortalLandingEditorComponent {
     this.landing.carreras.items.push({
       titulo: '',
       cno: '',
-      horas: 1020,
-      semestres: 3,
-      jornadas: 'Diurna, nocturna, sábados',
+      horas: 0,
+      semestres: 1,
+      jornadas: '',
     });
   }
 

@@ -1,5 +1,5 @@
 /* Fondo estrellado compartido (home, fundación, etc.) — usa variables del tema */
-.section-starfield,
+.section-starfield:not(.hero):not(#somos-mejor-opcion),
 .section-carreras {
   position: relative;
   overflow: hidden;
@@ -8,7 +8,20 @@
   color: var(--av-text);
 }
 
-.hero.section-starfield,
+/* Hero home: fondo oscuro Educarte fijo — no usar --av-starfield-bg claro del tema */
+.hero.section-starfield {
+  position: relative;
+  overflow: visible;
+  padding: 4.2rem 0 3.25rem;
+  background-color: #07051a;
+  background-image:
+    radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.48) 0%, transparent 58%),
+    radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.32) 0%, transparent 54%),
+    radial-gradient(ellipse 42% 38% at 52% 48%, rgba(245, 158, 11, 0.07) 0%, transparent 68%),
+    linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%);
+  color: #f8fafc;
+}
+
 .section-starfield:has(.hero-info-cards) {
   overflow: visible;
 }
@@ -70,5 +83,33 @@
     color: var(--av-accent);
     background: color-mix(in srgb, var(--av-accent) 14%, transparent);
     border-color: color-mix(in srgb, var(--av-accent) 35%, transparent);
+  }
+}
+
+/* Nuestros principios — fondo blanco, títulos oscuros; las dark-card no se modifican */
+#somos-mejor-opcion {
+  background: #fff;
+  color: #0f172a;
+
+  .starfield-bg {
+    display: none;
+  }
+
+  .starfield-head {
+    h2,
+    .title-reveal--h2 {
+      color: #0f172a;
+    }
+
+    .section-lead,
+    .fund-section__lead {
+      color: #475569;
+    }
+
+    .kicker {
+      color: #4338ca;
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.22);
+    }
   }
 }

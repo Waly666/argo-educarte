@@ -32,35 +32,53 @@ export function CatalogoContent({ intro }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const categorias = await fetchCategorias();
+        if (!cancelled) setCats(categorias);
+      } catch {
+        if (!cancelled) setCats([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loadCursos = useCallback(async () => {
     try {
-      const [rows, categorias] = await Promise.all([
-        fetchCursos(qDeb, catId),
-        cats.length ? Promise.resolve(cats) : fetchCategorias(),
-      ]);
-      setCursos(rows);
-      if (!cats.length) setCats(categorias);
+      const rows = await fetchCursos(qDeb, catId);
+      setCursos(Array.isArray(rows) ? rows : []);
     } catch {
       setCursos([]);
     }
-  }, [qDeb, catId, cats]);
+  }, [qDeb, catId]);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      await load();
+      await loadCursos();
       if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [load]);
+  }, [loadCursos]);
 
   async function onRefresh() {
     setRefreshing(true);
-    await load();
-    setRefreshing(false);
+    try {
+      const [categorias] = await Promise.all([fetchCategorias(), loadCursos()]);
+      setCats(categorias);
+    } catch {
+      setCats([]);
+      await loadCursos();
+    } finally {
+      setRefreshing(false);
+    }
   }
 
   function abrirCurso(curso: CursoVirtual) {

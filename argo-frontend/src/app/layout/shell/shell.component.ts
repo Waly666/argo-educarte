@@ -476,6 +476,7 @@ export class ShellComponent {
       children: [
         { kind: 'link', label: 'Cursos virtuales', icon: '▣', path: '/app/aula-virtual', iconTone: 'indigo', permiso: ['aula_virtual.gestionar', 'programas.gestionar'] },
         { kind: 'link', label: 'Editor sitio portal', icon: '✎', path: '/app/aula-virtual/sitio', iconTone: 'indigo', permiso: ['aula_virtual.sitio', 'aula_virtual.gestionar', 'programas.gestionar'] },
+        { kind: 'link', label: 'App móvil (subir APK)', icon: '📱', path: '/app/aula-virtual/sitio', queryParams: { panel: 'appmovil' }, iconTone: 'indigo', permiso: ['aula_virtual.sitio', 'aula_virtual.gestionar', 'programas.gestionar'] },
         { kind: 'link', label: 'Blog del portal', icon: '📰', path: '/app/aula-virtual/blog', iconTone: 'indigo', permiso: ['aula_virtual.sitio', 'aula_virtual.gestionar', 'programas.gestionar'] },
         { kind: 'link', label: 'Foro de cursos', icon: '💬', path: '/app/aula-virtual/foro', iconTone: 'indigo', permiso: ['aula_virtual.foro', 'aula_virtual.gestionar', 'programas.gestionar', 'instructores'] },
       ],

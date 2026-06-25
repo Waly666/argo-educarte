@@ -109,7 +109,9 @@ export function PortalLogo({
 
   return (
     <View style={[styles.wrap, style]}>
-      {logoSource ? (
+      {logoUrl ? (
+        renderLogoImage({ uri: imgUri ?? logoUrl }, uri ?? logoUrl)
+      ) : logoSource ? (
         renderLogoImage(logoSource, 'embedded')
       ) : loading ? (
         <View style={boxStyle}>

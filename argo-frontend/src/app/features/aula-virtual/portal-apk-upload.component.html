@@ -1,0 +1,69 @@
+<section class="apk-panel">
+  <header class="apk-panel__head">
+    <div>
+      <p class="apk-panel__kicker">Android · App aula virtual</p>
+      <h2>Publicar APK en el portal</h2>
+      <p class="apk-panel__lead">
+        Suba aquí el archivo <strong>.apk</strong>. El botón de descarga de la sección
+        <strong>App Mobile</strong> en el inicio del portal se actualiza al instante.
+        No hace falta subir el APK por GitHub ni redeployar el sitio.
+      </p>
+    </div>
+  </header>
+
+  <div class="apk-panel__card">
+    @if (landing.appMobile.apkNombre || landing.appMobile.apkUrl) {
+      <div class="apk-panel__current">
+        <span class="apk-panel__current-label">APK activo en el portal</span>
+        <strong>{{ landing.appMobile.apkNombre || 'aula-virtual.apk' }}</strong>
+        <code>{{ landing.appMobile.apkUrl }}</code>
+        @if (apkEnlacePortal(); as enlace) {
+          <a class="apk-panel__link" [href]="enlace" target="_blank" rel="noopener">Probar descarga ↗</a>
+        }
+      </div>
+    } @else {
+      <p class="apk-panel__empty">Aún no hay APK configurado para descarga.</p>
+    }
+
+    <div class="apk-panel__actions">
+      <label class="apk-panel__upload-btn" [class.is-busy]="apkUploading()">
+        <span class="apk-panel__upload-icon" aria-hidden="true">⬆</span>
+        <span>{{ apkUploading() ? 'Subiendo APK…' : 'Subir APK del aula virtual' }}</span>
+        <input
+          type="file"
+          accept=".apk,application/vnd.android.package-archive"
+          hidden
+          (change)="onApkSelected($event)"
+          [disabled]="apkUploading()"
+        />
+      </label>
+
+      @if (tieneApkSubido()) {
+        <button type="button" class="apk-panel__secondary" [disabled]="apkUploading()" (click)="quitarApk()">
+          Restaurar enlace por defecto
+        </button>
+      }
+    </div>
+
+    <p class="apk-panel__hint">
+      Máximo 150 MB · Solo Android · Se guarda en el servidor (carpeta <code>uploads/aula-virtual-apk</code>)
+    </p>
+  </div>
+
+  <details class="apk-panel__advanced">
+    <summary>Configuración avanzada (nombre y URL manual)</summary>
+    <div class="apk-panel__advanced-grid">
+      <label class="apk-panel__field">
+        <span>Nombre al descargar</span>
+        <input type="text" [(ngModel)]="landing.appMobile.apkNombre" placeholder="aula-virtual-educarte.apk" />
+      </label>
+      <label class="apk-panel__field apk-panel__field--full">
+        <span>URL del APK</span>
+        <input type="text" [(ngModel)]="landing.appMobile.apkUrl" placeholder="/uploads/aula-virtual-apk/…" />
+      </label>
+    </div>
+    <p class="apk-panel__hint">
+      Use esto solo si el APK está en otra ruta. Lo normal es usar el botón verde de arriba.
+    </p>
+  </details>
+</section>

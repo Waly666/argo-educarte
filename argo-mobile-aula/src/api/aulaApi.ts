@@ -74,7 +74,9 @@ export async function fetchPortalConfig(): Promise<PortalConfig> {
 }
 
 export function fetchCategorias(): Promise<CategoriaVirtual[]> {
-  return apiFetch<CategoriaVirtual[]>(`${B}/categorias`, { auth: false });
+  return apiFetch<CategoriaVirtual[]>(`${B}/categorias`, { auth: false }).then((rows) =>
+    Array.isArray(rows) ? rows : [],
+  );
 }
 
 export function fetchCursos(q = '', idCategoria?: number | null): Promise<CursoVirtual[]> {
@@ -82,7 +84,9 @@ export function fetchCursos(q = '', idCategoria?: number | null): Promise<CursoV
   if (q) parts.push(`q=${encodeURIComponent(q)}`);
   if (idCategoria != null) parts.push(`idCategoria=${idCategoria}`);
   const qs = parts.length ? `?${parts.join('&')}` : '';
-  return apiFetch<CursoVirtual[]>(`${B}/cursos${qs}`, { auth: false });
+  return apiFetch<CursoVirtual[]>(`${B}/cursos${qs}`, { auth: false }).then((rows) =>
+    Array.isArray(rows) ? rows : [],
+  );
 }
 
 export function fetchCurso(id: string | number): Promise<CursoVirtual> {
