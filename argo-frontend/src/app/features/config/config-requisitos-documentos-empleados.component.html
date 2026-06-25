@@ -1,0 +1,216 @@
+<section class="req-emp-page card">
+  <header class="req-emp-head">
+    <div class="req-emp-head-main">
+      <h1>Requisitos de documentos — Empleados</h1>
+      <p>
+        Defina qué documentos exige cada cargo (instructor, cajero, etc.) y cuáles tienen vencimiento.
+        Se usan en RRHH y en la inspección preoperacional.
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="req-emp-badges">
+        <span class="req-emp-chip req-emp-chip--sky">{{ tiposDocumento().length }} tipo{{ tiposDocumento().length === 1 ? '' : 's' }} doc.</span>
+        <span class="req-emp-chip req-emp-chip--amber">{{ tiposActivos().length }} activo{{ tiposActivos().length === 1 ? '' : 's' }}</span>
+        <span class="req-emp-chip req-emp-chip--rose">{{ cargos().length }} cargo{{ cargos().length === 1 ? '' : 's' }}</span>
+        <span class="req-emp-chip req-emp-chip--violet">Aviso {{ diasAvisoVencimiento() }} d</span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="req-emp-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="req-emp-msg" [class.req-emp-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="req-emp-form argo-form-shell">
+      <!-- 1. Alertas -->
+      <section class="req-emp-section req-emp-section--amber">
+        <header class="req-emp-section-head">
+          <span class="req-emp-section-badge">1</span>
+          <div class="req-emp-section-titles">
+            <h2 class="req-emp-section-title">Alertas de vencimiento</h2>
+            <p class="req-emp-section-desc">
+              Días antes del vencimiento para las alertas de documentos de empleado en RRHH.
+            </p>
+          </div>
+        </header>
+        <div class="req-emp-section-body">
+          <label class="req-emp-field req-emp-field--ancho">
+            <span class="req-emp-label">Días de aviso (global)</span>
+            <input
+              type="number"
+              min="1"
+              max="365"
+              [ngModel]="diasAvisoVencimiento()"
+              (ngModelChange)="diasAvisoVencimiento.set(+$event || 30)" />
+            <span class="req-emp-field-hint">Cada tipo puede sobreescribir este valor en la tabla de documentos.</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. Tipos de documento -->
+      <section class="req-emp-section req-emp-section--sky">
+        <header class="req-emp-section-head">
+          <span class="req-emp-section-badge">2</span>
+          <div class="req-emp-section-titles">
+            <h2 class="req-emp-section-title">Tipos de documento</h2>
+            <p class="req-emp-section-desc">Cédula, licencias, certificados médicos y demás documentos del empleado.</p>
+          </div>
+          <button type="button" class="ghost mini req-emp-btn-add" (click)="agregarTipo()">+ Agregar tipo</button>
+        </header>
+        <div class="req-emp-section-body">
+          <div class="req-emp-table-wrap">
+            <table class="req-emp-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th class="req-emp-th-c" title="Exige expedición y vencimiento">Vence</th>
+                  <th>Días aviso</th>
+                  <th class="req-emp-th-c">Activo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of tiposDocumento(); track t.id; let i = $index) {
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-emp-input"
+                        [ngModel]="t.codigo"
+                        (ngModelChange)="patchTipo(i, 'codigo', $event)"
+                        placeholder="CEDULA" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-emp-input"
+                        [ngModel]="t.nombre"
+                        (ngModelChange)="patchTipo(i, 'nombre', $event)"
+                        placeholder="Cédula" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-emp-input"
+                        [ngModel]="t.descripcion"
+                        (ngModelChange)="patchTipo(i, 'descripcion', $event)" />
+                    </td>
+                    <td class="req-emp-td-c">
+                      <input
+                        type="checkbox"
+                        [ngModel]="t.controlaVencimiento !== false"
+                        (ngModelChange)="patchTipo(i, 'controlaVencimiento', $event)" />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        class="req-emp-input req-emp-input--num"
+                        [disabled]="t.controlaVencimiento === false"
+                        [ngModel]="t.diasAvisoVencimiento ?? ''"
+                        (ngModelChange)="patchTipoDiasAviso(i, $event)"
+                        placeholder="Global" />
+                    </td>
+                    <td class="req-emp-td-c">
+                      <input
+                        type="checkbox"
+                        [ngModel]="t.activo !== false"
+                        (ngModelChange)="patchTipo(i, 'activo', $event)" />
+                    </td>
+                    <td class="req-emp-td-r">
+                      <button type="button" class="ghost mini danger" (click)="quitarTipo(i)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+                @if (!tiposDocumento().length) {
+                  <tr>
+                    <td colspan="7" class="req-emp-empty">Sin tipos definidos. Pulse «Agregar tipo» para comenzar.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="req-emp-field-hint req-emp-field-hint--block">
+            <strong>Vence:</strong> exige expedición y vencimiento al registrar y genera alertas.
+            Desmarque para documentos sin fecha (ej. cédula).
+            <strong>Días aviso</strong> vacío usa el valor global de la sección 1.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. Matriz por cargo -->
+      <section class="req-emp-section req-emp-section--rose">
+        <header class="req-emp-section-head">
+          <span class="req-emp-section-badge">3</span>
+          <div class="req-emp-section-titles">
+            <h2 class="req-emp-section-title">Requisitos por cargo</h2>
+            <p class="req-emp-section-desc">
+              Marque los documentos obligatorios para cada cargo. El instructor logueado debe cumplirlos al diligenciar la inspección.
+            </p>
+          </div>
+        </header>
+        <div class="req-emp-section-body">
+          @if (cargos().length && tiposActivos().length) {
+            <div class="req-emp-matrix-wrap">
+              <table class="req-emp-matrix">
+                <thead>
+                  <tr>
+                    <th class="req-emp-matrix-sticky">Cargo</th>
+                    @for (d of tiposActivos(); track d.id) {
+                      <th class="req-emp-matrix-doc" [title]="d.codigo">{{ d.nombre }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of cargos(); track c.idCargo) {
+                    <tr>
+                      <td class="req-emp-matrix-sticky">
+                        <strong>{{ c.label }}</strong>
+                        <span class="req-emp-matrix-id">{{ c.idCargo }}</span>
+                      </td>
+                      @for (d of tiposActivos(); track d.id) {
+                        <td class="req-emp-td-c">
+                          <label class="req-emp-matrix-check">
+                            <input
+                              type="checkbox"
+                              [checked]="tieneDocCargo(c.idCargo, d.id)"
+                              (change)="toggleDocCargo(c.idCargo, d.id, $any($event.target).checked)" />
+                            <span class="sr-only">{{ d.nombre }} — {{ c.label }}</span>
+                          </label>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else if (!cargos().length) {
+            <div class="req-emp-empty-block">
+              <span class="req-emp-empty-icon" aria-hidden="true">👤</span>
+              <p>No hay cargos configurados.</p>
+              <span class="req-emp-field-hint">Cree cargos en el catálogo correspondiente de RRHH.</span>
+            </div>
+          } @else {
+            <div class="req-emp-empty-block">
+              <span class="req-emp-empty-icon" aria-hidden="true">📄</span>
+              <p>No hay tipos de documento activos.</p>
+              <span class="req-emp-field-hint">Agregue y active al menos un tipo en la sección 2.</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <footer class="req-emp-foot">
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  }
+</section>

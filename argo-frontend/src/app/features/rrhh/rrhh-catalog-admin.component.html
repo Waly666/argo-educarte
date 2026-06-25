@@ -1,0 +1,139 @@
+@if (config(); as cfg) {
+<section class="catalog-page rrhh-page admin-list-page card">
+  <header class="rrhh-head page-head">
+    <div class="rrhh-head-main">
+      <p class="breadcrumb"><a routerLink="/app/rrhh/inicio">RRHH</a> / Catálogos</p>
+      <h1>Catálogos RRHH</h1>
+      <p class="hint">Organización y seguridad social. Luego asigne estos datos en cada empleado.</p>
+    </div>
+    <div class="rrhh-badges head-actions">
+      <span class="rrhh-chip rrhh-chip--rose">{{ cfg.titulo }}</span>
+      <a routerLink="/app/rrhh/empleados" class="ghost link-btn mini">→ Empleados</a>
+    </div>
+  </header>
+
+  <nav class="catalog-tabs" aria-label="Tipo de catálogo">
+    <div class="tab-grp">Organización</div>
+    @for (t of tabsOrganizacion(); track t.id) {
+      <a class="tab" [class.active]="tabActivo() === t.id" [routerLink]="['/app/rrhh/catalogos', t.id]">{{ t.label }}</a>
+    }
+    <div class="tab-grp">Seguridad social</div>
+    @for (t of tabsSeguridad(); track t.id) {
+      <a class="tab" [class.active]="tabActivo() === t.id" [routerLink]="['/app/rrhh/catalogos', t.id]">{{ t.label }}</a>
+    }
+  </nav>
+
+  <div class="rrhh-head page-head" style="margin-top: 0">
+    <div class="rrhh-head-main">
+      <h2>{{ cfg.titulo }}</h2>
+      @if (cfg.hint) {
+        <p class="hint">{{ cfg.hint }}</p>
+      }
+    </div>
+    <button type="button" class="primary" (click)="nuevo()">+ Nuevo</button>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Buscar…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+      (keyup.enter)="cargar()"
+    />
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')" title="Vista tabla">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')" title="Vista tarjetas">▦ Cards</button>
+    </div>
+  </div>
+
+  @if (msg(); as texto) {
+    <div class="rrhh-msg" [class.rrhh-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="form-card card argo-form-shell" *ngIf="mostrarForm()">
+    <h2>{{ editando() ? 'Editar' : 'Nuevo' }}</h2>
+    <div class="row">
+      <div *ngFor="let field of cfg.fields" [class]="'col-' + (field.col || 4)">
+        <label>{{ field.label }}<span *ngIf="field.required"> *</span></label>
+        <textarea
+          *ngIf="field.type === 'textarea'"
+          rows="2"
+          [ngModel]="form()[field.key]"
+          (ngModelChange)="patch(field.key, $event)"
+        ></textarea>
+        <select
+          *ngIf="field.type === 'select'"
+          [ngModel]="form()[field.key]"
+          (ngModelChange)="patch(field.key, $event)"
+        >
+          <option *ngFor="let o of field.options" [value]="o.value">{{ o.label }}</option>
+        </select>
+        <input
+          *ngIf="!field.type || field.type === 'text' || field.type === 'number'"
+          [type]="field.type === 'number' ? 'number' : 'text'"
+          [ngModel]="form()[field.key]"
+          (ngModelChange)="patch(field.key, field.type === 'number' ? +$event : $event)"
+        />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+
+  <table class="argo" *ngIf="!loading() && vista() === 'lista'">
+    <thead>
+      <tr>
+        <th *ngFor="let c of cfg.columns">{{ c.label }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of rows()">
+        <td *ngFor="let c of cfg.columns">{{ cell(r, c.key) }}</td>
+        <td class="actions-cell">
+          <button type="button" class="ghost sm" (click)="editar(r)">Editar</button>
+          <button type="button" class="danger sm" (click)="eliminar(r)">Eliminar</button>
+        </td>
+      </tr>
+      <tr *ngIf="rows().length === 0">
+        <td [attr.colspan]="cfg.columns.length + 1" class="empty">Sin registros.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+    <article class="list-card" *ngFor="let r of rows()">
+      <header class="card-title"><h3>{{ cardTitulo(r) }}</h3></header>
+      <div class="card-body">
+        <div class="entity-badge-wrap">
+          <div class="entity-badge tone-teal">{{ cell(r, cfg.idKey) }}</div>
+        </div>
+        <div class="card-main">
+          <dl class="card-fields">
+            <div *ngFor="let c of cfg.columns">
+              <dt>{{ c.label }}</dt>
+              <dd>{{ cell(r, c.key) }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      <footer class="card-foot">
+        <span class="card-hint">{{ cfg.titulo }}</span>
+        <div class="card-actions">
+          <button type="button" class="act open" (click)="editar(r)">Editar</button>
+          <button type="button" class="act doc" (click)="eliminar(r)">Eliminar</button>
+        </div>
+      </footer>
+    </article>
+    <div class="empty cards-empty" *ngIf="rows().length === 0">Sin registros.</div>
+  </div>
+</section>
+}

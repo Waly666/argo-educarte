@@ -1,0 +1,363 @@
+<div class="layout-editor">
+  <button type="button" class="toggle-head" (click)="abierto() ? abierto.set(false) : abrirEditor()">
+    <span class="toggle-title">
+      <span class="step-badge">2</span>
+      Ubicar textos y código QR
+    </span>
+    <span class="chev">{{ abierto() ? 'Ocultar' : 'Abrir editor' }}</span>
+  </button>
+
+  @if (abierto()) {
+    <div class="editor-intro">
+      <strong>{{ labelTipo(tipo) }}</strong> · formato {{ labelOri(orientacion) }}.
+      Elija un campo en el certificado y manipúlelo con el mouse: mover, redimensionar y alinear. Guarde al terminar.
+    </div>
+
+    <div class="copy-layout-bar">
+      <div class="copy-layout-main">
+        <span class="copy-layout-label">Copiar medidas desde</span>
+        <select
+          class="copy-layout-select"
+          [ngModel]="copiarDesdeKey()"
+          (ngModelChange)="copiarDesdeKey.set($event)">
+          <option value="">— Elija un formato configurado —</option>
+          @for (f of fuentesCopia(); track f.key) {
+            <option [value]="f.key">{{ f.label }}</option>
+          }
+        </select>
+        <button type="button" class="copy-layout-btn" [disabled]="!copiarDesdeKey()" (click)="copiarMedidas()">
+          Aplicar
+        </button>
+      </div>
+      @if (fuentesCopia().length === 0) {
+        <p class="copy-layout-hint">
+          Aún no hay otros formatos con medidas. Configure uno, guarde, y podrá reutilizarlo aquí.
+        </p>
+      } @else {
+        <p class="copy-layout-hint">
+          Copia posiciones, tamaños de letra, color y QR. Luego pulse <strong>Guardar configuración</strong>.
+        </p>
+      }
+      @if (copyMsg(); as msg) {
+        <p class="copy-layout-msg" role="status">{{ msg }}</p>
+      }
+    </div>
+
+    <div class="editor-split">
+      <!-- Izquierda: certificado siempre visible -->
+      <section class="panel-preview" aria-label="Vista del certificado">
+        <div class="preview-header">
+          <span class="preview-label">Vista del certificado</span>
+          <button type="button" class="link-btn" (click)="abrirPreview()" [disabled]="!urlFondoPreview || cargandoPreview()">
+            {{ cargandoPreview() ? 'Cargando…' : 'Ver como PDF' }}
+          </button>
+        </div>
+
+        @if (urlFondoPreview) {
+          @if (textoSel(); as tbId) {
+            <div class="preview-toolbar" aria-label="Herramientas del campo seleccionado">
+              <span class="tb-label">{{ labelCampo(tbId) }}</span>
+              <span class="tb-sep"></span>
+              @if (puedeCentrarEnHoja(tbId)) {
+                <button
+                  type="button"
+                  class="tb-btn tb-btn-labeled"
+                  title="Centrar horizontalmente en la hoja"
+                  (click)="centrarCuadroEnCertificado(tbId)">
+                  <span class="tb-icon tb-icon-sheet"></span>
+                  <span>Centrar H</span>
+                </button>
+                <span class="tb-sep"></span>
+              }
+              @if (!esCampoPosicional(tbId)) {
+                <button
+                  type="button"
+                  class="tb-btn"
+                  [class.active]="alineacionActual(tbId) === 'left' && !esCentrado(tbId)"
+                  title="Alinear texto a la izquierda"
+                  (click)="setAlineacion(tbId, 'left')">
+                  <span class="tb-icon tb-icon-left"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tb-btn"
+                  [class.active]="esCentrado(tbId)"
+                  title="Alinear texto al centro"
+                  (click)="setAlineacion(tbId, 'center')">
+                  <span class="tb-icon tb-icon-center"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tb-btn"
+                  [class.active]="alineacionActual(tbId) === 'right' && !esCentrado(tbId)"
+                  title="Alinear texto a la derecha"
+                  (click)="setAlineacion(tbId, 'right')">
+                  <span class="tb-icon tb-icon-right"></span>
+                </button>
+                <span class="tb-sep"></span>
+              }
+              <div class="font-size-control font-size-control--compact" title="Tamaño de la letra">
+                <button type="button" class="font-size-btn" (click)="ajustarTamano(tbId, -0.5)" aria-label="Reducir tamaño">−</button>
+                <input
+                  type="number"
+                  class="font-size-input"
+                  [min]="fuenteMinPt"
+                  [max]="fuenteMaxPt"
+                  step="0.5"
+                  [ngModel]="tamanoActual(tbId)"
+                  (ngModelChange)="onTamano(tbId, $event)" />
+                <span class="font-size-unit">pt</span>
+                <button type="button" class="font-size-btn" (click)="ajustarTamano(tbId, 0.5)" aria-label="Aumentar tamaño">+</button>
+              </div>
+            </div>
+          } @else if (esQrSel() && mostrarQr) {
+            <div class="preview-toolbar" aria-label="Herramientas del QR">
+              <span class="tb-label">Código QR</span>
+              <span class="tb-sep"></span>
+              <button
+                type="button"
+                class="tb-btn tb-btn-labeled"
+                title="Centrar QR horizontalmente"
+                (click)="centrarQrEnCertificado()">
+                <span class="tb-icon tb-icon-sheet"></span>
+                <span>Centrar H</span>
+              </button>
+              <span class="tb-sep"></span>
+              <span class="tb-meta">{{ qrSizeActual() | number:'1.1-1' }}% · ~{{ qrSizeMmActual() }} mm</span>
+            </div>
+          } @else {
+            <p class="preview-toolbar-hint">Seleccione un texto o el QR en el certificado para ver las herramientas.</p>
+          }
+
+          <div class="cert-stage" [class.horizontal]="orientacion === 'horizontal'">
+            <div class="cert-preview" #certCanvas>
+              <img [src]="urlFondoPreview" alt="Plantilla del certificado" draggable="false" />
+              <div class="overlay" [class.is-dragging]="arrastrando()">
+                @for (c of campos; track c.id) {
+                  <div
+                    role="button"
+                    tabindex="0"
+                    class="ov-text"
+                    [class.multilinea]="esMultilinea(c.id)"
+                    [class.is-selected]="campoSel() === c.id"
+                    [class.hidden-field]="!visible(c.id)"
+                    [class.draggable]="visible(c.id)"
+                    [style]="estiloOverlay(c.id)"
+                    (keydown.enter)="seleccionar(c.id)"
+                    (keydown.space)="seleccionar(c.id); $event.preventDefault()"
+                    (pointerdown)="iniciarArrastreTexto($event, c.id)">
+                    {{ textoMuestra(c.id) }}
+                    @if (campoSel() === c.id && visible(c.id)) {
+                      <span class="handle handle-w" title="Ancho izquierdo" (pointerdown)="iniciarResizeTexto($event, c.id, 'w')"></span>
+                      <span class="handle handle-e" title="Ancho derecho" (pointerdown)="iniciarResizeTexto($event, c.id, 'e')"></span>
+                      <span class="handle handle-s" title="Tamaño de letra" (pointerdown)="iniciarResizeTexto($event, c.id, 's')"></span>
+                      <span class="handle handle-se" title="Ancho y tamaño" (pointerdown)="iniciarResizeTexto($event, c.id, 'se')"></span>
+                    }
+                  </div>
+                }
+                @if (mostrarQr) {
+                  <div
+                    role="button"
+                    tabindex="0"
+                    class="ov-qr"
+                    [class.is-selected]="esQrSel()"
+                    [style]="estiloOverlayQr()"
+                    (keydown.enter)="seleccionar('qr')"
+                    (keydown.space)="seleccionar('qr'); $event.preventDefault()"
+                    (pointerdown)="iniciarArrastreQr($event)">
+                    <span class="qr-mock">QR</span>
+                    @if (esQrSel()) {
+                      <span
+                        class="handle handle-se"
+                        title="Tamaño del QR"
+                        (pointerdown)="iniciarResizeQr($event)"></span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+          <p class="preview-tip">
+            <span class="tip-icon">①</span>
+            <strong>Clic</strong> para seleccionar · <strong>Arrastrar</strong> para mover ·
+            <strong>Asas</strong> en los bordes para ancho y tamaño de letra ·
+            <strong>Barra fija</strong> arriba del certificado para centrar, alinear y tamaño de letra.
+          </p>
+        } @else {
+          <div class="no-plantilla">
+            <p>Primero suba la imagen PNG del certificado (paso anterior).</p>
+            <p class="sub">Después podrá mover cada texto a su lugar.</p>
+          </div>
+        }
+      </section>
+
+      <!-- Derecha: opciones del campo elegido -->
+      <section class="panel-opciones" aria-label="Opciones de texto">
+        <div class="opciones-global">
+          <label class="field-label">Color del texto (todo el certificado)</label>
+          <div class="color-pick">
+            <input type="color" [ngModel]="colorGlobal()" (ngModelChange)="patchColorGlobal($event)" title="Color general" />
+            <span class="color-hint">Toque el cuadro para cambiar el color</span>
+          </div>
+        </div>
+
+        <div class="opciones-divider"></div>
+
+        <label class="field-label">¿Qué desea ajustar?</label>
+        <div class="campo-grid">
+          @for (c of campos; track c.id) {
+            <button
+              type="button"
+              class="campo-chip"
+              [class.active]="campoSel() === c.id"
+              [class.off]="!visible(c.id)"
+              (click)="seleccionar(c.id)">
+              {{ c.label }}
+            </button>
+          }
+          @if (mostrarQr) {
+            <button
+              type="button"
+              class="campo-chip qr-chip"
+              [class.active]="esQrSel()"
+              (click)="seleccionar('qr')">
+              Código QR
+            </button>
+          }
+        </div>
+
+        @if (!mostrarQr) {
+          <p class="control-hint">El QR está desactivado arriba en «Código QR (global)». Actívelo para ubicarlo aquí.</p>
+        }
+
+        @if (esQrSel() && mostrarQr) {
+          <div class="campo-editor qr-editor">
+            <h3 class="editing-title">Código QR</h3>
+            <p class="control-hint visual-hint">
+              Arrástrelo en el certificado para moverlo. Use la esquina inferior derecha para el tamaño.
+            </p>
+
+            <label class="field-label">Ubicación rápida</label>
+            <div class="esquina-grid">
+              @for (e of qrEsquinas; track e.id) {
+                <button type="button" class="esquina-btn" (click)="aplicarEsquinaQr(e.id)">{{ e.label }}</button>
+              }
+            </div>
+
+            <div class="control-block">
+              <button type="button" class="tool-btn full" (click)="centrarQrEnCertificado()">
+                <span class="tool-icon tool-icon-sheet"></span>
+                Centrar QR horizontalmente
+              </button>
+            </div>
+
+            <div class="control-block compact-readout">
+              <span class="value-readout">{{ qrSizeActual() | number:'1.1-1' }}% del ancho · ~{{ qrSizeMmActual() }} mm</span>
+            </div>
+
+            <div class="editor-actions">
+              <button type="button" class="ghost" (click)="restaurarQr()">Usar posición global del QR</button>
+            </div>
+          </div>
+        } @else {
+          @if (textoSel(); as id) {
+          <div class="campo-editor">
+            <h3 class="editing-title">{{ labelCampo(id) }}</h3>
+
+            <p class="control-hint visual-hint">
+              Manipule el texto directamente en el certificado: arrastre para mover, asas laterales para ancho,
+              asa inferior o esquina para el tamaño de letra, barra flotante para alinear.
+            </p>
+
+            <label class="switch-row">
+              <input type="checkbox" [ngModel]="visible(id)" (ngModelChange)="patchCampo(id, { visible: $event })" />
+              <span>Mostrar en el certificado</span>
+            </label>
+
+            @if (visible(id)) {
+              <div class="herramientas-rapidas">
+                <label class="field-label">Herramientas</label>
+                @if (puedeCentrarEnHoja(id)) {
+                  <button type="button" class="tool-btn" (click)="centrarCuadroEnCertificado(id)">
+                    <span class="tool-icon tool-icon-sheet"></span>
+                    Centrar horizontalmente en la hoja
+                  </button>
+                }
+                <div class="tool-font-row">
+                  <span class="tool-font-label">Tamaño de letra</span>
+                  <div class="font-size-control">
+                    <button type="button" class="font-size-btn" (click)="ajustarTamano(id, -0.5)" aria-label="Reducir tamaño">−</button>
+                    <input
+                      type="number"
+                      class="font-size-input"
+                      [min]="fuenteMinPt"
+                      [max]="fuenteMaxPt"
+                      step="0.5"
+                      [ngModel]="tamanoActual(id)"
+                      (ngModelChange)="onTamano(id, $event)" />
+                    <span class="font-size-unit">pt</span>
+                    <button type="button" class="font-size-btn" (click)="ajustarTamano(id, 0.5)" aria-label="Aumentar tamaño">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-block row-2">
+                <div>
+                  <label class="field-label">Negrilla</label>
+                  <select [ngModel]="campo(id).fw || '600'" (ngModelChange)="patchCampo(id, { fw: $event })">
+                    <option value="400">Normal</option>
+                    <option value="600">Semi-negrita</option>
+                    <option value="700">Negrita</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="control-block">
+                <label class="field-label">Tipo de letra</label>
+                <select
+                  [ngModel]="campo(id).fontFamily || fuenteDefault"
+                  (ngModelChange)="patchCampo(id, { fontFamily: $event })">
+                  @for (f of fuentes; track f.value) {
+                    <option [value]="f.value">{{ f.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="control-block">
+                <label class="field-label">Color (opcional)</label>
+                <div class="color-pick">
+                  <input
+                    type="color"
+                    [ngModel]="campo(id).color || colorGlobal()"
+                    (ngModelChange)="patchCampo(id, { color: $event })" />
+                  <button type="button" class="link-btn" (click)="patchCampo(id, { color: undefined })">Usar color general</button>
+                </div>
+              </div>
+
+              <div class="editor-actions">
+                <button type="button" class="ghost" (click)="restaurarCampo(id)">Restaurar este texto</button>
+              </div>
+            }
+          </div>
+          }
+        }
+
+        <div class="panel-footer">
+          <button type="button" class="ghost" (click)="restaurarTodo()">Restaurar todo al original</button>
+        </div>
+      </section>
+    </div>
+  }
+</div>
+
+@if (previewHtml()) {
+  <div class="preview-modal" (click)="cerrarPreview()">
+    <div class="preview-frame" (click)="$event.stopPropagation()">
+      <header>
+        <strong>Vista previa de impresión</strong>
+        <button type="button" class="ghost" (click)="cerrarPreview()">Cerrar</button>
+      </header>
+      <iframe [srcdoc]="previewSafe()!" title="Vista previa certificado"></iframe>
+    </div>
+  </div>
+}

@@ -1,0 +1,68 @@
+.alumnos-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-head {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  align-items: center;
+  gap: 18px;
+
+  .title h1 { margin: 0; }
+  .title p { color: var(--text-dim); margin: 4px 0 0; font-size: .9rem; }
+  .search { min-width: 0; }
+  .current {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 10px;
+    background: rgba(78, 163, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(78, 163, 255, 0.15);
+      display: grid; place-items: center;
+      color: var(--accent-2);
+      font-weight: 600;
+      overflow: hidden;
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+    .meta { display: flex; flex-direction: column; line-height: 1.2; }
+    .meta strong { color: var(--text); }
+    .meta span { color: var(--text-soft); font-size: .8rem; }
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+
+  .tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 14px;
+    color: var(--text-soft);
+    letter-spacing: .5px;
+
+    &:hover { color: var(--text); box-shadow: none; }
+    &.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+    }
+  }
+}
+
+.tab-body { min-height: 200px; }
+
+@media (max-width: 980px) {
+  .page-head {
+    grid-template-columns: 1fr;
+  }
+}

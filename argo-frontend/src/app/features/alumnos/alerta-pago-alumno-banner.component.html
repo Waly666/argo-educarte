@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-pago"
+  icon="💰"
+  [title]="'Cobros programados hoy (' + rows().length + ')'"
+  hint="Recordatorio acordado con el alumno — pulse una fila para ir a la ficha."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

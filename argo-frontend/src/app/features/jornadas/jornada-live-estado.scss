@@ -1,0 +1,151 @@
+/* Estados vivos (parpadeo) — compartido en Jornadas Cap */
+
+@keyframes jor-live-green-blink {
+  0%,
+  100% {
+    opacity: 1;
+    border-color: rgba(74, 222, 128, 0.98);
+    box-shadow:
+      0 0 14px rgba(34, 197, 94, 0.65),
+      0 0 24px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    opacity: 0.78;
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.12);
+  }
+}
+
+@keyframes jor-live-blue-blink {
+  0%,
+  100% {
+    opacity: 1;
+    border-color: rgba(56, 189, 248, 0.98);
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.55);
+  }
+  50% {
+    opacity: 0.8;
+    border-color: rgba(56, 189, 248, 0.35);
+    box-shadow: 0 0 4px rgba(14, 165, 233, 0.1);
+  }
+}
+
+.row-contrato-ejecucion,
+.row-jornada-proceso {
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.65);
+
+  &:hover {
+    background: rgba(16, 185, 129, 0.11);
+  }
+}
+
+.row-clase-proceso {
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.65);
+}
+
+.row-clase-programada {
+  background: rgba(14, 165, 233, 0.04);
+  box-shadow: inset 3px 0 0 rgba(56, 189, 248, 0.55);
+}
+
+.row-certificado-hoy {
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.65);
+
+  &:hover {
+    background: rgba(16, 185, 129, 0.1);
+  }
+}
+
+.estado-contrato-live,
+.estado-jornada-live,
+.estado-proceso-live {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ecfdf5;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.5), rgba(5, 150, 105, 0.38));
+  border: 1px solid rgba(74, 222, 128, 0.95);
+  animation: jor-live-green-blink 1.1s ease-in-out infinite;
+}
+
+.estado-clase-live {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7.5rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.estado-clase-proceso {
+  color: #ecfdf5;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.5), rgba(5, 150, 105, 0.38));
+  border-color: rgba(74, 222, 128, 0.95);
+  animation: jor-live-green-blink 1.1s ease-in-out infinite;
+}
+
+.estado-clase-programada {
+  color: #e0f2fe;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.48), rgba(3, 105, 161, 0.35));
+  border-color: rgba(56, 189, 248, 0.95);
+  animation: jor-live-blue-blink 1.2s ease-in-out infinite;
+}
+
+.jor-live-badge {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #ecfdf5;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.42), rgba(16, 185, 129, 0.32));
+  border: 1px solid rgba(52, 211, 153, 0.9);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+  animation: jor-live-green-blink 1.1s ease-in-out infinite;
+}
+
+.chip.row-clase-proceso,
+.chip.row-clase-programada {
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.35);
+}
+
+.chip.row-clase-proceso {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.55);
+}
+
+.chip.row-clase-programada {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.35);
+}
+
+.cal-evento.estado-jornada-live,
+.cal-evento-clase.estado-clase-proceso,
+.cal-evento-clase.estado-clase-programada {
+  font-weight: 700;
+}
+
+.cal-clase-est.estado-clase-live {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  min-width: 0;
+}

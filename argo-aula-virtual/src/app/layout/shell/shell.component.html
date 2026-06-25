@@ -1,0 +1,233 @@
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" routerLink="/" (click)="cerrarMenu()">
+      @if (logoUrl(); as logo) {
+        <img [src]="logo" [alt]="config()?.nombreCea || 'CEA'" class="brand-logo" />
+      }
+      <span class="brand-name">{{ brandMarca() }}</span>
+    </a>
+
+    <button
+      #menuToggle
+      type="button"
+      class="menu-toggle"
+      [class.menu-toggle--open]="menuAbierto()"
+      [attr.aria-expanded]="menuAbierto()"
+      aria-controls="portal-nav-menu-mobile"
+      [attr.aria-label]="menuAbierto() ? 'Cerrar menú' : 'Abrir menú'"
+      (click)="toggleMenu()"
+    >
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
+    </button>
+
+    <div
+      id="portal-nav-menu"
+      class="topbar-menu topbar-menu--desktop"
+      [class.topbar-menu--open]="menuAbierto()"
+    >
+      <nav class="nav">
+        @for (item of navItems(); track item.key) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="item.route === '/' ? { exact: true } : { exact: false }"
+            (click)="cerrarMenu()"
+          >{{ item.label }}</a>
+        }
+      </nav>
+      <div class="actions">
+        @if (auth.isLoggedIn()) {
+          <span
+            class="user-chip"
+            [title]="auth.user()?.nombreCompleto || auth.user()?.email || ''"
+          >{{ auth.user()?.nombreCompleto || auth.user()?.email }}</span>
+          <button type="button" class="btn btn-ghost" (click)="logout(); cerrarMenu()">{{ landing().nav.salir }}</button>
+        } @else {
+          <a routerLink="/login" class="btn btn-ghost" (click)="cerrarMenu()">{{ landing().nav.acceder }}</a>
+          <a routerLink="/registro" class="btn btn-primary" (click)="cerrarMenu()">{{ landing().nav.registrarse }}</a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="portal-nav-menu-mobile"
+    class="topbar-menu topbar-menu--mobile"
+    [class.topbar-menu--open]="menuAbierto()"
+    [attr.inert]="menuAbierto() ? null : ''"
+  >
+    <div class="container topbar-menu-inner">
+      <nav class="nav">
+        @for (item of navItems(); track item.key) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="item.route === '/' ? { exact: true } : { exact: false }"
+            (click)="cerrarMenu()"
+          >{{ item.label }}</a>
+        }
+      </nav>
+      <div class="actions">
+        @if (auth.isLoggedIn()) {
+          <span
+            class="user-chip"
+            [title]="auth.user()?.nombreCompleto || auth.user()?.email || ''"
+          >{{ auth.user()?.nombreCompleto || auth.user()?.email }}</span>
+          <button type="button" class="btn btn-ghost" (click)="logout(); cerrarMenu()">{{ landing().nav.salir }}</button>
+        } @else {
+          <a routerLink="/login" class="btn btn-ghost" (click)="cerrarMenu()">{{ landing().nav.acceder }}</a>
+          <a routerLink="/registro" class="btn btn-primary" (click)="cerrarMenu()">{{ landing().nav.registrarse }}</a>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (menuAbierto()) {
+    <button type="button" class="nav-backdrop" aria-label="Cerrar menú" (click)="cerrarMenu()"></button>
+  }
+</header>
+
+<main class="main">
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__glow" aria-hidden="true"></div>
+  <div class="container site-footer__main">
+    <div class="site-footer__brand">
+      <a class="site-footer__logo-link" routerLink="/">
+        @if (logoUrl(); as logo) {
+          <img [src]="logo" [alt]="nombreCea()" class="site-footer__logo" />
+        }
+        <span class="site-footer__brand-line">
+          <span class="site-footer__brand-name">{{ brandMarca() }}</span>
+          <span class="site-footer__badge">{{ landing().footer.founded }}</span>
+        </span>
+      </a>
+      <p class="site-footer__about">{{ footerAbout() }}</p>
+      <a
+        class="site-footer__ext"
+        [href]="sitioInstitucionalUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Sitio institucional ↗
+      </a>
+    </div>
+
+    <nav class="site-footer__col" aria-label="Enlaces rápidos">
+      <h3 class="site-footer__title">{{ landing().footer.tituloEnlaces }}</h3>
+      <ul class="site-footer__links">
+        @for (link of footerEnlaces(); track link.label) {
+          <li>
+            @if (link.fragment) {
+              <a [routerLink]="link.route" [fragment]="link.fragment">{{ link.label }}</a>
+            } @else {
+              <a [routerLink]="link.route">{{ link.label }}</a>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <nav class="site-footer__col" aria-label="Servicios">
+      <h3 class="site-footer__title">{{ landing().footer.tituloServicios }}</h3>
+      <ul class="site-footer__links">
+        @for (s of footerServiciosLinks(); track s.label) {
+          <li>
+            @if (s.external) {
+              <a [href]="s.href" target="_blank" rel="noopener noreferrer">{{ s.label }} ↗</a>
+            } @else if (s.fragment) {
+              <a [routerLink]="s.route" [fragment]="s.fragment">{{ s.label }}</a>
+            } @else {
+              <a [routerLink]="s.route">{{ s.label }}</a>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="site-footer__col site-footer__contact">
+      <h3 class="site-footer__title">{{ landing().footer.tituloContacto }}</h3>
+      <ul class="site-footer__contact-list">
+        @if (config()?.telefono; as tel) {
+          <li class="site-footer__contact-card">
+            <span class="site-footer__contact-icon" aria-hidden="true">📞</span>
+            <div class="site-footer__contact-body">
+              <strong>Teléfono</strong>
+              @if (telHref(); as href) {
+                <a [href]="href">{{ telDisplay() }}</a>
+              } @else {
+                <span>{{ tel }}</span>
+              }
+            </div>
+          </li>
+        }
+        @if (config()?.email; as mail) {
+          <li class="site-footer__contact-card">
+            <span class="site-footer__contact-icon" aria-hidden="true">✉️</span>
+            <div class="site-footer__contact-body">
+              <strong>Correo</strong>
+              <a [href]="'mailto:' + mail">{{ mail }}</a>
+            </div>
+          </li>
+        }
+        @if (direccionCompleta(); as dir) {
+          <li class="site-footer__contact-card">
+            <span class="site-footer__contact-icon" aria-hidden="true">📍</span>
+            <div class="site-footer__contact-body">
+              <strong>Dirección</strong>
+              <span>{{ dir }}</span>
+            </div>
+          </li>
+        }
+        @if (whatsappHref(); as wa) {
+          <li class="site-footer__contact-card">
+            <span class="site-footer__contact-icon" aria-hidden="true">💬</span>
+            <div class="site-footer__contact-body">
+              <strong>WhatsApp</strong>
+              <a [href]="wa" target="_blank" rel="noopener noreferrer">Escríbanos</a>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <div class="container site-footer__bottom-inner">
+      <p class="site-footer__copy">{{ landing().footer.copyright }}</p>
+      <nav class="site-footer__legal" aria-label="Acceso y consultas">
+        <a routerLink="/login">{{ landing().nav.acceder }}</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/registro">{{ landing().nav.registrarse }}</a>
+        @if (paginaActivaConsulta()) {
+          <span aria-hidden="true">·</span>
+          <a routerLink="/consulta-certificados">{{ etiquetaConsultaCertificados() }}</a>
+        }
+        <span aria-hidden="true">·</span>
+        <a routerLink="/pqr">PQR</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+@if (whatsappHref(); as waUrl) {
+  <a
+    class="wa-float"
+    [href]="waUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    [attr.aria-label]="'WhatsApp ' + whatsappTelefono()"
+    [title]="'WhatsApp ' + whatsappTelefono()"
+  >
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M16.003 2.667c-7.364 0-13.336 5.972-13.336 13.336 0 2.352.612 4.656 1.776 6.688L2.667 29.333l6.776-1.744a13.28 13.28 0 0 0 6.56 1.712h.005c7.364 0 13.336-5.972 13.336-13.336S23.367 2.667 16.003 2.667zm0 24.003h-.004a11.04 11.04 0 0 1-5.632-1.536l-.403-.24-4.016 1.035 1.072-3.915-.264-.4a11.04 11.04 0 0 1-1.696-5.88c0-6.104 4.968-11.072 11.072-11.072 2.96 0 5.744 1.152 7.832 3.248a11.02 11.02 0 0 1 3.24 7.832c0 6.104-4.968 11.072-11.072 11.072zm6.064-8.272c-.333-.168-1.968-.968-2.272-1.08-.304-.112-.528-.168-.752.168-.224.336-.864 1.08-1.056 1.304-.192.224-.384.248-.712.08-.328-.168-1.384-.512-2.632-1.632-.976-.872-1.632-1.952-1.824-2.28-.192-.328-.02-.504.144-.664.148-.148.328-.384.496-.576.168-.192.224-.328.336-.552.112-.224.056-.416-.028-.584-.08-.168-.752-1.808-1.032-2.472-.272-.632-.544-.544-.752-.552-.192-.008-.416-.008-.64-.008s-.584.08-.888.416c-.304.336-1.168 1.144-1.168 2.784 0 1.64 1.192 3.224 1.36 3.448.168.224 2.344 3.576 5.68 4.016.792.112 1.488.048 2.048-.104.624-.176 1.968-.808 2.248-1.584.28-.776.28-1.44.192-1.584-.08-.144-.304-.224-.632-.392z"
+      />
+    </svg>
+  </a>
+}

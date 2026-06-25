@@ -1,0 +1,604 @@
+/* Sistema unificado de formularios ARGO — secciones, color, inputs y horario */
+
+@mixin argo-section-surface($accent: rgba(56, 189, 248, 0.75)) {
+  border-radius: 12px;
+  border: 1px solid rgba(120, 170, 255, 0.16);
+  border-left: 3px solid $accent;
+  background: linear-gradient(145deg, rgba(8, 18, 45, 0.72), rgba(5, 12, 32, 0.55));
+  overflow: hidden;
+}
+
+@mixin argo-input-accent {
+  border-radius: 9px;
+  border: 1px solid rgba(120, 170, 255, 0.22);
+  background: rgba(3, 10, 28, 0.65);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.55);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+  }
+}
+
+/* Contenedores shell */
+.argo-form-shell,
+.fm-body,
+.form-card,
+.editor-panel .editor-body,
+.editor-panel .editor-section,
+.editor-panel .fields-block,
+.cert-edit-form,
+.form-cols,
+.contrato-form,
+.edit-panel,
+.grid-form,
+.doc-form,
+.edit-card,
+.form-panel,
+.modal-form,
+.modal-edit-form,
+.doc-modal-form,
+.clase-modal-form {
+  counter-reset: argo-form-section;
+
+  &:not(.argo-form-shell):not(.fm-body) {
+    /* form-card / panels fuera de modal */
+  }
+}
+
+.argo-form-shell,
+.modal-form,
+.modal-edit-form,
+.doc-modal-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.fm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Inputs dentro de shells */
+.argo-form-shell,
+.fm-body,
+.form-card,
+.editor-panel .editor-body,
+.editor-panel .editor-section,
+.editor-panel .fields-block,
+.cert-edit-form,
+.form-cols,
+.contrato-form,
+.edit-panel,
+.grid-form,
+.doc-form,
+.edit-card,
+.form-panel,
+.modal-form,
+.modal-edit-form,
+.doc-modal-form,
+.clase-modal-form {
+  input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  select,
+  textarea {
+    @include argo-input-accent;
+  }
+
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='time'] {
+    color-scheme: dark;
+    min-height: 2.35rem;
+    padding: 0.4rem 0.55rem;
+  }
+
+  label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-dim, #94a3b8);
+  }
+
+  .field,
+  .cm-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .hint,
+  .field-hint,
+  .hint-inline {
+    font-size: 0.78rem;
+    color: var(--text-soft, #7f95c4);
+  }
+
+  .form-error-box,
+  .banner.error {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(248, 113, 113, 0.55);
+    background: rgba(127, 29, 29, 0.2);
+    color: #fecaca;
+  }
+
+  .conflictos-box {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    background: rgba(251, 191, 36, 0.08);
+  }
+}
+
+.form-card {
+  border-radius: 12px;
+  border: 1px solid rgba(120, 170, 255, 0.14);
+  background: linear-gradient(145deg, rgba(8, 18, 45, 0.55), rgba(5, 12, 32, 0.42));
+
+  > h2 {
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(120, 170, 255, 0.12);
+    font-size: 1.05rem;
+    color: #e0f2fe;
+  }
+}
+
+.form-panel {
+  padding: 0.25rem 0;
+}
+
+.form-cols,
+.contrato-form,
+.edit-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+/* Secciones explícitas */
+.argo-form-section,
+.clase-form-section {
+  @include argo-section-surface();
+
+  &.variant-primary,
+  &.section-programa {
+    border-left-color: rgba(99, 102, 241, 0.75);
+  }
+
+  &.variant-horario,
+  &.section-horario {
+    border-left-color: rgba(56, 189, 248, 0.75);
+    background: linear-gradient(145deg, rgba(8, 22, 52, 0.82), rgba(6, 14, 38, 0.62));
+  }
+
+  &.variant-recursos,
+  &.section-recursos {
+    border-left-color: rgba(99, 102, 241, 0.65);
+  }
+
+  &.variant-alumnos,
+  &.section-alumnos {
+    border-left-color: rgba(244, 114, 182, 0.65);
+  }
+
+  &.variant-teoria,
+  &.tipo-teoria {
+    border-left-color: rgba(167, 139, 250, 0.75);
+  }
+
+  &.variant-taller,
+  &.tipo-taller {
+    border-left-color: rgba(52, 211, 153, 0.75);
+  }
+
+  &.variant-practica,
+  &.tipo-practica {
+    border-left-color: rgba(251, 191, 36, 0.75);
+  }
+
+  &.variant-success {
+    border-left-color: rgba(52, 211, 153, 0.75);
+  }
+
+  &.variant-warning {
+    border-left-color: rgba(251, 191, 36, 0.75);
+  }
+
+  &.tone-blue,
+  &.variant-blue {
+    border-left-color: rgba(59, 130, 246, 0.85);
+  }
+
+  &.tone-purple,
+  &.variant-purple {
+    border-left-color: rgba(139, 92, 246, 0.85);
+  }
+
+  &.tone-teal,
+  &.variant-teal {
+    border-left-color: rgba(20, 184, 166, 0.85);
+  }
+
+  &.tone-orange,
+  &.variant-orange {
+    border-left-color: rgba(249, 115, 22, 0.85);
+  }
+
+  &.tone-slate,
+  &.variant-slate {
+    border-left-color: rgba(100, 116, 139, 0.85);
+  }
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem 0.55rem;
+  border-bottom: 1px solid rgba(120, 170, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.section-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e0f2fe;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.45), rgba(99, 102, 241, 0.45));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.section-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: var(--text, #e6eeff);
+}
+
+.section-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-dim, #94a3b8);
+}
+
+.section-body {
+  padding: 0.75rem 0.9rem 0.9rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.section-body-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Combobox / date picker dentro de sección: evitar recorte del dropdown (overflow:hidden del surface). */
+.argo-form-section:has(argo-catalogo-enum-buscar.dropdown-open),
+.clase-form-section:has(argo-catalogo-enum-buscar.dropdown-open),
+.argo-form-section:has(argo-date-input.dropdown-open),
+.clase-form-section:has(argo-date-input.dropdown-open) {
+  overflow: visible;
+  position: relative;
+  z-index: 30;
+}
+
+.section-body:has(argo-catalogo-enum-buscar.dropdown-open),
+.section-body:has(argo-date-input.dropdown-open) {
+  overflow: visible;
+}
+
+.modal-edit-form:has(argo-catalogo-enum-buscar.dropdown-open),
+.modal-edit-form:has(argo-date-input.dropdown-open) {
+  overflow: visible;
+}
+
+.form-cols [class*='col-']:has(argo-date-input.dropdown-open),
+.row [class*='col-']:has(argo-date-input.dropdown-open),
+.field-date:has(argo-date-input.dropdown-open),
+.field-fecha:has(argo-date-input.dropdown-open),
+label:has(> argo-date-input.dropdown-open) {
+  position: relative;
+  z-index: 5000;
+}
+
+/* Legacy .form-section auto-upgrade dentro de shells */
+.argo-form-shell,
+.modal-form,
+.fm-body,
+.form-card {
+  .form-section {
+    @include argo-section-surface(rgba(99, 102, 241, 0.65));
+    padding: 0;
+
+    > h3,
+    > h4:first-child {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin: 0;
+      padding: 0.75rem 0.9rem 0.55rem;
+      border-bottom: 1px solid rgba(120, 170, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 0.98rem;
+      font-weight: 650;
+      color: var(--text, #e6eeff);
+
+      &::before {
+        counter-increment: argo-form-section;
+        content: counter(argo-form-section);
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.65rem;
+        height: 1.65rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #e0f2fe;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.45), rgba(99, 102, 241, 0.45));
+        border: 1px solid rgba(56, 189, 248, 0.35);
+      }
+    }
+
+    > .row,
+    > .form-note,
+    > p:not(.hint),
+    > .audit-grid,
+    > ul,
+    > .fields-block,
+    > .prog-info-chips {
+      margin-left: 0.9rem;
+      margin-right: 0.9rem;
+    }
+
+    > .row:first-of-type,
+    > .form-note:first-of-type,
+    > p:first-of-type {
+      margin-top: 0.75rem;
+    }
+
+    > *:last-child {
+      margin-bottom: 0.9rem;
+    }
+
+    &.jornada-cap-note {
+      border-left-color: rgba(52, 211, 153, 0.75);
+    }
+  }
+
+  .clase-modal-section {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0.5rem 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 650;
+    color: #bae6fd;
+
+    &::before {
+      counter-increment: argo-form-section;
+      content: counter(argo-form-section);
+      min-width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+  }
+}
+
+.form-select-accent,
+.fecha-input-accent,
+.cupo-input {
+  @include argo-input-accent;
+}
+
+argo-date-input.fecha-input-accent .argo-date-text {
+  @include argo-input-accent;
+}
+
+.tipo-clase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  &.practica {
+    color: #fde68a;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+  }
+}
+
+/* Horario — panel, slots, pills, resumen */
+.horario-rango-hint {
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+.horario-slots-wrap {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.slots-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft, #94a3b8);
+}
+
+.horario-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  max-height: 7.5rem;
+  overflow-y: auto;
+  padding: 0.15rem 0.1rem;
+}
+
+.horario-slot {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 170, 255, 0.22);
+  background: rgba(6, 16, 41, 0.55);
+  color: var(--text, #e2e8f0);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(56, 189, 248, 0.45);
+    background: rgba(56, 189, 248, 0.12);
+  }
+
+  &.active {
+    border-color: rgba(56, 189, 248, 0.75);
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(99, 102, 241, 0.3));
+    color: #f8fafc;
+  }
+}
+
+.horario-manual {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+  background: rgba(6, 16, 41, 0.35);
+}
+
+.horario-manual-col {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 140px;
+}
+
+.horario-readonly-val {
+  padding: 0.55rem 0.7rem;
+  border-radius: 9px;
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  background: rgba(3, 10, 28, 0.45);
+  font-weight: 650;
+  color: #e2e8f0;
+}
+
+.duracion-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.duracion-pill {
+  min-width: 2.75rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.08);
+  color: #fde68a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: rgba(251, 191, 36, 0.16);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.45), rgba(245, 158, 11, 0.35));
+    border-color: rgba(251, 191, 36, 0.75);
+    color: #fffbeb;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.horario-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.1));
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+.horario-resumen-item {
+  display: grid;
+  gap: 0.1rem;
+
+  .resumen-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-soft);
+  }
+
+  strong {
+    font-size: 1rem;
+    color: #f0f9ff;
+  }
+}
+
+.horario-resumen-arrow {
+  font-size: 1.1rem;
+  color: rgba(56, 189, 248, 0.85);
+  font-weight: 700;
+}
+
+.horario-resumen-badge {
+  margin-left: auto;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ecfdf5;
+  background: rgba(52, 211, 153, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.inscripcion-modal-block {
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 170, 255, 0.12);
+  background: rgba(6, 16, 41, 0.25);
+}
+
+.clase-form-modal,
+.clase-modal-form {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.clase-modal-form {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}

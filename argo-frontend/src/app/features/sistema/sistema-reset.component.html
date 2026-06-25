@@ -1,0 +1,220 @@
+<section class="sys-page card">
+  <argo-backup-reset-restore-nav />
+
+  <header class="sys-head">
+    <div>
+      <h1>Puesta en cero</h1>
+      <p>
+        Borre todos los datos de operación (reset completo) o solo los módulos que elija (reset parcial).
+        En ambos casos se conservan los catálogos base y, antes de borrar, se crea una copia de
+        seguridad completa.
+      </p>
+    </div>
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="sys-msg" [class.sys-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  @if (progreso(); as p) {
+    @if (ejecutando()) {
+      <div class="sys-progress" role="status" aria-live="polite">
+        <div class="sys-progress__head">
+          <span>{{ p.fase || 'Procesando…' }}</span>
+          @if (p.porcentaje != null) {
+            <span class="pct">{{ p.porcentaje }}%</span>
+          }
+        </div>
+        <div class="sys-progress__track">
+          @if (p.porcentaje != null) {
+            <div class="sys-progress__fill" [style.width.%]="p.porcentaje"></div>
+          } @else {
+            <div class="sys-progress__fill sys-progress__fill--indeterminada"></div>
+          }
+        </div>
+        @if (p.total > 0) {
+          <div class="sys-progress__meta">{{ p.hecho | number }} / {{ p.total | number }}</div>
+        }
+      </div>
+    }
+  }
+
+  @if (resultado(); as r) {
+    <section class="sys-section sys-section--emerald">
+      <header class="sys-section-head">
+        <h2>
+          @if (r.tipoReset === 'parcial') {
+            ✔ Reset parcial completado
+          } @else {
+            ✔ Puesta en cero completada
+          }
+        </h2>
+      </header>
+      <div class="sys-section-body">
+        @if (r.tipoReset === 'parcial' && r.modulos?.length) {
+          <p class="sys-hint">Módulos reseteados: <strong>{{ etiquetasModulos(r.modulos) }}</strong></p>
+        }
+        <div class="sys-resumen">
+          <div class="sys-resumen-item">
+            <div class="num">{{ r.coleccionesLimpiadas }}</div>
+            <div class="lbl">Tablas limpiadas</div>
+          </div>
+          <div class="sys-resumen-item">
+            <div class="num">{{ r.coleccionesConservadas }}</div>
+            <div class="lbl">Tablas conservadas</div>
+          </div>
+          @if (r.usuariosEliminados > 0) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.usuariosEliminados }}</div>
+              <div class="lbl">Usuarios eliminados</div>
+            </div>
+          }
+        </div>
+        <p class="sys-hint">
+          Copia de seguridad previa: <strong>{{ r.respaldoPrevio }}</strong> (en Configuración → Backup
+          seguridad).
+          @if (r.tipoReset !== 'parcial') {
+            Próximos pasos: configure la nueva empresa en Configuración → Empresa y comprobantes, revise
+            la sede en Configuración → Sedes y cree los usuarios del personal.
+          }
+        </p>
+      </div>
+    </section>
+  } @else {
+    <section class="sys-section sys-section--sky">
+      <header class="sys-section-head">
+        <h2>Alcance del reset</h2>
+        <p>Elija reset completo (como antes) o marque solo los módulos que desea borrar.</p>
+      </header>
+      <div class="sys-section-body">
+        <div class="sys-row">
+          <label class="sys-switch">
+            <input type="radio" name="modoReset" [checked]="modoCompleto()"
+                   (change)="cambiarModo(true)" />
+            Reset completo — borra todo lo operativo (nueva empresa)
+          </label>
+          <label class="sys-switch">
+            <input type="radio" name="modoReset" [checked]="!modoCompleto()"
+                   (change)="cambiarModo(false)" />
+            Reset parcial — solo los módulos seleccionados
+          </label>
+        </div>
+      </div>
+    </section>
+
+    @if (modoCompleto()) {
+      <section class="sys-section sys-section--emerald">
+        <header class="sys-section-head">
+          <h2>Qué se conserva (reset completo)</h2>
+        </header>
+        <div class="sys-section-body">
+          <ul class="sys-hint" style="margin: 0; padding-left: 1.1rem; line-height: 1.7">
+            <li>Catálogos base (Configuración → Catálogos): tipos de documento, bancos, DIVIPOLA, EPS/AFP/ARL, cargos, ítems de inspección, etc.</li>
+            <li>Su usuario administrador (quien ejecuta esta operación).</li>
+            <li>Una sede «Principal» lista para renombrar.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sys-section sys-section--danger">
+        <header class="sys-section-head">
+          <h2>Qué se borra (reset completo)</h2>
+        </header>
+        <div class="sys-section-body">
+          <div class="sys-danger-box">
+            <ul>
+              <li>Programas, servicios, sedes, aulas, temarios y clases programadas.</li>
+              <li>Alumnos, matrículas, liquidaciones, pagos, recibos y egresos.</li>
+              <li>Certificados, caja, facturación, nómina, vehículos y programación CEA.</li>
+              <li>Usuarios del personal, portal de alumnos y archivos subidos.</li>
+              <li>Configuración y consecutivos vuelven a 0.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    } @else {
+      <section class="sys-section sys-section--sky">
+        <header class="sys-section-head">
+          <h2>Módulos a resetear</h2>
+          <p>Los catálogos base nunca se borran. Marque al menos un módulo.</p>
+        </header>
+        <div class="sys-section-body">
+          <div class="sys-row sys-row--modulos">
+            @for (mod of modulos(); track mod.id) {
+              <label class="sys-modulo" [title]="mod.descripcion">
+                <input type="checkbox" [ngModel]="estaSeleccionado(mod.id)"
+                       (ngModelChange)="toggleModulo(mod.id, $event)" />
+                <span class="sys-modulo__text">
+                  <strong>{{ mod.etiqueta }}</strong>
+                  <small>{{ mod.descripcion }}</small>
+                </span>
+              </label>
+            }
+          </div>
+          <div class="sys-row">
+            <button type="button" class="ghost" (click)="seleccionarTodos()">Marcar todos</button>
+            <button type="button" class="ghost" (click)="limpiarSeleccion()">Desmarcar todos</button>
+          </div>
+          @if (!haySeleccionParcial()) {
+            <p class="sys-hint">Seleccione al menos un módulo para continuar.</p>
+          }
+          @for (aviso of advertenciasActivas(); track aviso) {
+            <p class="sys-hint">⚠ {{ aviso }}</p>
+          }
+          <p class="sys-hint">
+            En reset parcial no se eliminan archivos subidos ni se reinician consecutivos, salvo que
+            incluya «Configuración y consecutivos».
+          </p>
+        </div>
+      </section>
+    }
+
+    <section class="sys-section sys-section--amber">
+      <header class="sys-section-head">
+        <h2>Confirmación (ISO/IEC 27001)</h2>
+        <p>
+          Operación protegida: copia de seguridad previa obligatoria, contraseña de administrador,
+          código MFA y frase de confirmación. Todo queda registrado en la auditoría.
+        </p>
+      </header>
+      <div class="sys-section-body">
+        <label class="sys-switch">
+          <input type="checkbox" [(ngModel)]="entendido" />
+          @if (modoCompleto()) {
+            Entiendo que esta acción borra todos los datos de la empresa actual y no se puede deshacer
+            (solo restaurando la copia de seguridad).
+          } @else {
+            Entiendo que se borrarán solo los módulos marcados y no se puede deshacer (solo restaurando
+            la copia de seguridad).
+          }
+        </label>
+        <div class="sys-row">
+          <div class="sys-field">
+            <label for="zpass">Su contraseña de administrador</label>
+            <input id="zpass" type="password" [(ngModel)]="password" autocomplete="current-password" />
+          </div>
+          <div class="sys-field">
+            <label for="zmfa">Código MFA (si lo tiene activo)</label>
+            <input id="zmfa" type="text" [(ngModel)]="codigoMfa" maxlength="6" inputmode="numeric"
+                   placeholder="000000" />
+          </div>
+          <div class="sys-field" style="min-width: 16rem">
+            <label for="zconf">Escriba {{ frase() }} para confirmar</label>
+            <input id="zconf" type="text" [(ngModel)]="confirmacion" [placeholder]="frase()" />
+          </div>
+        </div>
+        <div class="sys-row">
+          <button type="button" class="primary" (click)="ejecutar()" [disabled]="!puedeEjecutar()">
+            @if (ejecutando()) {
+              Ejecutando… esto puede tardar un par de minutos
+            } @else if (modoCompleto()) {
+              Poner el sistema en cero (completo)
+            } @else {
+              Ejecutar reset parcial
+            }
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+</section>

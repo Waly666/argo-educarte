@@ -1,0 +1,20 @@
+<section [ngClass]="sectionClass()">
+  @if (title || badge != null) {
+    <header class="section-head">
+      @if (badge != null && badge !== '') {
+        <span class="section-badge">{{ badge }}</span>
+      }
+      <div>
+        @if (title) {
+          <h3 class="section-title">{{ title }}</h3>
+        }
+        @if (subtitle) {
+          <p class="section-sub">{{ subtitle }}</p>
+        }
+      </div>
+    </header>
+  }
+  <div class="section-body" [class.section-body-grid]="grid">
+    <ng-content />
+  </div>
+</section>

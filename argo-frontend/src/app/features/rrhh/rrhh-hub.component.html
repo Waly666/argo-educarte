@@ -1,0 +1,83 @@
+<section class="rrhh-hub rrhh-page card">
+  <header class="rrhh-head">
+    <div class="rrhh-head-main">
+      <h1>Recursos humanos</h1>
+      <p class="hint">
+        Siga el flujo del mes en orden. Para abrir cada módulo use el menú <strong>RRHH</strong> del panel izquierdo.
+      </p>
+    </div>
+    <span class="rrhh-chip rrhh-chip--rose">6 pasos del mes</span>
+  </header>
+
+  <section class="rrhh-section">
+    <header class="rrhh-section-head">
+      <span class="rrhh-section-badge">1</span>
+      <h2 class="rrhh-section-title">Flujo recomendado</h2>
+    </header>
+    <div class="workflow" aria-label="Flujo recomendado del mes">
+      <a class="wf-step" routerLink="/app/rrhh/catalogos/cargos">
+        <span class="num">1</span>
+        <strong>Catálogos</strong>
+        <span>Cargos, EPS, AFP…</span>
+      </a>
+      <span class="wf-arrow" aria-hidden="true">→</span>
+      <a class="wf-step" routerLink="/app/rrhh/empleados">
+        <span class="num">2</span>
+        <strong>Empleados</strong>
+        <span>Ficha y seguridad social</span>
+      </a>
+      <span class="wf-arrow" aria-hidden="true">→</span>
+      <a class="wf-step" routerLink="/app/rrhh/contratos">
+        <span class="num">3</span>
+        <strong>Contratos</strong>
+        <span>Salario y fechas</span>
+      </a>
+      <span class="wf-arrow" aria-hidden="true">→</span>
+      <a class="wf-step" routerLink="/app/rrhh/novedades">
+        <span class="num">4</span>
+        <strong>Novedades</strong>
+        <span>IGE, licencias, PILA</span>
+      </a>
+      <span class="wf-arrow" aria-hidden="true">→</span>
+      <a class="wf-step" routerLink="/app/rrhh/nomina">
+        <span class="num">5</span>
+        <strong>Nómina</strong>
+        <span>Generar y liquidar</span>
+      </a>
+      <span class="wf-arrow" aria-hidden="true">→</span>
+      <a class="wf-step" routerLink="/app/caja">
+        <span class="num">6</span>
+        <strong>Caja</strong>
+        <span>Pagar neto</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="hub-guides">
+    <article class="guide-panel">
+      <h3>Liquidación del período</h3>
+      <ol>
+        <li>Crear período en <strong>Liquidación</strong></li>
+        <li>Registrar novedades PILA si aplica (incapacidades, licencias)</li>
+        <li><strong>Generar novedades</strong> → <strong>Liquidar</strong></li>
+        <li>Descargar planilla PILA (.txt / .csv)</li>
+        <li>Cerrar período y pagar el neto en <strong>Flujo de caja</strong></li>
+      </ol>
+    </article>
+
+    <article class="guide-panel">
+      <h3>Configuración previa (menú RRHH)</h3>
+      <ul>
+        <li><strong>Parámetros legales</strong> — SMLMV, UVT y porcentajes del año vigente</li>
+        <li><strong>Empresa (NIT)</strong> — datos del aportante para PILA y comprobantes</li>
+        <li><strong>Cargos y seguridad social</strong> — EPS, AFP, ARL y cajas de compensación</li>
+        <li>Empleados con cargo Cajero o Instructor: usuario automático con el número de documento</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="tip-box">
+    <strong>Importar administradoras:</strong> si tiene el Excel del Ministerio, en el servidor ejecute
+    <code>pnpm run import:administradoras</code> (carpeta <code>excel/</code>) para cargar códigos EPS, AFP, ARL y CCF.
+  </div>
+</section>

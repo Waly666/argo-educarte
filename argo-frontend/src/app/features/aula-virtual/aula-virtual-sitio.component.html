@@ -1,0 +1,64 @@
+<section class="av-page av-page--sitio av-page--builder">
+  <header class="av-head">
+    <div class="av-head-main">
+      <p class="av-kicker">Aula virtual</p>
+      <h1>Editor de su sitio web</h1>
+      <p>
+        Cambie textos, colores y páginas <strong>sin saber programar</strong>.
+        Use la <strong>Guía rápida</strong> a la izquierda y mire la vista previa a la derecha.
+        Cuando termine, pulse <strong>Publicar cambios</strong> al final.
+        Los cursos se administran en <a routerLink="/app/aula-virtual">Aula virtual → Cursos</a>.
+      </p>
+    </div>
+    <div class="av-head-actions">
+      <a class="av-btn av-btn--ghost" [href]="portalUrl" target="_blank" rel="noopener">Vista previa ↗</a>
+      <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual">← Cursos y usuarios</a>
+    </div>
+  </header>
+
+  @if (msg(); as m) {
+    <p class="av-toast" [class.av-toast--err]="err()">{{ m }}</p>
+  }
+
+  @if (puedeDisenoPortal()) {
+    <div class="av-diseno-toolbar">
+      <p class="av-diseno-toolbar__hint">
+        Herramientas de soporte: copie diseños entre clientes o aplique plantillas base.
+        <strong>No incluye logo ni datos fiscales.</strong>
+        Tras importar o aplicar plantilla, pulse <strong>Publicar cambios</strong>.
+      </p>
+      <div class="av-diseno-toolbar__actions">
+        <button type="button" class="av-btn av-btn--ghost" (click)="exportarDiseno()">↓ Exportar diseño</button>
+        <label class="av-btn av-btn--ghost av-btn--file">
+          ↑ Importar diseño
+          <input type="file" accept=".json,application/json" hidden (change)="importarDiseno($event)" />
+        </label>
+        <span class="av-diseno-toolbar__sep" aria-hidden="true"></span>
+        <button type="button" class="av-btn av-btn--primary av-btn--plantillas" (click)="galeriaAbierta.set(true)">
+          ✦ Explorar plantillas ({{ plantillas.length }})
+        </button>
+      </div>
+    </div>
+
+    <argo-portal-plantilla-galeria
+      [open]="galeriaAbierta()"
+      (closed)="galeriaAbierta.set(false)"
+      (applied)="aplicarPlantillaDesdeGaleria($event)" />
+  }
+
+  <argo-portal-site-builder
+    [portalForm]="portalForm"
+    [portalUrl]="portalUrl"
+    (avNotice)="onBuilderNotice($event)"
+  />
+
+  <div class="av-save-bar av-save-bar--builder">
+    <div class="av-save-bar__text">
+      <strong>¿Listo?</strong>
+      <span>Los visitantes solo verán sus cambios después de publicar.</span>
+    </div>
+    <button type="button" class="av-btn av-btn--primary av-btn--publish" [disabled]="saving()" (click)="guardar()">
+      {{ saving() ? 'Publicando…' : '✓ Publicar cambios en el sitio' }}
+    </button>
+  </div>
+</section>

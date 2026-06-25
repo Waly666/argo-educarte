@@ -1,0 +1,270 @@
+<section class="inst-mis-clases clases-hoy-page argo-cal card">
+  <header class="page-head">
+    <div class="title">
+      <h3>Mis clases</h3>
+      <p class="hint">
+        Sus clases asignadas del <strong>{{ fechaLabel() }}</strong>
+        @if (esHoySel()) { (hoy) }
+        — CEA y jornada carpa. Haga clic en una clase para editarla, gestionar alumnos e iniciarla o finalizarla manualmente.
+      </p>
+    </div>
+    <div class="head-badges">
+      @if (enProcesoCount() > 0) {
+        <span class="live-badge estado-clase-live estado-clase-proceso">{{ enProcesoCount() }} en proceso</span>
+      }
+      @if (programadasCount() > 0) {
+        <span class="live-badge estado-clase-live estado-clase-programada">{{ programadasCount() }} programada(s)</span>
+      }
+      @if (finalizadasCount() > 0) {
+        <span class="live-badge cap cap-slate cap-sm cap-text">{{ finalizadasCount() }} finalizada(s)</span>
+      }
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="banner error" role="alert">{{ error() }}</div>
+  }
+
+  @if (msg(); as t) {
+    <div class="banner error" role="status">
+      <span>{{ t }}</span>
+      <button type="button" class="close" (click)="cerrarMsg()" aria-label="Cerrar">×</button>
+    </div>
+  }
+
+  <div class="toolbar">
+    <label class="fecha-field">
+      <span>Fecha</span>
+      <argo-date-input [ngModel]="fechaSel()" (ngModelChange)="onFechaChange($event)" ></argo-date-input>
+    </label>
+    <button type="button" class="ghost mini" (click)="irHoy()">Hoy</button>
+    <div class="vista-toggle" role="group">
+      <button type="button" class="ghost sm" [class.active]="vista() === 'calendario'" (click)="setVista('calendario')">Calendario</button>
+      <button type="button" class="ghost sm" [class.active]="vista() === 'lista'" (click)="setVista('lista')">Lista</button>
+    </div>
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar programa, tema, vehículo…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        autocomplete="off" />
+    </div>
+    <button type="button" class="ghost mini" (click)="cargarTodo()">Actualizar</button>
+    <span class="count">{{ filtradasSemana().length }} en la semana</span>
+  </div>
+
+  @if (vista() === 'calendario') {
+    <div class="cal-hoy-layout">
+      <section class="cal-mes-col card-inner">
+        <div class="cal-panel cal-mes-panel">
+          <div class="cal-toolbar">
+            <button type="button" class="ghost mini" (click)="mesAnterior()">‹</button>
+            <h3 class="cal-title">{{ tituloMesCal() }}</h3>
+            <button type="button" class="ghost mini" (click)="mesSiguiente()">›</button>
+            <button type="button" class="ghost mini" (click)="irMesHoy()">Mes actual</button>
+          </div>
+          <div class="cal-mes-head">
+            @for (d of diasSemanaLabels; track d) {
+              <div class="cal-mes-head-cell" [class.fin-semana]="$index >= 5">{{ d }}</div>
+            }
+          </div>
+          <div class="cal-mes-grid">
+            @for (cel of calCeldas(); track cel.key || $index) {
+              <button
+                type="button"
+                class="cal-mes-dia cea-cal-dia cal-mes-dia-btn"
+                [class.otro-mes]="cel.otroMes"
+                [class.hoy]="cel.key === hoyKey()"
+                [class.sel]="cel.key === fechaSel()"
+                [class.fin-semana]="cel.fecha && esFinDeSemana(cel.fecha)"
+                [disabled]="!cel.fecha"
+                (click)="seleccionarDiaMes(cel.key)">
+                @if (cel.fecha) {
+                  <div class="cal-mes-dia-top">
+                    <span class="cal-mes-num">{{ cel.fecha.getDate() }}</span>
+                    @if (clasesEnDiaMes(cel.key).length > 0) {
+                      <span class="cal-mes-badge">{{ clasesEnDiaMes(cel.key).length }}</span>
+                    }
+                  </div>
+                  <div class="cal-mes-eventos mini">
+                    @for (c of clasesEnDiaMesVisibles(cel.key); track c._id + c.origen) {
+                      <span
+                        class="cal-evento-mini"
+                        [ngClass]="[tipoCalBlock(c), estadoClaseCalAccentClass(c.estado)]"
+                        (click)="onClaseClick(c, $event)">
+                        {{ c.horaDesde }}
+                      </span>
+                    }
+                    @if (clasesEnDiaMesOcultas(cel.key) > 0) {
+                      <span class="cal-evento-mini mas">+{{ clasesEnDiaMesOcultas(cel.key) }}</span>
+                    }
+                  </div>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="cal-semana-col card-inner">
+        <div class="cal-panel cal-horas-panel cea-cal-panel">
+          <div class="cal-toolbar">
+            <button type="button" class="ghost mini" (click)="semanaAnterior()">‹</button>
+            <h3 class="cal-title">{{ tituloSemanaCal() }}</h3>
+            <button type="button" class="ghost mini" (click)="semanaSiguiente()">›</button>
+            <button type="button" class="ghost mini" (click)="irSemanaHoy()">Esta semana</button>
+          </div>
+
+          <div class="cal-resumen">
+            <span><strong>{{ clasesSemanaResumen().total }}</strong> clase(s) en la semana</span>
+            @if (clasesSemanaResumen().programada > 0) {
+              <span class="cal-resumen-chip cal-clase-programada">{{ clasesSemanaResumen().programada }} PROGRAMADA</span>
+            }
+            @if (clasesSemanaResumen().proceso > 0) {
+              <span class="cal-resumen-chip cal-clase-proceso">{{ clasesSemanaResumen().proceso }} EN PROCESO</span>
+            }
+            @if (clasesSemanaResumen().finalizado > 0) {
+              <span class="cal-resumen-chip cal-clase-finalizada">{{ clasesSemanaResumen().finalizado }} FINALIZADO</span>
+            }
+          </div>
+
+          @if (loadingCal()) {
+            <p class="hint cal-loading">Cargando calendario…</p>
+          }
+
+          @if (clasesSinHorarioSemana().length > 0) {
+            <div class="cal-sin-horario">
+              <span class="cal-sin-horario-label">Sin horario definido</span>
+              @for (c of clasesSinHorarioSemana(); track c._id + c.origen) {
+                <button
+                  type="button"
+                  class="cal-evento cal-evento-clase sin-hora"
+                  [ngClass]="[tipoCalBlock(c), estadoClaseCalAccentClass(c.estado)]"
+                  [title]="chipClaseCal(c)"
+                  (click)="onClaseClick(c)">
+                  {{ ymdCalendario(c.fechaClase) }} · {{ chipClaseCalCorto(c) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="cal-horas-scroll">
+            <div class="cal-horas-grid">
+              <div class="cal-horas-corner"></div>
+              @for (d of diasSemanaCal(); track d.key) {
+                <div
+                  class="cal-horas-dayhead"
+                  [class.hoy]="d.key === hoyKey()"
+                  [class.sel]="d.key === fechaSel()"
+                  [class.fin-semana]="esFinDeSemana(d.fecha)">
+                  <span class="cal-day-name">{{ fmtDiaCal(d.fecha) }}</span>
+                  @if (conteoClasesDia(d.key) > 0) {
+                    <span class="cal-day-count">{{ conteoClasesDia(d.key) }}</span>
+                  }
+                </div>
+              }
+              @for (h of horasCal; track h) {
+                <div class="cal-horas-time">{{ h }}:00</div>
+                @for (d of diasSemanaCal(); track d.key) {
+                  <div
+                    class="cal-horas-slot"
+                    [class.hoy]="d.key === hoyKey()"
+                    [class.sel]="d.key === fechaSel()"
+                    [class.fin-semana]="esFinDeSemana(d.fecha)"></div>
+                }
+              }
+              <div class="cal-horas-events-layer">
+                @for (d of diasSemanaCal(); track 'col-' + d.key) {
+                  <div class="cal-horas-events-col" [class.hoy]="d.key === hoyKey()" [class.sel]="d.key === fechaSel()">
+                    @if (d.key === hoyKey() && semanaIncluyeHoy() && ahoraCalTopPct() != null) {
+                      <div class="cal-now-line" [style.top.%]="ahoraCalTopPct()!" aria-hidden="true"></div>
+                    }
+                    @let diaClases = clasesEnDia(d.key);
+                    @let layoutsDia = layoutsCalendarioDia(diaClases);
+                    @for (c of diaClases; track c._id + c.origen) {
+                      @if (layoutsDia.get(c._id); as lay) {
+                        <button
+                          type="button"
+                          class="cal-clase-block"
+                          [ngClass]="[tipoCalBlock(c), estadoClaseCalAccentClass(c.estado)]"
+                          [style.top.%]="lay.topPct"
+                          [style.height.%]="lay.heightPct"
+                          [style.left.%]="lay.leftPct"
+                          [style.width.%]="lay.widthPct"
+                          [title]="chipClaseCal(c)"
+                          (click)="onClaseClick(c)">
+                          <span class="cal-clase-hora">{{ c.horaDesde }}@if (c.horaHasta) { – {{ c.horaHasta }} }</span>
+                          <span class="cal-clase-tit">{{ chipClaseCalCorto(c) }}</span>
+                          <span class="cal-clase-inst">{{ labelOrigen(c.origen) }}</span>
+                          <span class="cal-clase-est">{{ c.estado }}</span>
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (!loadingCal() && clasesSemanaResumen().total === 0) {
+            <p class="hint cal-empty">No hay clases en esta semana.</p>
+          }
+        </div>
+      </section>
+    </div>
+  } @else {
+    <div class="content-wrap">
+      <p class="loading" *ngIf="loading()">Cargando clases…</p>
+      <table class="argo data-table" *ngIf="!loading()">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Origen</th>
+            <th>Tipo</th>
+            <th>Detalle</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let c of filtradasSemana()"
+            [ngClass]="rowClaseClass(c.estado)"
+            class="clase-row-click"
+            (click)="onClaseClick(c)">
+            <td>{{ fmtFechaCalendario(c.fechaClase) }}</td>
+            <td class="hora-cell">{{ c.horaDesde }}@if (c.horaHasta) { – {{ c.horaHasta }} }</td>
+            <td>{{ labelOrigen(c.origen) }}</td>
+            <td>{{ labelTipoCal(c) }}</td>
+            <td>{{ c.temaNombre || c.programaLabel || '—' }}</td>
+            <td><span [ngClass]="estadoClaseLiveClass(c.estado)">{{ c.estado || '—' }}</span></td>
+            <td class="col-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="mini" (click)="onClaseClick(c)">Abrir</button>
+            </td>
+          </tr>
+          <tr *ngIf="filtradasSemana().length === 0">
+            <td colspan="7" class="empty"><p>No hay clases en esta semana.</p></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (puedeOperarCea()) {
+  <argo-programacion-cea-clases
+    #claseEditor
+    [editorHost]="true"
+    modoClases="mixto"
+    [programas]="programas()"
+    (claseGuardada)="onClaseEditada()" />
+}
+@if (puedeOperarJornada()) {
+  <argo-jornada-clase-editor
+    #jornadaEditor
+    [editorHost]="true"
+    (claseGuardada)="onClaseEditada()" />
+}

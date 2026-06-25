@@ -1,0 +1,241 @@
+/* Jornadas — tema unificado */
+
+.jornadas-page,
+.jornadas-proceso-page,
+.clases-hoy-page,
+.instructor-page,
+.contratos-page,
+.cert-jor-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: none;
+  width: 100%;
+}
+
+/* —— Cabecera —— */
+.jor-head,
+.jor-page-header,
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.28rem;
+    background: linear-gradient(90deg, #fdba74 0%, #7dd3fc 48%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.jor-head-main,
+.jor-page-title,
+.page-head .title {
+  min-width: 0;
+}
+
+.jor-badges,
+.jor-flow-chips,
+.head-badges,
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.breadcrumb {
+  margin: 0 0 0.35rem;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+
+  a {
+    color: #fdba74;
+    text-decoration: none;
+
+    &:hover {
+      color: #fde68a;
+    }
+  }
+}
+
+.jor-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  &--indigo {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(99, 102, 241, 0.35);
+  }
+
+  &--sky {
+    color: #7dd3fc;
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+
+  &--orange {
+    color: #fdba74;
+    background: rgba(249, 115, 22, 0.14);
+    border-color: rgba(249, 115, 22, 0.35);
+  }
+
+  &--emerald {
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  &--amber {
+    color: #fde68a;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+}
+
+.jor-flow-arrow {
+  opacity: 0.45;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.hint,
+.hint-block {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  max-width: 44rem;
+}
+
+.link-btn {
+  text-decoration: none;
+}
+
+/* —— Paneles —— */
+.panel,
+.contrato-panel {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(249, 115, 22, 0.16);
+  border-left: 3px solid #f97316;
+  background: linear-gradient(145deg, rgba(28, 18, 12, 0.68), rgba(12, 10, 28, 0.5));
+}
+
+h3.sec,
+.form-block-title {
+  margin: 0.85rem 0 0.5rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fdba74;
+  background: rgba(249, 115, 22, 0.08);
+  border-left: 3px solid #f97316;
+  border-radius: 0 6px 6px 0;
+}
+
+/* —— Toolbar —— */
+.toolbar,
+.clases-toolbar,
+.filter-compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.55rem 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(249, 115, 22, 0.16);
+  background: rgba(3, 8, 28, 0.35);
+}
+
+/* —— Tablas —— */
+.table-wrap,
+.content-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+}
+
+.admin-list-page {
+  table.argo,
+  table.data-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+
+    th, td {
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid rgba(249, 115, 22, 0.08);
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr:hover td {
+      background: rgba(249, 115, 22, 0.05);
+    }
+  }
+}
+
+.actions-cell {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+  min-width: 8rem;
+}
+
+/* —— Tabs (refuerzo) —— */
+nav.tabs,
+.tabs-flow {
+  border-radius: 12px;
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  background: linear-gradient(160deg, rgba(20, 14, 10, 0.65), rgba(8, 8, 28, 0.5));
+  padding: 0.35rem;
+}
+
+.jor-live-badge {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+@media (max-width: 520px) {
+  .jor-badges,
+  .jor-flow-chips,
+  .head-badges,
+  .head-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

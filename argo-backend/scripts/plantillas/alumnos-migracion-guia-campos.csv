@@ -1,0 +1,23 @@
+campo_csv;campo_argo;obligatorio;notas
+tipoDoc;tipoDoc;SI;Use codigo 1-6 o texto 1) CEDULA... (se extrae el numero)
+numDoc;numDoc;SI;6-14 digitos unico
+apellido1;apellido1;SI;
+apellido2;apellido2;NO;
+nombre1;nombre1;SI;
+nombre2;nombre2;NO;
+tipoAlumno;tipoAlumno;NO;Regular o Jornadas de Capacitacion. Vacio = Regular
+expedida;expedida;NO;
+fechaNac;fechaNac;NO;Preferido YYYY-MM-DD. Tambien 11-sep-65 al importar
+genero;genero;NO;M o F (desde 1. FEMENINO / 2. MASCULINO)
+tipoSangre;tipoSangre;NO;A+ O+ etc
+jornada;jornada;NO;1 Diurna 2 Nocturna 3 Fin de semana
+estadoCivil;estadoCivil;NO;Codigo 1-7
+estrato;estrato;NO;1-6 o 99
+regimenSalud;regimenSalud;NO;Codigo 1-4 (Contributivo...) o nombre EPS en observaciones
+nivelFormacion;nivelFormacion;NO;Codigo 1-8
+ocupacion;ocupacion;NO;Codigo 1-5 (corrija ocpupacion si esta mal escrito en su CSV)
+discapacidad;discapacidad;NO;Codigo 1-9 (9=No aplica). 6. NINGUNO -> 9
+multiCulturalidad;multiCulturalidad;NO;NO_APLICA INDIGENA etc
+munOrigen;munOrigen;NO;Codigo Divipola 5 digitos
+celular;celular;NO;10 digitos. 1. NO REGISTRA = dejar vacio
+email;correo;NO;En ARGO el campo se llama correo. 1. NO REGISTRA = dejar vacio

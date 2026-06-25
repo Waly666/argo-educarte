@@ -1,0 +1,361 @@
+<div class="landing">
+  <div class="site-bg" aria-hidden="true">
+    <div class="site-bg__orb site-bg__orb--1"></div>
+    <div class="site-bg__orb site-bg__orb--2"></div>
+    <div class="site-bg__grid"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#inicio">
+        <img src="logoargo.png" alt="ARGO" width="40" height="40" class="brand__logo" />
+        <span class="brand__text">ARGO</span>
+      </a>
+      <nav class="topbar__nav">
+        <a href="#valor">Por qué ARGO</a>
+        <a href="#ciclo">Ciclo operativo</a>
+        <a href="#modulos">Módulos</a>
+        <a href="#mod-sedes">Sedes</a>
+        <a href="#mod-alarmas">Alarmas</a>
+        <a href="#mod-mia">Mia</a>
+        <a href="#certificados">Certificados</a>
+        <a href="#galeria">Galería</a>
+        <a href="#videos">Videos</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <a class="topbar__login" [href]="loginUrl">Entrar al sistema</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- —— HERO —— -->
+    <section id="inicio" class="hero">
+      <div class="hero__bg" aria-hidden="true">
+        <argo-matrix-login-bg />
+        <div class="hero__bg-glow"></div>
+      </div>
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <p class="kicker">ERP vertical para CEAs · Colombia · COP · es-CO</p>
+          <h1>
+            Todo tu centro de enseñanza<br />
+            <span class="hero__accent">en un solo sistema</span>
+          </h1>
+          <p class="hero__lead">
+            ARGO es software de producción para centros de formación vial: alumnos, matrículas,
+            caja por turno, certificados académicos, programación CEA, jornadas empresariales,
+            flota vehicular, instructores, RRHH, operación multi-sede con datos filtrados,
+            <strong>alarmas inteligentes en el encabezado</strong>, facturación electrónica DIAN y
+            asistente Mia con ayuda interactiva según la pantalla donde trabajas.
+          </p>
+          <p class="hero__lead hero__lead--secondary">
+            Deja atrás las planillas Excel, los recibos sueltos y los certificados en Word.
+            ARGO conecta operación, academia y fiscal en tiempo real — y te avisa antes de que algo se
+            pase por alto: caja, documentos, clases, certificados y flota.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" [href]="whatsappUrl" target="_blank" rel="noopener noreferrer">
+              Solicitar demo
+            </a>
+            <a class="btn btn--outline" href="#modulos">Explorar módulos</a>
+          </div>
+          <ul class="hero__metrics">
+            <li><strong>20+</strong> alarmas por rol</li>
+            <li><strong>Multi-sede</strong> por usuario</li>
+            <li><strong>DIAN</strong> facturación FE</li>
+            <li><strong>Mia</strong> ayuda interactiva</li>
+          </ul>
+        </div>
+
+        <div class="hero__media">
+          <figure class="hero__visual">
+            <img
+              [src]="mediaUrl('imagenes/hero-flota.png')"
+              alt="Flota escuela de conducción: moto, automóvil, camión y tractomula con branding institucional"
+              width="1024"
+              height="576"
+              fetchpriority="high"
+            />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- —— VALOR —— -->
+    <section id="valor" class="panel panel--light valores">
+      <div class="panel__inner">
+        <header class="panel__head panel__head--center">
+          <p class="kicker kicker--dark">Por qué elegir ARGO</p>
+          <h2>Diseñado con la operación real de un CEA colombiano</h2>
+          <p class="panel__sub panel__sub--wide">
+            No es un CRM adaptado ni un software contable genérico. ARGO nace del flujo diario:
+            recepción matricula al alumno, caja cobra, programación asigna clase, instructor sale a
+            práctica con inspección del vehículo, académico emite certificado y contabilidad recibe
+            factura electrónica cuando corresponde. Cada módulo habla con los demás.
+          </p>
+        </header>
+        <div class="valores__grid">
+          @for (v of valores; track v.titulo) {
+            <article class="valor-card" [attr.data-accent]="v.accent">
+              <span class="card-dot" aria-hidden="true"></span>
+              <h3>{{ v.titulo }}</h3>
+              <p>{{ v.texto }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- —— CICLO —— -->
+    <section id="ciclo" class="panel ciclo">
+      <div class="panel__inner">
+        <header class="panel__head panel__head--center">
+          <p class="kicker">Flujo integral</p>
+          <h2>El ciclo operativo del alumno en ARGO</h2>
+          <p class="panel__sub">
+            Desde que llega al mostrador hasta que sale con certificado y documento fiscal — sin
+            re-digitación entre áreas.
+          </p>
+        </header>
+        <ol class="ciclo__steps">
+          @for (p of cicloOperativo; track p.numero) {
+            <li class="ciclo-step">
+              <span class="ciclo-step__num">{{ p.numero }}</span>
+              <div>
+                <h3>{{ p.titulo }}</h3>
+                <p>{{ p.texto }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+        <figure class="media-slot media-slot--wide media-slot--diagram">
+          <img
+            [src]="mediaUrl('imagenes/ciclo-operativo.jpg')"
+            alt="Diagrama del ciclo operativo del alumno en ARGO"
+            width="1600"
+            height="900"
+            loading="lazy"
+          />
+        </figure>
+      </div>
+    </section>
+
+    <!-- —— MÓDULOS DETALLADOS —— -->
+    <section id="modulos" class="panel panel--light modulos-detalle">
+      <div class="panel__inner">
+        <header class="panel__head panel__head--center">
+          <p class="kicker kicker--dark">Plataforma completa</p>
+          <h2>Cada módulo, explicado en detalle</h2>
+          <p class="panel__sub panel__sub--wide">
+            A continuación encontrarás la descripción funcional de las áreas principales de ARGO,
+            con capturas y videos demostrativos del sistema.
+          </p>
+        </header>
+
+        @for (m of modulosDetalle; track m.id; let odd = $odd) {
+          <article class="feature-block" [class.feature-block--reverse]="odd" [attr.data-accent]="m.accent" [id]="'mod-' + m.id">
+            <div class="feature-block__copy">
+              <span class="card-dot"></span>
+              <p class="feature-block__kicker">{{ m.subtitulo }}</p>
+              <h3>{{ m.titulo }}</h3>
+              @for (parrafo of m.parrafos; track parrafo) {
+                <p class="feature-block__p">{{ parrafo }}</p>
+              }
+              <ul class="feature-block__list">
+                @for (b of m.bullets; track b) {
+                  <li>{{ b }}</li>
+                }
+              </ul>
+            </div>
+            <div class="feature-block__media">
+              <figure class="media-slot media-slot--module">
+                <img [src]="mediaUrl(m.imagen)" [alt]="m.imagenAlt" loading="lazy" />
+              </figure>
+              @if (m.video) {
+                <div class="media-slot media-slot--video media-slot--module-video">
+                  <video
+                    [src]="mediaUrl(m.video)"
+                    controls
+                    playsinline
+                    preload="metadata"
+                    [poster]="mediaUrl(m.imagen)"
+                  ></video>
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- —— CERTIFICADOS —— -->
+    <section id="certificados" class="panel certificados-tipos">
+      <div class="panel__inner">
+        <header class="panel__head">
+          <p class="kicker">Emisión académica</p>
+          <h2>Tipos de certificado soportados</h2>
+          <p class="panel__sub">
+            Cada programa define su tipo de certificado. ARGO elige la plantilla correcta,
+            valida elegibilidad (pagos y documentos) e incrementa el consecutivo por sede.
+          </p>
+        </header>
+        <div class="cert-grid">
+          @for (c of certificadosTipos; track c.id) {
+            <article class="cert-card">
+              <h3>{{ c.nombre }}</h3>
+              <p>{{ c.uso }}</p>
+            </article>
+          }
+        </div>
+        <figure class="media-slot media-slot--wide">
+          <img [src]="mediaUrl('imagenes/certificados-plantillas.jpg')" alt="Plantillas de certificados ARGO" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
+    <!-- —— GALERÍA —— -->
+    <section id="galeria" class="panel panel--light galeria">
+      <div class="panel__inner">
+        <header class="panel__head panel__head--center">
+          <p class="kicker kicker--dark">Capturas del sistema</p>
+          <h2>Galería de pantallas ARGO</h2>
+          <p class="panel__sub panel__sub--wide">
+            Capturas reales del sistema en operación: dashboard, caja, alumnos, programación y más.
+          </p>
+        </header>
+        <div class="galeria__grid">
+          @for (g of galeria; track g.imagen) {
+            <figure class="galeria-item" [attr.data-accent]="g.accent">
+              <div class="galeria-item__frame">
+                <img [src]="mediaUrl(g.imagen)" [alt]="g.titulo" loading="lazy" />
+              </div>
+              <figcaption>
+                <strong>{{ g.titulo }}</strong>
+                <span>{{ g.desc }}</span>
+              </figcaption>
+            </figure>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- —— VIDEOS —— -->
+    <section id="videos" class="panel videos">
+      <div class="panel__inner">
+        <header class="panel__head panel__head--center">
+          <p class="kicker">Demos en video</p>
+          <h2>Biblioteca de videos promocionales</h2>
+          <p class="panel__sub panel__sub--wide">
+            Demostraciones en video de los módulos principales: presentación, operación diaria y flujos clave del CEA.
+          </p>
+        </header>
+        <div class="videos__grid videos__grid--large">
+          @for (v of videos; track v.src; let i = $index) {
+            <article class="video-card video-card--rich" [attr.data-accent]="videoAccents[i]">
+              <div class="video-card__frame">
+                <video
+                  [src]="mediaUrl(v.src)"
+                  controls
+                  playsinline
+                  preload="metadata"
+                  [poster]="mediaUrl(v.poster)"
+                ></video>
+              </div>
+              <div class="video-card__body">
+                <h3>{{ v.titulo }}</h3>
+                <p class="video-card__desc">{{ v.desc }}</p>
+                <p class="video-card__detalle">{{ v.detalle }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- —— TECNOLOGÍA —— -->
+    <section id="tecnologia" class="panel panel--light tech">
+      <div class="panel__inner tech__inner">
+        <header class="panel__head">
+          <p class="kicker kicker--dark">Infraestructura</p>
+          <h2>Tecnología y despliegue</h2>
+        </header>
+        <div class="tech__grid">
+          <div class="tech__text">
+            <p>
+              ARGO es un monorepo con backend <strong>Node.js + Express + MongoDB</strong> y
+              frontend <strong>Angular 19</strong>. Autenticación JWT, permisos en base de datos y
+              catálogo de reglas en código para máxima flexibilidad.
+            </p>
+            <p>
+              Despliegue típico en servidor del CEA o VPS en red local: API en puerto
+              <strong>3000</strong>, aplicación web en <strong>4200</strong>, accesible desde
+              otros equipos de la LAN. Moneda COP, locale es-CO, recibos y reportes adaptados a
+              operación colombiana.
+            </p>
+            <ul>
+              <li>Roles semilla: administrador, cajero, recepción, instructor</li>
+              <li>Sistema de alarmas: franjas parpadeantes en encabezado, configurables por rol</li>
+              <li>Auditoría de acciones y monitor de recursos</li>
+              <li>Multi-sede: selector en barra superior, consecutivos y oferta por sede</li>
+              <li>Mia: ayudante flotante con tips interactivos según la pantalla activa</li>
+            </ul>
+          </div>
+          <figure class="media-slot">
+            <img [src]="mediaUrl('imagenes/tecnologia-servidor.jpg')" alt="Despliegue ARGO" loading="lazy" />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- —— CTA —— -->
+    <section id="contacto" class="panel cta-band">
+      <div class="panel__inner cta-band__inner">
+        <h2>¿Hablamos de ARGO para tu CEA?</h2>
+        <p>
+          Agenda una demostración personalizada, solicita cotización o accede si ya eres cliente.
+          Estamos en Colombia y el sistema está listo para operación real.
+        </p>
+        <div class="cta-band__actions">
+          <a class="btn btn--white" [href]="whatsappUrl" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="btn btn--ghost-light" [href]="'mailto:' + email">Correo</a>
+          <a class="btn btn--ghost-light" [href]="loginUrl">Iniciar sesión</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__inner">
+      <div class="foot__brand">
+        <img src="logoargo.png" alt="" width="28" height="28" />
+        <div>
+          <strong>ARGO</strong>
+          <p>© {{ anio }} · {{ desarrollador | uppercase }} · DESARROLLADOR</p>
+        </div>
+      </div>
+      <div class="foot__links">
+        <a [href]="'mailto:' + email">{{ email }}</a>
+        <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer">+57 316 283 5974</a>
+      </div>
+      <p class="foot__tag">
+        Sistema de información para centros de enseñanza automovilística · ERP vertical Colombia
+      </p>
+    </div>
+  </footer>
+
+  <a
+    class="whatsapp-float"
+    [href]="whatsappUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Contactar por WhatsApp"
+    title="WhatsApp"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+      />
+    </svg>
+  </a>
+</div>

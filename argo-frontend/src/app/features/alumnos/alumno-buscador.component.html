@@ -1,0 +1,35 @@
+<div class="buscador-host">
+  <div class="input-wrap">
+    <span class="ic">◎</span>
+    <input
+      type="text"
+      placeholder="Buscar por cédula o nombre..."
+      [ngModel]="query()"
+      (ngModelChange)="onInput($event)"
+      (focus)="focus()"
+      autocomplete="off"
+    />
+    <button class="ghost mini" (click)="nuevo()" title="Nuevo alumno">+ Nuevo</button>
+  </div>
+
+  <div class="dropdown" *ngIf="open()">
+    <div class="loading" *ngIf="loading()">Buscando…</div>
+
+    <div class="empty" *ngIf="!loading() && !hasResults()">
+      No hay resultados. Puedes crear un alumno nuevo con el botón <em>+ Nuevo</em>.
+    </div>
+
+    <ul class="list" *ngIf="hasResults()">
+      <li *ngFor="let r of results()" (click)="seleccionar(r)">
+        <div class="avatar">
+          <img *ngIf="fotoUrl(r.foto) as f" [src]="f" alt="" />
+          <span *ngIf="!r.foto">{{ (r.nombres.charAt(0) || '?') + (r.apellidos.charAt(0) || '') }}</span>
+        </div>
+        <div class="info">
+          <span class="name">{{ r.nombres }} {{ r.apellidos }}</span>
+          <span class="meta">{{ r.tipoDoc || 'CC' }} {{ r.numDoc }} <ng-container *ngIf="r.celular"> · {{ r.celular }}</ng-container></span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

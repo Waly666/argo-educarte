@@ -1,0 +1,212 @@
+<section class="instructor-page card admin-list-page">
+  <header class="jor-head jor-page-header">
+    <div class="jor-head-main jor-page-title">
+      <p class="breadcrumb"><a routerLink="/app/jornadas">Jornadas</a> / Instructor</p>
+      <h1>Clase en carpa — Instructor</h1>
+      <p class="hint-block">
+        Operación en campo: elija la jornada del día, cree la clase y registre asistencias para el certificado automático.
+      </p>
+    </div>
+    <span class="jor-chip jor-chip--orange">Vista operador</span>
+  </header>
+
+  @if (msg(); as texto) {
+    <div
+      class="jor-banner"
+      [class.jor-banner--ok]="msgTipo() === 'ok'"
+      [class.jor-banner--error]="msgTipo() === 'error'"
+      [class.jor-banner--warn]="msgTipo() === 'warn'"
+      [class.jor-banner--info]="msgTipo() === 'info'"
+      role="alert">
+      <span class="jor-banner-icon" aria-hidden="true">{{ iconoJorMsg(msgTipo()) }}</span>
+      <div class="jor-banner-body">
+        <strong class="jor-banner-title">{{ msgTitulo() }}</strong>
+        <span>{{ texto }}</span>
+      </div>
+      <button type="button" class="jor-banner-close" (click)="cerrarMsg()" aria-label="Cerrar mensaje">×</button>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-4">
+      <argo-date-input label="Fecha (consulta)" [ngModel]="fecha()" (ngModelChange)="onFechaChange($event)" ></argo-date-input>
+    </div>
+    <div class="col-8 hint-col">
+      <p class="hint">
+        <span class="cap cap-emerald cap-sm cap-text">EN PROCESO</span>
+        Solo en ese estado puede crear clases y marcar asistencia (día programado = hoy en este equipo).
+      </p>
+      <button type="button" class="ghost mini" (click)="irHoy()">Ir a hoy</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Jornadas del día</h2>
+    <table class="argo">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Contratación</th>
+          <th>Municipio</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let j of jornadasHoy()"
+          [class.sel]="jornadaSel() === j._id"
+          [ngClass]="rowJornadaClass(j.estado)"
+          (click)="seleccionarJornada(j._id)">
+          <td><span [ngClass]="capFechaJor(j.fechaProgramacion)">{{ fmtFecha(j.fechaProgramacion) }}</span></td>
+          <td><span [ngClass]="capContratoLabel(j.contratoLabel)">{{ j.contratoLabel || '—' }}</span></td>
+          <td><span [ngClass]="capMunicipioJor(j.municipio)">{{ j.municipio || '—' }}</span></td>
+          <td><span [ngClass]="estadoJornadaLiveClass(j.estado)">{{ j.estado }}</span></td>
+          <td>
+            <button
+              type="button"
+              class="mini"
+              (click)="seleccionarJornada(j._id); $event.stopPropagation()"
+              [disabled]="j.estado !== 'EN PROCESO'"
+              [title]="j.estado !== 'EN PROCESO' ? 'Solo opera la jornada de hoy (EN PROCESO)' : ''">
+              Usar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="jornadasHoy().length === 0">
+          <td colspan="5" class="empty jor-empty">
+            <span class="jor-empty-icon">📍</span>
+            <p>No hay jornadas programadas para esta fecha. Pruebe con <strong>Ir a hoy</strong>.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hint" *ngIf="jornadaActiva() as ja">
+      Jornada activa:
+      <span [ngClass]="estadoJornadaLiveClass(ja.estado)">{{ ja.estado }}</span>
+      <span *ngIf="ja.estado !== 'EN PROCESO'"> — operación bloqueada hasta el día programado.</span>
+    </p>
+  </div>
+
+  <div class="panel" *ngIf="jornadaSel()">
+    <h2>Clase</h2>
+    <div class="row">
+      <div class="col-5">
+        <argo-catalogo-enum-buscar
+          label="Programa"
+          placeholder="Seleccione o escriba programa…"
+          [textoInicial]="textoProgramaInstructor()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [opcionesLocales]="opcionesProgramasInstructor()"
+          (seleccionado)="onProgramaInstructorPick($event)"
+          (limpiado)="onProgramaInstructorLimpiar()"
+        />
+      </div>
+      <div class="col-3">
+        <argo-catalogo-enum-buscar
+          label="Ubicación"
+          placeholder="Seleccione ubicación…"
+          [textoInicial]="textoUbicacionInstructor()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [opcionesLocales]="opcionesUbicacionInstructor()"
+          (seleccionado)="onUbicacionInstructorPick($event)"
+          (limpiado)="onUbicacionInstructorLimpiar()"
+        />
+      </div>
+      <div class="col-2 actions-inline">
+        <button type="button" class="primary" (click)="crearClase()" [disabled]="!jornadaOperable()">Nueva clase</button>
+      </div>
+    </div>
+    <p class="hint">
+      Instructor de la clase:
+      <span [ngClass]="capInstructor(instructorSesionNombre())">{{ instructorSesionNombre() }}</span>
+      (vinculado a su usuario en RRHH).
+    </p>
+
+    <div class="chips">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let c of clases()"
+        [class.active]="claseSel() === c._id"
+        [ngClass]="rowClaseClass(c.estado)"
+        (click)="seleccionarClase(c)">
+        <span [ngClass]="capPrograma(c.idPrograma)">{{ nombrePrograma(c.idPrograma) }}</span>
+        ·
+        <span [ngClass]="capInstructor(labelInstructorClase(c))">{{ labelInstructorClase(c) }}</span>
+        ·
+        <span [ngClass]="capUbicacionClase(c.ubicacion)">{{ c.ubicacion }}</span>
+        ·
+        <span [ngClass]="estadoClaseLiveClass(c.estado)">{{ c.estado }}</span>
+      </button>
+      <p class="hint chips-empty" *ngIf="clases().length === 0">Sin clases en esta jornada. Cree una arriba.</p>
+    </div>
+
+    <div *ngIf="claseActiva() as cl" class="clase-ops">
+      <p class="clase-horas">
+        Inicio:
+        <span [ngClass]="capHoraJor(cl.horaInicio)">{{ fmtHora(cl.horaInicio) }}</span>
+        · Fin:
+        <span [ngClass]="capHoraJor(cl.horaFin)">{{ fmtHora(cl.horaFin) }}</span>
+        ·
+        <span [ngClass]="estadoClaseLiveClass(cl.estado)">{{ cl.estado }}</span>
+      </p>
+      <div class="actions">
+        <button type="button" class="primary" (click)="iniciarClase()" [disabled]="!jornadaOperable()">Iniciar</button>
+        <button type="button" class="ghost" (click)="finalizarClase()">Finalizar</button>
+      </div>
+      <div class="row asis">
+        <div class="col-5">
+          <label>Nº documento alumno</label>
+          <input
+            type="text"
+            [ngModel]="numDocAsis()"
+            (ngModelChange)="onNumDocAsisChange($event)"
+            (keyup.enter)="marcarAsistencia()"
+            autofocus />
+        </div>
+        <div class="col-3">
+          <button
+            type="button"
+            class="primary"
+            (click)="marcarAsistencia()"
+            [disabled]="!jornadaOperable() || alumnoYaCertificadoContrato()">
+            Registrar asistencia
+          </button>
+        </div>
+      </div>
+      <p class="progreso-preview" *ngIf="progresoPreviewLoading()">Consultando progreso del contrato…</p>
+      <p class="progreso-preview ok" *ngIf="!progresoPreviewLoading() && progresoPreview() as p">
+        {{ etiquetaProgresoCert(p, nombreAlumnoPreview()) }}
+        <span class="meta" *ngIf="jornadaActiva()?.numSesCert">
+          (meta del contrato:
+          <span [ngClass]="capSesCert(jornadaActiva()?.numSesCert)">{{ jornadaActiva()?.numSesCert }} sesiones</span>)
+        </span>
+      </p>
+      <p class="hint hint-warn cert-bloqueo" *ngIf="alumnoYaCertificadoContrato()">
+        Este alumno ya tiene certificado en el contrato. No puede registrar asistencia en nuevas clases.
+        <button type="button" class="mini ghost" (click)="mostrarDialogoAlumnoCertificado()">
+          Imprimir certificado
+        </button>
+      </p>
+      <table class="argo mini">
+        <thead>
+          <tr><th>Doc</th><th>Nombre</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of asistencias()">
+            <td><span [ngClass]="capDocAsis(a.numDocAlumno)">{{ a.numDocAlumno }}</span></td>
+            <td><span [ngClass]="capAlumnoNombre(a.nombreCompleto)">{{ a.nombreCompleto }}</span></td>
+          </tr>
+          <tr *ngIf="asistencias().length === 0">
+            <td colspan="2" class="empty jor-empty-mini">Aún no hay asistencias en esta clase.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

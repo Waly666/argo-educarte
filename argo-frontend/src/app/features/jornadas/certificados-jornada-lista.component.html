@@ -1,0 +1,193 @@
+<div class="cert-jor-page admin-list-page">
+  <header class="jor-head page-head panel">
+    <div class="jor-head-main">
+      <p class="breadcrumb"><a routerLink="/app/jornadas">Jornadas</a> / Certificados</p>
+      <h1>Certificados generados</h1>
+      <p class="hint">
+        Certificados automáticos emitidos al completar las sesiones del contrato en Jornadas de Capacitación.
+      </p>
+    </div>
+    <div class="jor-badges head-actions">
+      @if (certsHoyCount() > 0) {
+        <span class="jor-chip jor-chip--emerald">{{ certsHoyCount() }} hoy</span>
+      }
+      <button type="button" class="ghost" (click)="cargar()" [disabled]="loading()">↻ Actualizar</button>
+    </div>
+  </header>
+
+  @if (msg()) {
+    <p class="jor-banner" [class.jor-banner--error]="msgError()">{{ msg() }}</p>
+  }
+
+  <div class="panel filtros">
+    <label for="filtro-cert">Buscar</label>
+    <input
+      id="filtro-cert"
+      type="search"
+      placeholder="Filtrar por nombre, contrato, ubicación jornada, encabezado, código cert. o documento…"
+      [ngModel]="filtro()"
+      (ngModelChange)="filtro.set($event)"
+      autocomplete="off" />
+    <p class="hint">{{ filtrados().length }} de {{ certificados().length }} certificado(s)</p>
+    @if (certsHoyCount() > 0) {
+      <p class="hint certs-hoy-hint">
+        <span class="jor-live-badge">{{ certsHoyCount() }} emitido(s) hoy</span>
+        — resaltados en verde parpadeante aunque se listen todos.
+      </p>
+    }
+  </div>
+
+  <div class="panel">
+    @if (loading()) {
+      <p class="hint">Cargando certificados…</p>
+    } @else {
+      <table class="argo">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Alumno</th>
+            <th>Doc</th>
+            <th>Contrato</th>
+            <th>Ubicación jornada</th>
+            <th>Encabezado</th>
+            <th>Horas</th>
+            <th>Emisión</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtrados(); track c._id) {
+            <tr [ngClass]="rowCertificadoHoyClass(c.fechaEmision)">
+              <td><span [ngClass]="capCertCodigo(c.codigoCert)">{{ c.codigoCert || '—' }}</span></td>
+              <td><span [ngClass]="capAlumnoNombre(c.nombreCompleto)">{{ c.nombreCompleto || '—' }}</span></td>
+              <td><span [ngClass]="capDocAsis(c.numDoc)">{{ c.numDoc }}</span></td>
+              <td><span [ngClass]="capCodContrato(c.codContrato)">{{ c.codContrato || '—' }}</span></td>
+              <td>
+                <span [ngClass]="capUbicacionJornada(c.municipio, c.direccion)">
+                  {{ c.ubicacionJornada || ubicacionJornadaLabel(c.municipio, c.direccion) || '—' }}
+                </span>
+              </td>
+              <td>
+                @if (esFechaHoy(c.fechaEmision)) {
+                  <span
+                    class="serv-saldo-inline encabezado-hoy-blink"
+                    [attr.title]="'Certificado emitido hoy · ' + fmtFecha(c.fechaEmision)">
+                    {{ c.encabezado || '—' }}
+                  </span>
+                } @else {
+                  <span [ngClass]="capCliente(c.encabezado)">{{ c.encabezado || '—' }}</span>
+                }
+              </td>
+              <td><span [ngClass]="capHorasCert(c.horasCert)">{{ c.horasCert || '—' }}</span></td>
+              <td>
+                @if (esFechaHoy(c.fechaEmision)) {
+                  <span class="serv-saldo-inline encabezado-hoy-blink" [attr.title]="'Emitido hoy'">
+                    {{ fmtFecha(c.fechaEmision) }}
+                  </span>
+                } @else {
+                  <span [ngClass]="capFechaJor(c.fechaEmision)">{{ fmtFecha(c.fechaEmision) }}</span>
+                }
+              </td>
+              <td class="actions-cell">
+                <button type="button" class="mini ghost" (click)="imprimir(c)">Imprimir</button>
+                <button type="button" class="mini primary" (click)="abrirEditar(c._id)">Editar</button>
+                <button type="button" class="mini danger" (click)="eliminar(c)">Eliminar</button>
+              </td>
+            </tr>
+          }
+          @if (filtrados().length === 0) {
+            <tr>
+              <td colspan="9" class="empty">No hay certificados que coincidan con el filtro.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+<argo-form-modal
+  [open]="modalEditar()"
+  title="Editar certificado"
+  [wide]="true"
+  (closed)="cerrarEditar()">
+  @if (certificadoEdit(); as c) {
+    <section class="cert-edit-form argo-form-shell">
+      <div class="row">
+        <div class="col-6">
+          <label>Alumno</label>
+          <p class="readonly">{{ c.nombreCompleto || '—' }}</p>
+        </div>
+        <div class="col-3">
+          <label>Documento</label>
+          <p class="readonly">{{ c.numDoc }}</p>
+        </div>
+        <div class="col-3">
+          <label>Código</label>
+          <p class="readonly">{{ c.codigoCert || '—' }}</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-8">
+          <label>Encabezado</label>
+          <input type="text" [ngModel]="editEncabezado()" (ngModelChange)="editEncabezado.set($event)" />
+        </div>
+        <div class="col-4">
+          <argo-catalogo-enum-buscar
+            label="tipoCertificado"
+            placeholder="Seleccione o escriba tipo…"
+            [textoInicial]="textoTipoCertificadoEdit()"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [opcionesLocales]="opcionesTipoCertificado()"
+            (seleccionado)="onTipoCertPick($event)"
+            (limpiado)="onTipoCertLimpiar()"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <label>Nº acta</label>
+          <input type="text" [ngModel]="editNumActa()" (ngModelChange)="editNumActa.set($event)" />
+        </div>
+        <div class="col-4">
+          <label>Nº folio</label>
+          <input type="text" [ngModel]="editNumFolio()" (ngModelChange)="editNumFolio.set($event)" />
+        </div>
+        <div class="col-4">
+          <label>Nº RUNT</label>
+          <input type="text" [ngModel]="editNumRunt()" (ngModelChange)="editNumRunt.set($event)" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <argo-date-input label="Fecha emisión" [ngModel]="editFechaEmision()" (ngModelChange)="editFechaEmision.set($event)" ></argo-date-input>
+        </div>
+        <div class="col-4">
+          <argo-date-input label="Fecha vencimiento" [ngModel]="editFechaVencimiento()" (ngModelChange)="editFechaVencimiento.set($event)" ></argo-date-input>
+        </div>
+        <div class="col-4">
+          <label>Horas cert.</label>
+          <p class="readonly">{{ c.horasCert || '—' }}</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <label>Observaciones</label>
+          <textarea rows="3" [ngModel]="editObservaciones()" (ngModelChange)="editObservaciones.set($event)"></textarea>
+        </div>
+      </div>
+    </section>
+  }
+
+  <div modal-actions>
+    <button type="button" class="ghost" (click)="cerrarEditar()" [disabled]="guardando()">Cerrar</button>
+    @if (certificadoEdit(); as c) {
+      <button type="button" class="ghost" (click)="imprimir(c)">🖨 Imprimir</button>
+    }
+    <button type="button" class="primary" (click)="guardarEditar()" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+    </button>
+  </div>
+</argo-form-modal>

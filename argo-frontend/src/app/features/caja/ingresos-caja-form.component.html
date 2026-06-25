@@ -1,0 +1,127 @@
+<section class="ing-caja-page card">
+  <nav class="caja-nav-link">
+    <a routerLink="/app/caja">← Resumen del día</a>
+    <a routerLink="/app/caja/ingresos">← Lista ingresos de mi caja</a>
+    <span class="caja-mini" [class.ok]="cajaAbierta()" [class.warn]="!cajaAbierta()">
+      {{ cajaAbierta() ? 'Caja #' + sesionId() + ' abierta' : 'Caja cerrada — abra en Resumen' }}
+    </span>
+  </nav>
+
+  <header class="caja-head page-head">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / <a routerLink="/app/caja/ingresos">Ingresos</a> / Sin alumno</p>
+      <h1>Ingreso de caja (sin alumno)</h1>
+      <p class="hint">Contratos, aprovisiones u otros ingresos que no provienen de un alumno.</p>
+    </div>
+    <span class="caja-chip caja-chip--emerald" *ngIf="cajaAbierta()">Caja #{{ sesionId() }} abierta</span>
+  </header>
+
+  <p class="caja-msg caja-msg--warn" *ngIf="!cajaAbierta()">Abra su caja en Resumen del día para registrar ingresos.</p>
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <form class="form-panel panel argo-form-shell" (ngSubmit)="$event.preventDefault(); guardar()">
+    <h3 class="sec">1. Tipo y fecha</h3>
+    <div class="row">
+      <label class="col-6">
+        Tipo de ingreso *
+        <select [ngModel]="idTipoIngreso()" (ngModelChange)="onTipoIngresoChange($event)" name="tipoIng">
+          <option value="">— Seleccione —</option>
+          <option *ngFor="let t of tiposIngreso()" [value]="t.idTipoIngreso">{{ labelTipo(t) }}</option>
+        </select>
+      </label>
+      <argo-date-input label="Fecha" [ngModel]="fecha()" (ngModelChange)="fecha.set($event)" name="fecha" ></argo-date-input>
+    </div>
+
+    <p class="hint tipo-hint" *ngIf="esContrato()">
+      Contrato de capacitación u otro acuerdo con persona natural o jurídica (no alumno).
+    </p>
+    <p class="hint tipo-hint" *ngIf="esAprovision()">
+      Dinero que el propietario o responsable aporta a la caja para cubrir pagos del turno.
+    </p>
+    <p class="hint tipo-hint" *ngIf="esOtros()">
+      Ingresos que no encajan en contrato ni aprovisionamiento.
+    </p>
+
+    <label>
+      Concepto / detalle *
+      <input type="text" [ngModel]="concepto()" (ngModelChange)="concepto.set($event)" name="concepto"
+        placeholder="Ej. Contrato capacitación empresa XYZ, aporte propietario…" />
+    </label>
+
+    <div class="row" *ngIf="idTipoIngreso()">
+      <label class="col-4" *ngIf="esContrato()">
+        Persona
+        <select [ngModel]="tipoPersona()" (ngModelChange)="tipoPersona.set($event)" name="tipoPersona">
+          <option value="">—</option>
+          <option value="natural">Natural</option>
+          <option value="juridica">Jurídica</option>
+        </select>
+      </label>
+      <label [class.col-4]="esContrato()" [class.col-6]="!esContrato()">
+        Documento / NIT {{ esContrato() ? '*' : '' }}
+        <input type="text" [ngModel]="documentoTercero()" (ngModelChange)="documentoTercero.set($event)"
+          name="docTercero" placeholder="CC, NIT, CE…" />
+      </label>
+      <label [class.col-4]="esContrato()" [class.col-6]="!esContrato()">
+        Recibido de (nombre) *
+        <input type="text" [ngModel]="recibidoDe()" (ngModelChange)="recibidoDe.set($event)" name="recibidoDe"
+          placeholder="Nombre del contratante o aportante" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label class="col-4">
+        Valor *
+        <input type="number" min="1" [ngModel]="valor()" (ngModelChange)="valor.set(+$event || 0)" name="valor" />
+      </label>
+      <label class="col-4">
+        Forma de pago *
+        <select [ngModel]="idTipoPago()" (ngModelChange)="onTipoPagoChange($event)" name="tipoPago">
+          <option value="">—</option>
+          <option *ngFor="let t of tiposPago()" [value]="tipoPagoValor(t)">{{ tipoPagoLabel(t) }}</option>
+        </select>
+      </label>
+      <label class="col-4" *ngIf="requiereCuentaEmpresa()">
+        Cuenta empresa *
+        <select [ngModel]="idCuentaBancaria()" (ngModelChange)="idCuentaBancaria.set($event)" name="cuenta">
+          <option value="">—</option>
+          <option *ngFor="let c of cuentasBancarias()" [value]="cuentaValor(c)">{{ labelCuenta(c) }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row" *ngIf="requiereCuentaEmpresa()">
+      <label class="col-6">
+        Ref. comprobante / transferencia *
+        <input type="text" [ngModel]="numComprobante()" (ngModelChange)="numComprobante.set($event)" name="ref" />
+      </label>
+    </div>
+
+    <div class="row" *ngIf="requiereCuentaEmpresa()">
+      <div class="col-12">
+        <argo-pago-soporte-field
+          [obligatorio]="true"
+          [previewUrl]="previewSoporte()"
+          [nombreArchivo]="archivoSoporte()?.name ?? null"
+          (seleccionado)="onSoporteArchivo($event)"
+          (quitado)="quitarSoporte()"
+        />
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!requiereCuentaEmpresa()">
+      <label class="col-12">
+        Observaciones
+        <input type="text" [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)" name="obs" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="primary" [disabled]="saving() || !puedeGuardar()">
+        {{ saving() ? 'Guardando…' : 'Registrar ingreso' }}
+      </button>
+      <p class="hint err" *ngIf="mensajePagoIntangible() as aviso">{{ aviso }}</p>
+    </div>
+  </form>
+</section>

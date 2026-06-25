@@ -1,0 +1,21 @@
+const mongoose = require('mongoose');
+
+const CajaCompensacionSchema = new mongoose.Schema(
+  {
+    idCajaCompensacion: { type: Number, required: true, unique: true, index: true },
+    nombre: { type: String, required: true, trim: true },
+    codigoMinisterio: { type: String, trim: true, index: true },
+    nit: { type: String, trim: true },
+    direccion: { type: String, trim: true },
+    ciudad: { type: String, trim: true },
+    telefono: { type: String, trim: true },
+    estado: { type: String, trim: true, default: 'activo' },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date },
+    userAddReg: { type: String, trim: true },
+    userChangeRecord: { type: String, trim: true },
+  },
+  { collection: 'cajasCompensacion', strict: false },
+);
+
+module.exports = mongoose.model('CajaCompensacion', CajaCompensacionSchema);

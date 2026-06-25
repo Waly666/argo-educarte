@@ -1,0 +1,533 @@
+<section class="veh-page">
+  <header class="veh-head card">
+    <div class="veh-head-row">
+      <button type="button" class="ghost veh-back" (click)="volver()">← Lista vehículos</button>
+      <div class="veh-head-main">
+        <div class="veh-title-row">
+          <h1>{{ tituloPagina() }}</h1>
+          @if (!esNuevo() && form().placa) {
+            <span class="veh-placa">{{ form().placa }}</span>
+          }
+        </div>
+        @if (!esNuevo()) {
+          <p class="veh-subtitle">
+            {{ form().nombreMarca || '—' }} {{ form().nombreLinea || '' }}
+            @if (form().modelo) { · {{ form().modelo }} }
+            @if (form().claseVehiculo) { · {{ form().claseVehiculo }} }
+          </p>
+        } @else {
+          <p class="veh-subtitle">Complete los datos y guarde para habilitar documentos e inspección.</p>
+        }
+      </div>
+      @if (!loading() && !esNuevo()) {
+        <div class="veh-head-badges">
+          <span class="veh-chip" [ngClass]="estadoChipClass(form().estado)">{{ form().estado || 'Sin estado' }}</span>
+          @if (form().tipoServicio) {
+            <span class="veh-chip veh-chip--service">{{ form().tipoServicio }}</span>
+          }
+          @if (form().modalidad) {
+            <span class="veh-chip veh-chip--mod">{{ form().modalidad }}</span>
+          }
+          @if (docsResumen().total) {
+            <span class="veh-chip" [class.veh-chip--warn]="docsResumen().pendientes > 0" [class.veh-chip--err]="docsResumen().vencidos > 0" [class.veh-chip--ok]="docsResumen().pendientes === 0 && docsResumen().vencidos === 0">
+              Docs {{ docsResumen().ok }}/{{ docsResumen().total }}
+            </span>
+          }
+        </div>
+      }
+      @if (!esNuevo()) {
+        <div class="veh-head-actions">
+          <button type="button" class="danger ghost" (click)="eliminar()">Eliminar</button>
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (msg()) {
+    <div class="veh-msg veh-msg--ok" role="status">{{ msg() }}</div>
+  }
+  @if (err()) {
+    <div class="veh-msg veh-msg--err" role="alert">{{ err() }}</div>
+  }
+
+  @if (!loading()) {
+    <nav class="veh-tabs card" role="tablist">
+      @for (t of tabs; track t.key) {
+        <button
+          type="button"
+          role="tab"
+          class="veh-tab"
+          [class.veh-tab--active]="tab() === t.key"
+          [disabled]="(t.key === 'documentos' || t.key === 'inspeccion') && !puedeDocumentos()"
+          (click)="setTab(t.key)">
+          <span class="veh-tab-label">{{ t.label }}</span>
+          @if ((t.key === 'documentos' || t.key === 'inspeccion') && !puedeDocumentos()) {
+            <span class="veh-tab-hint">Guarde primero</span>
+          }
+          @if (t.key === 'documentos' && docsResumen().pendientes > 0) {
+            <span class="veh-tab-badge">{{ docsResumen().pendientes }}</span>
+          }
+        </button>
+      }
+    </nav>
+  }
+
+  @if (loading()) {
+    <div class="veh-loading card">Cargando vehículo…</div>
+  }
+
+  @if (!loading() && tab() === 'datos') {
+    <div class="veh-panel card argo-form-shell">
+      <div class="veh-datos-layout">
+        <div class="veh-datos-main">
+          <section class="veh-section veh-section--sky">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">1</span>
+              <div>
+                <h2 class="veh-section-title">Identificación y operación</h2>
+                <p class="veh-section-desc">Placa, estado operativo y tipo de servicio.</p>
+              </div>
+            </header>
+            <div class="veh-section-body veh-stack">
+              @if (!esNuevo() && vehiculoId()) {
+                <div class="veh-id-row">
+                  <span class="veh-label">idVehiculo</span>
+                  <span class="veh-mongo-id" [ngClass]="capId(vehiculoId())" [title]="vehiculoId()">{{ vehiculoId() }}</span>
+                </div>
+              }
+              <div class="veh-grid veh-grid--4">
+                <label class="veh-field">
+                  <span class="veh-label">Placa *</span>
+                  <input type="text" class="veh-placa-input" [ngModel]="form().placa" (ngModelChange)="patch('placa', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Estado</span>
+                  <select [ngModel]="form().estado" (ngModelChange)="patch('estado', $event)">
+                    @for (e of meta()?.estados || []; track e) {
+                      <option [value]="e">{{ e }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Tipo servicio</span>
+                  <select [ngModel]="form().tipoServicio" (ngModelChange)="patch('tipoServicio', $event)">
+                    <option value="">— Seleccione —</option>
+                    @for (t of meta()?.tiposServicio || []; track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Modalidad</span>
+                  <select [ngModel]="form().modalidad" (ngModelChange)="patch('modalidad', $event)">
+                    <option value="">— Seleccione —</option>
+                    @for (m of meta()?.modalidades || []; track m) {
+                      <option [value]="m">{{ m }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="veh-section veh-section--violet">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">2</span>
+              <div>
+                <h2 class="veh-section-title">Marca y modelo</h2>
+                <p class="veh-section-desc">Catálogo RUNT: marca, línea, modelo y cilindraje.</p>
+              </div>
+            </header>
+            <div class="veh-section-body">
+              <div class="veh-grid veh-grid--marca">
+                <div class="veh-field">
+                  <argo-catalogo-enum-buscar
+                    label="Marca"
+                    placeholder="Seleccione o escriba marca…"
+                    [textoInicial]="form().nombreMarca || ''"
+                    [modoCombo]="true"
+                    [minLength]="1"
+                    [buscarRemoto]="buscarMarcasRemoto"
+                    (seleccionado)="onMarcaPick($event)"
+                    (limpiado)="onMarcaLimpiar()" />
+                </div>
+                <div class="veh-field">
+                  <argo-catalogo-enum-buscar
+                    label="Línea"
+                    placeholder="Seleccione o escriba línea…"
+                    [textoInicial]="form().nombreLinea || ''"
+                    [modoCombo]="true"
+                    [minLength]="1"
+                    [disabled]="!form().codigoMarca"
+                    [buscarRemoto]="buscarLineasRemoto"
+                    (seleccionado)="onLineaPick($event)"
+                    (limpiado)="onLineaLimpiar()" />
+                </div>
+                <label class="veh-field">
+                  <span class="veh-label">Modelo</span>
+                  <input type="text" [ngModel]="form().modelo" (ngModelChange)="patch('modelo', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Cilindraje (cc)</span>
+                  <input type="text" [ngModel]="form().cilindraje" (ngModelChange)="patch('cilindraje', $event)" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="veh-section veh-section--amber">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">3</span>
+              <div>
+                <h2 class="veh-section-title">Clasificación</h2>
+                <p class="veh-section-desc">Clase, carrocería y color del vehículo.</p>
+              </div>
+            </header>
+            <div class="veh-section-body">
+              <div class="veh-grid veh-grid--3">
+                <div class="veh-field">
+                  <argo-catalogo-enum-buscar
+                    label="Clase vehículo"
+                    placeholder="Seleccione o escriba clase…"
+                    [textoInicial]="form().claseVehiculo || ''"
+                    [modoCombo]="true"
+                    [remoto]="false"
+                    [minLength]="1"
+                    [opcionesLocales]="opcionesClase()"
+                    (seleccionado)="onClasePick($event)"
+                    (limpiado)="onClaseLimpiar()" />
+                </div>
+                <div class="veh-field">
+                  <argo-catalogo-enum-buscar
+                    label="Carrocería"
+                    placeholder="Seleccione o escriba carrocería…"
+                    [textoInicial]="form().carroceria || ''"
+                    [modoCombo]="true"
+                    [remoto]="false"
+                    [minLength]="1"
+                    [disabled]="!carroceriasDisponibles().length"
+                    [opcionesLocales]="opcionesCarroceria()"
+                    (seleccionado)="onCarroceriaPick($event)"
+                    (limpiado)="onCarroceriaLimpiar()" />
+                </div>
+                <div class="veh-field">
+                  <argo-catalogo-enum-buscar
+                    label="Color"
+                    placeholder="Escriba color (ej. AZUL, ROJO)…"
+                    [textoInicial]="form().color || ''"
+                    [minLength]="2"
+                    [buscarRemoto]="buscarColoresRemoto"
+                    (seleccionado)="onColorPick($event)"
+                    (limpiado)="onColorLimpiar()" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="veh-section veh-section--teal">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">4</span>
+              <div>
+                <h2 class="veh-section-title">Motor y chasis</h2>
+                <p class="veh-section-desc">Combustible e identificadores técnicos.</p>
+              </div>
+            </header>
+            <div class="veh-section-body">
+              <div class="veh-grid veh-grid--4">
+                <label class="veh-field">
+                  <span class="veh-label">Combustible</span>
+                  <select [ngModel]="form().combustible" (ngModelChange)="patch('combustible', $event)">
+                    <option value="">— Seleccione —</option>
+                    @for (c of meta()?.combustibles || []; track c) {
+                      <option [value]="c">{{ c }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">N.º motor</span>
+                  <input type="text" [ngModel]="form().numeroMotor" (ngModelChange)="patch('numeroMotor', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">N.º chasis</span>
+                  <input type="text" [ngModel]="form().numeroChasis" (ngModelChange)="patch('numeroChasis', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Serie</span>
+                  <input type="text" [ngModel]="form().serie" (ngModelChange)="patch('serie', $event)" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="veh-section veh-section--emerald">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">5</span>
+              <div>
+                <h2 class="veh-section-title">Capacidad y licencia</h2>
+                <p class="veh-section-desc">Tonelaje, pasajeros y licencia de tránsito.</p>
+              </div>
+            </header>
+            <div class="veh-section-body">
+              <div class="veh-grid veh-grid--3">
+                <label class="veh-field">
+                  <span class="veh-label">Tonelaje</span>
+                  <input type="text" [ngModel]="form().tonelaje" (ngModelChange)="patch('tonelaje', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Pasajeros</span>
+                  <input type="text" [ngModel]="form().pasajeros" (ngModelChange)="patch('pasajeros', $event)" />
+                </label>
+                <label class="veh-field">
+                  <span class="veh-label">Licencia tránsito</span>
+                  <input type="text" [ngModel]="form().numeroLicencia" (ngModelChange)="patch('numeroLicencia', $event)" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="veh-section veh-section--rose">
+            <header class="veh-section-head">
+              <span class="veh-section-badge">6</span>
+              <div>
+                <h2 class="veh-section-title">Observaciones</h2>
+                <p class="veh-section-desc">Notas internas sobre el vehículo.</p>
+              </div>
+            </header>
+            <div class="veh-section-body">
+              <label class="veh-field">
+                <span class="veh-label">Observaciones</span>
+                <textarea rows="3" [ngModel]="form().observaciones" (ngModelChange)="patch('observaciones', $event)"></textarea>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <aside class="veh-foto-aside">
+          <div class="veh-foto-card">
+            <span class="veh-foto-kicker">Foto del vehículo</span>
+            <div class="veh-foto-box">
+              @if (fotoPreview(); as p) {
+                <img [src]="p" alt="Vehículo" />
+              } @else {
+                <span class="veh-foto-empty">Sin foto</span>
+              }
+            </div>
+            <label class="veh-foto-upload">
+              <input type="file" accept="image/*" (change)="onFoto($event)" hidden />
+              Cargar foto
+            </label>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="veh-actions">
+        <button type="button" class="primary" [disabled]="saving()" (click)="guardar()">
+          {{ saving() ? 'Guardando…' : (esNuevo() ? 'Crear vehículo' : 'Guardar cambios') }}
+        </button>
+      </footer>
+    </div>
+  }
+
+  @if (!loading() && tab() === 'documentos' && puedeDocumentos()) {
+    <div class="veh-panel card veh-docs-panel">
+      <section class="veh-req-section">
+        <header class="veh-req-head">
+          <div>
+            <h2>Requisitos según clase</h2>
+            <p>Documentos obligatorios configurados para la clase del vehículo. Pulse «Registrar» para cargar el escaneo.</p>
+          </div>
+          <button type="button" class="ghost mini" (click)="cargarRequisitos()" [disabled]="loadingReq()">
+            {{ loadingReq() ? 'Actualizando…' : 'Actualizar' }}
+          </button>
+        </header>
+
+        @if (loadingReq()) {
+          <p class="veh-req-loading">Cargando requisitos…</p>
+        }
+
+        @if (!loadingReq() && sinClaseDoc()) {
+          <div class="veh-empty">
+            <p>Asigne una <strong>clase de vehículo</strong> en la pestaña Datos para ver los documentos requeridos.</p>
+          </div>
+        }
+
+        @if (!loadingReq() && !sinClaseDoc() && docsRequeridos().length === 0) {
+          <div class="veh-empty">
+            <p>No hay requisitos configurados para «{{ claseDoc()?.label }}». Revise <strong>Configuración → Requisitos vehículos</strong>.</p>
+          </div>
+        }
+
+        @if (!loadingReq() && claseDoc(); as c) {
+          <div class="veh-clase-banner">
+            <span class="veh-clase-label">Clase detectada</span>
+            <span class="veh-clase-value">{{ c.label }}</span>
+          </div>
+        }
+
+        @if (!loadingReq() && docsRequeridos().length) {
+          <div class="veh-doc-grid">
+            @for (doc of docsRequeridos(); track doc.id; let i = $index) {
+              <article
+                class="veh-doc-card"
+                [ngClass]="[cardToneReq(i), doc.vencido ? 'veh-doc-card--vencido' : '', doc.vencePronto ? 'veh-doc-card--pronto' : '']">
+                <header class="veh-doc-card-head">
+                  <span class="veh-doc-icon">{{ iconLabelReq(doc.codigo) }}</span>
+                  <div class="veh-doc-card-titles">
+                    <h3>{{ doc.nombre }}</h3>
+                    @if (doc.descripcion) {
+                      <p>{{ doc.descripcion }}</p>
+                    }
+                  </div>
+                  @if (!doc.controlaVencimiento) {
+                    <span class="veh-badge veh-badge--muted">Sin vencimiento</span>
+                  }
+                  @if (doc.subido && !doc.vencido && !doc.vencePronto && !doc.faltaFechaVence) {
+                    <span class="veh-badge veh-badge--ok">Registrado</span>
+                  }
+                  @if (!doc.subido) {
+                    <span class="veh-badge veh-badge--warn">Pendiente</span>
+                  }
+                  @if (doc.vencido) {
+                    <span class="veh-badge veh-badge--err">Vencido</span>
+                  }
+                  @if (doc.subido && doc.faltaFechaVence && !doc.vencido && doc.controlaVencimiento) {
+                    <span class="veh-badge veh-badge--warn">Falta vencimiento</span>
+                  }
+                  @if (doc.subido && doc.vencePronto && !doc.vencido && !doc.faltaFechaVence) {
+                    <span class="veh-badge veh-badge--warn">Por vencer</span>
+                  }
+                </header>
+                @if (doc.subido) {
+                  <div class="veh-doc-meta">
+                    @if (doc.numero) { <span>Nº {{ doc.numero }}</span> }
+                    @if (doc.fechaExp) { <span>Exp. {{ doc.fechaExp | date:'dd/MM/yyyy' }}</span> }
+                    @if (doc.fechaVence) { <span>Vence {{ doc.fechaVence | date:'dd/MM/yyyy' }}</span> }
+                    @if (doc.controlaVencimiento) {
+                      <span>Aviso {{ doc.diasAvisoVencimiento || diasAvisoGlobal() }} días antes</span>
+                    }
+                  </div>
+                } @else if (doc.controlaVencimiento) {
+                  <div class="veh-doc-meta">
+                    <span>Requiere expedición y vencimiento al registrar</span>
+                  </div>
+                } @else {
+                  <div class="veh-doc-meta">
+                    <span>No requiere fecha de vencimiento</span>
+                  </div>
+                }
+                <div class="veh-doc-card-actions">
+                  <button type="button" class="primary mini" (click)="registrarRequisito(doc)">
+                    {{ doc.subido ? 'Editar registro' : 'Registrar' }}
+                  </button>
+                  <button type="button" class="ghost mini" (click)="abrirDocRequerido(doc)" [disabled]="!doc.urlArchivo">
+                    Ver archivo
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="veh-docs-list-section">
+        <header class="veh-docs-list-head">
+          <h2>Registros cargados</h2>
+          <button type="button" class="ghost" (click)="abrirDocNuevo()">+ Agregar</button>
+        </header>
+
+        @if (documentos().length) {
+          <div class="veh-table-wrap">
+            <table class="veh-table">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Número</th>
+                  <th>Expedición</th>
+                  <th>Vence</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of documentos(); track d._id) {
+                  <tr [class.veh-row-selected]="docEdit()?._id === d._id" [ngClass]="docEstadoClass(d)">
+                    <td>{{ d.documento }}</td>
+                    <td>{{ d.numero || '—' }}</td>
+                    <td>{{ d.fechaExp ? (d.fechaExp | date:'dd/MM/yyyy') : '—' }}</td>
+                    <td>{{ d.fechaVence ? (d.fechaVence | date:'dd/MM/yyyy') : '—' }}</td>
+                    <td class="veh-row-actions">
+                      <button type="button" class="ghost sm" (click)="editarDoc(d)">Editar</button>
+                      <button type="button" class="ghost sm danger" (click)="eliminarDoc(d)">×</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="veh-empty-docs">Sin documentos registrados.</p>
+        }
+      </section>
+
+      <argo-form-modal
+        [open]="docModalOpen()"
+        [title]="docEdit() ? 'Editar documento' : 'Nuevo documento'"
+        [wide]="true"
+        (closed)="cerrarDocModal()">
+        <div class="veh-doc-modal argo-form-shell">
+          <argo-catalogo-enum-buscar
+            label="Tipo de documento"
+            placeholder="Escriba tipo (ej. SOAT, licencia tránsito)…"
+            [textoInicial]="docForm().documento || ''"
+            [remoto]="false"
+            [minLength]="1"
+            [opcionesLocales]="opcionesTipoDocumento()"
+            (seleccionado)="onTipoDocPick($event)" />
+          <label class="veh-field">
+            <span class="veh-label">Descripción</span>
+            <input type="text" [ngModel]="docForm().documento" (ngModelChange)="patchDoc('documento', $event)" />
+          </label>
+          <label class="veh-field">
+            <span class="veh-label">Número</span>
+            <input type="text" [ngModel]="docForm().numero" (ngModelChange)="patchDoc('numero', $event)" />
+          </label>
+          @if (docControlaVencimiento()) {
+            <div class="veh-grid veh-grid--2">
+              <label class="veh-field">
+                <span class="veh-label">Expedición *</span>
+                <argo-date-input [ngModel]="docForm().fechaExp" (ngModelChange)="patchDoc('fechaExp', $event)" ></argo-date-input>
+              </label>
+              <label class="veh-field">
+                <span class="veh-label">Vencimiento *</span>
+                <argo-date-input [ngModel]="docForm().fechaVence" (ngModelChange)="patchDoc('fechaVence', $event)" ></argo-date-input>
+              </label>
+            </div>
+          }
+          @if (!docControlaVencimiento()) {
+            <p class="veh-hint">Este tipo de documento no controla vencimiento. Solo registre número y archivo si aplica.</p>
+          } @else {
+            <p class="veh-hint">La alerta aparece {{ docReqActivo()?.diasAvisoVencimiento || diasAvisoGlobal() }} días antes del vencimiento.</p>
+          }
+          <label class="veh-field">
+            <span class="veh-label">Archivo escaneado</span>
+            <input type="file" accept="image/*,.pdf" (change)="onDocArchivo($event)" />
+          </label>
+          @if (docForm().urlArchivo; as u) {
+            <a class="veh-doc-link" [href]="fotoUrl(u)" target="_blank" rel="noopener">Ver archivo actual</a>
+          }
+        </div>
+        <div modal-actions>
+          <button type="button" class="ghost" (click)="cerrarDocModal()">Cancelar</button>
+          <button type="button" class="primary" [disabled]="docSaving()" (click)="guardarDocumento()">
+            {{ docSaving() ? 'Guardando…' : 'Guardar documento' }}
+          </button>
+        </div>
+      </argo-form-modal>
+    </div>
+  }
+
+  @if (!loading() && tab() === 'inspeccion' && puedeDocumentos() && vehiculoId(); as vid) {
+    <div class="veh-panel card veh-insp-panel">
+      <argo-vehiculo-inspeccion-panel [vehiculoId]="vid" [abrirFormularioHoy]="abrirInspeccionHoy()" />
+    </div>
+  }
+</section>

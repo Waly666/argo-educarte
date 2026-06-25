@@ -1,0 +1,67 @@
+@use './jornadas-ui.scss';
+@use './jornadas-shared' as *;
+
+.instructor-page {
+  .row {
+    overflow: visible;
+  }
+
+  .col-3,
+  .col-5 {
+    position: relative;
+    z-index: 0;
+
+    &:has(argo-catalogo-enum-buscar.dropdown-open) {
+      z-index: 5001;
+    }
+  }
+
+  .hint-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    align-items: center;
+  }
+
+  .chips-empty {
+    margin: 0;
+    width: 100%;
+  }
+
+  .chip .cap {
+    vertical-align: middle;
+  }
+
+  .clase-horas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .clase-ops {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .asis {
+    align-items: flex-end;
+    margin-top: 1rem;
+  }
+
+  .progreso-preview {
+    font-size: 0.95rem;
+    margin: 0.35rem 0 0.75rem;
+  }
+}

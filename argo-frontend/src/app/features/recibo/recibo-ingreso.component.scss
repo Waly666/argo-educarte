@@ -1,0 +1,113 @@
+.recibo-page {
+  min-height: 100vh;
+  background: #e8eef5;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  justify-content: center;
+}
+
+.loading, .err {
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.err { color: #ffd6d6; }
+
+/* Tipo validadora ~80mm */
+.ticket {
+  width: 72mm;
+  max-width: 72mm;
+  min-width: 72mm;
+  background: #fff;
+  color: #000;
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 6mm 4mm;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.center { text-align: center; }
+.empresa-block { margin-bottom: 4px; }
+.empresa { font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+.dato { font-size: 10px; line-height: 1.35; color: #111; }
+.titulo-block { margin: 4px 0; }
+.titulo { font-weight: 700; font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase; }
+.slogan { font-size: 10px; font-style: italic; margin-top: 3px; color: #222; }
+.sub { font-size: 10px; color: #222; }
+.sep { margin: 4px 0; font-size: 10px; overflow: hidden; }
+
+.detalle {
+  width: 100%;
+  border-collapse: collapse;
+  td {
+    vertical-align: top;
+    padding: 2px 0;
+    &:first-child { width: 42%; font-weight: 700; }
+    &:last-child { width: 58%; text-align: right; word-break: break-word; }
+  }
+  .total-row td {
+    font-size: 12px;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+}
+
+.qr {
+  margin: 8px 0;
+  img { display: inline-block; }
+}
+
+.pie {
+  font-size: 9px;
+  color: #333;
+  margin-top: 6px;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 3mm;
+  }
+.firma-block {
+  margin-top: 12px;
+  font-size: 10px;
+  text-align: center;
+  .nota-legal {
+    color: #444;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .linea-firma {
+    border-top: 1px solid #000;
+    margin: 24px 12px 6px;
+  }
+  p {
+    margin: 2px 0;
+  }
+}
+
+.recibo-page {
+    background: #fff;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .ticket {
+    box-shadow: none;
+    width: 72mm;
+    max-width: 72mm;
+  }
+}

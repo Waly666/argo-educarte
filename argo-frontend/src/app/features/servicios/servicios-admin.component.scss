@@ -1,0 +1,81 @@
+@use './servicios-shared' as *;
+
+.modal-anchor {
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.col-2 { flex: 0 0 calc(16% - 10px); min-width: 90px; }
+.col-3 { flex: 0 0 calc(25% - 10px); min-width: 120px; }
+.col-6 { flex: 1 1 300px; min-width: 200px; }
+
+.modal-form label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+.modal-form {
+  .row {
+    overflow: visible;
+  }
+
+  .col-3,
+  .col-6 {
+    position: relative;
+    z-index: 0;
+  }
+
+  .col-3:has(argo-catalogo-enum-buscar.dropdown-open),
+  .col-6:has(argo-catalogo-enum-buscar.dropdown-open) {
+    z-index: 5001;
+  }
+}
+
+.audit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(6, 16, 41, 0.45);
+  border: 1px solid rgba(45, 212, 191, 0.14);
+  border-radius: var(--radius);
+
+  h4 {
+    grid-column: 1 / -1;
+    margin: 0 0 6px;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+  }
+
+  span {
+    color: var(--text-soft);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+}
+
+input.readonly {
+  opacity: 0.85;
+  cursor: default;
+}

@@ -1,0 +1,239 @@
+.inf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1100px;
+  padding: 1.1rem 1.25rem 1.5rem;
+}
+
+.inf-head {
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.28rem;
+    background: linear-gradient(90deg, #a5f3fc 0%, #c4b5fd 50%, #fbcfe8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  p {
+    margin: 0;
+    max-width: 42rem;
+    color: var(--text-soft);
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+}
+
+.inf-hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+
+.inf-msg {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+
+  &--err {
+    color: #fecaca;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+}
+
+.inf-back {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: #7dd3fc;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.inf-panel {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.65rem;
+  background: rgba(15, 23, 42, 0.28);
+  overflow: visible;
+  position: relative;
+
+  &--filtros {
+    z-index: 2;
+  }
+
+  &--resultado {
+    z-index: 1;
+  }
+
+  &__head {
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+
+    h2 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    p {
+      margin: 0.2rem 0 0;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    &--row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.65rem;
+    }
+  }
+}
+
+.inf-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+  padding: 0.85rem 0.85rem 0.5rem;
+  align-items: end;
+  overflow: visible;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  > span {
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    font-weight: 500;
+  }
+
+  input[type='text'],
+  input[type='date'] {
+    padding: 0.48rem 0.55rem;
+    border-radius: 0.45rem;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(2, 6, 23, 0.45);
+    color: var(--text);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  &--wide {
+    @media (min-width: 721px) {
+      grid-column: span 2;
+    }
+  }
+
+  &--combo {
+    position: relative;
+    z-index: 0;
+    min-width: 0;
+
+    &:has(argo-catalogo-enum-buscar.dropdown-open) {
+      z-index: 5001;
+    }
+
+    ::ng-deep argo-catalogo-enum-buscar {
+      display: block;
+      width: 100%;
+
+      label {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 500;
+        color: var(--text-soft);
+      }
+
+      .enum-buscar-host input {
+        color: var(--text);
+        background: rgba(2, 6, 23, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 0.45rem;
+        padding: 0.48rem 0.55rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .input-wrap.combo input {
+        padding-right: 2.1rem;
+      }
+    }
+  }
+}
+
+.inf-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  padding: 0.35rem 0;
+  color: var(--text);
+
+  &--full {
+    @media (min-width: 721px) {
+      grid-column: span 2;
+    }
+  }
+}
+
+.inf-acciones {
+  padding: 0.5rem 0.85rem 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+
+  &--inline {
+    padding: 0;
+  }
+}
+
+.inf-table-wrap {
+  overflow: auto;
+  max-height: min(62vh, 520px);
+}
+
+.inf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+
+  th,
+  td {
+    padding: 0.4rem 0.55rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    text-align: left;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: rgba(15, 23, 42, 0.95);
+    z-index: 1;
+    font-weight: 600;
+  }
+
+  td.num,
+  th.num {
+    text-align: right;
+  }
+
+  tbody tr:hover {
+    background: rgba(56, 189, 248, 0.06);
+  }
+}

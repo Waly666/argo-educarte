@@ -1,0 +1,118 @@
+<div class="argo-date-field" [class.open]="open" [class.disabled]="disabled">
+  @if (label) {
+    <label [attr.for]="inputId || null" class="argo-date-label">{{ label }}</label>
+  }
+
+  <div class="argo-date-control">
+    <input
+      #textInput
+      class="argo-date-text mono"
+      type="text"
+      [id]="inputId || null"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [ngModel]="displayText"
+      (ngModelChange)="onTextInput($event)"
+      (blur)="onTextBlur()"
+      (keydown.enter)="onTextEnter($event)"
+      autocomplete="off"
+      inputmode="numeric" />
+
+    <button
+      type="button"
+      class="argo-date-trigger"
+      [disabled]="disabled"
+      (click)="toggleOpen()"
+      [attr.aria-expanded]="open"
+      aria-label="Abrir calendario"
+      title="Calendario">
+      <span class="argo-date-trigger-ic" aria-hidden="true"></span>
+    </button>
+
+    @if (open) {
+      <div class="argo-date-panel" role="dialog" aria-label="Selector de fecha">
+        <header class="argo-date-panel-head">
+          <button type="button" class="nav" (click)="goPrev()" aria-label="Anterior">‹</button>
+          <div class="title-wrap">
+            @if (view === 'day') {
+              <button type="button" class="title-btn" (click)="showMonthView()">
+                {{ mesesCorto[panelMonth] }}
+              </button>
+              <button type="button" class="title-btn" (click)="showYearView()">
+                {{ panelYear }}
+              </button>
+            } @else if (view === 'month') {
+              <button type="button" class="title-btn" (click)="showYearView()">
+                {{ panelYear }}
+              </button>
+            } @else {
+              <span class="title-static">{{ panelTitle }}</span>
+            }
+          </div>
+          <button type="button" class="nav" (click)="goNext()" aria-label="Siguiente">›</button>
+        </header>
+
+        @if (view === 'year') {
+          <div class="argo-date-grid argo-date-grid--years" role="listbox">
+            @for (y of yearCells; track y) {
+              <button
+                type="button"
+                class="cell year"
+                role="option"
+                [class.selected]="isYearSelected(y)"
+                [class.today]="isYearCurrent(y)"
+                (click)="pickYear(y)">
+                {{ y }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (view === 'month') {
+          <div class="argo-date-grid argo-date-grid--months" role="listbox">
+            @for (m of mesesCorto; track m; let i = $index) {
+              <button
+                type="button"
+                class="cell month"
+                role="option"
+                [class.selected]="isMonthSelected(i)"
+                (click)="pickMonth(i)">
+                {{ m }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (view === 'day') {
+          <div class="argo-date-weekdays">
+            @for (d of diasCorto; track d) {
+              <span class="wd">{{ d }}</span>
+            }
+          </div>
+          <div class="argo-date-days">
+            @for (cell of monthDayCells; track cell.key) {
+              @if (cell.day === null) {
+                <span class="cell empty" aria-hidden="true"></span>
+              } @else {
+                <button
+                  type="button"
+                  class="cell day"
+                  [class.selected]="isDaySelected(cell.day)"
+                  [class.today]="isToday(cell.day)"
+                  [disabled]="isDayDisabled(cell.day)"
+                  (click)="pickDay(cell.day)">
+                  {{ cell.day }}
+                </button>
+              }
+            }
+          </div>
+        }
+
+        <footer class="argo-date-panel-foot">
+          <button type="button" class="foot-btn" (click)="clear()">Limpiar</button>
+          <button type="button" class="foot-btn primary" (click)="pickToday()">Hoy</button>
+        </footer>
+      </div>
+    }
+  </div>
+</div>

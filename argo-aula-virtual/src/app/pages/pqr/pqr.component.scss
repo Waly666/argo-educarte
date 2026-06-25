@@ -1,0 +1,94 @@
+:host { display: block; }
+
+/* ── Hero ── */
+.pqr-page__hero {
+  background: linear-gradient(135deg, #78350f 0%, #92400e 40%, #b45309 100%);
+  color: #fff;
+  padding: 3.5rem 0 2.5rem;
+  text-align: center;
+}
+
+.pqr-page__kicker {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fde68a;
+  margin: 0 0 0.6rem;
+}
+
+.pqr-page__title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  margin: 0 0 0.75rem;
+  line-height: 1.2;
+}
+
+.pqr-page__sub {
+  max-width: 560px;
+  margin: 0 auto;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.87);
+  line-height: 1.6;
+}
+
+/* ── Body ── */
+.pqr-page__body {
+  padding-top: 2.5rem;
+  padding-bottom: 3rem;
+}
+
+/* ── Tarjetas de tipo ── */
+.pqr-tipos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pqr-tipo {
+  border-radius: 12px;
+  padding: 1.1rem 1rem 0.9rem;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.82rem;
+    color: #475569;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  &--peticion   { background: #eff6ff; border-color: #bfdbfe; h3 { color: #1e40af; } }
+  &--queja      { background: #fefce8; border-color: #fde047; h3 { color: #92400e; } }
+  &--reclamo    { background: #fff7ed; border-color: #fdba74; h3 { color: #c2410c; } }
+  &--sugerencia { background: #f0fdf4; border-color: #86efac; h3 { color: #166534; } }
+  &--felicitacion { background: #fdf4ff; border-color: #d8b4fe; h3 { color: #7e22ce; } }
+}
+
+/* ── Form ── */
+.pqr-page__form-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Back ── */
+.pqr-page__back {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}

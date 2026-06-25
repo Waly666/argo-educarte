@@ -1,0 +1,140 @@
+<section class="mov-page">
+  <header class="caja-head mov-head">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Cobros e ingresos</p>
+      <h1>Cobros / Ingresos de mi caja</h1>
+      <p class="hint" *ngIf="cajaAbierta() && sesionId()">
+        Sesión #{{ sesionId() }} — solo los cobros registrados en este turno.
+      </p>
+      <p class="hint warn" *ngIf="!cajaAbierta()">Abra su caja en Resumen del día para registrar cobros.</p>
+    </div>
+    <div class="caja-badges mov-actions">
+      <span class="caja-chip caja-chip--emerald" *ngIf="cajaAbierta()">Sesión activa</span>
+      <button type="button" class="ghost sm" (click)="cargar()">Actualizar</button>
+      <button type="button" class="primary sm" (click)="nuevoIngresoCaja()">
+        Ingreso sin alumno
+      </button>
+      <span class="total-badge">{{ total() | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+  </header>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="buscar-alumno panel" *ngIf="cajaAbierta()">
+    <h3>Registrar cobro de alumno</h3>
+    <p class="hint">
+      Busque aquí o abra
+      <a routerLink="/app/cobros-pendientes" class="inline-link">Cobros pendientes</a>
+      para ver servicios con saldo, historial y cobro rápido. Para ingresos sin alumno use «Ingreso sin alumno».
+    </p>
+    <div class="buscar-row">
+      <input
+        type="search"
+        placeholder="Buscar alumno por nombre o documento…"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        (keyup.enter)="buscarAlumno()"
+      />
+      <button type="button" class="primary sm" (click)="buscarAlumno()">Buscar</button>
+    </div>
+    <ul class="resultados" *ngIf="resultados().length">
+      <li *ngFor="let a of resultados()">
+        <button type="button" class="ghost link-row" (click)="cobrarAlumno(a)">
+          {{ a.nombres }} {{ a.apellidos }} · {{ a.numDoc }}
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="table-wrap panel" *ngIf="!loading(); else cargando">
+    <table class="tabla-mov">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Recibo</th>
+          <th>Alumno / Pagador</th>
+          <th>Tipo ingreso</th>
+          <th>Pago</th>
+          <th>Concepto</th>
+          <th>Forma pago</th>
+          <th>Cuenta / Ref.</th>
+          <th>Valor</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of items()">
+          <td>
+            <span [ngClass]="capFecha(i.fecha)">{{ i.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capRecibo(i.numRecibo)">{{ i.numRecibo || '—' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="i.esIngresoCaja ? capBeneficiario(pagadorLabel(i)) : capDoc(i.numDoc)">
+              {{ pagadorLabel(i) }}
+            </span>
+          </td>
+          <td>
+            <span [ngClass]="capTipoIngreso(tipoIngresoLabel(i))">{{ tipoIngresoLabel(i) }}</span>
+          </td>
+          <td>
+            <span *ngIf="!i.esIngresoCaja && i.tipoAbonoDescr" [ngClass]="capTipoAbono(i.tipoAbono, i.tipoAbonoDescr)">
+              {{ i.tipoAbonoDescr }}
+            </span>
+            <span *ngIf="i.esIngresoCaja || !i.tipoAbonoDescr" class="dim">—</span>
+          </td>
+          <td>
+            <span [ngClass]="capConceptoCaja(conceptoLabel(i))">{{ conceptoLabel(i) }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capFormaPago(formaPagoLabel(i))">{{ formaPagoLabel(i) }}</span>
+          </td>
+          <td>
+            <div class="cap-stack" *ngIf="muestraRefEnCuenta(i) || (esPagoNoEfectivo(i) && (i.cuentaBancariaDescr || i.cuentaRecibe)); else cuentaSolo">
+              <span [ngClass]="capCuentaBancaria(i.cuentaBancariaDescr || i.cuentaRecibe)">{{ i.cuentaBancariaDescr || i.cuentaRecibe || '—' }}</span>
+              <span *ngIf="muestraRefEnCuenta(i)" [ngClass]="capRefComprobante(refComprobante(i))">
+                Ref. {{ refComprobante(i) }}
+              </span>
+            </div>
+            <ng-template #cuentaSolo>
+              <span [ngClass]="capCuentaBancaria(i.cuentaBancariaDescr || i.cuentaRecibe)">{{ i.cuentaBancariaDescr || i.cuentaRecibe || '—' }}</span>
+            </ng-template>
+          </td>
+          <td class="num">
+            <span [ngClass]="capValorIngreso()">{{ i.valor | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+          </td>
+          <td class="actions-cell">
+            <button type="button" class="ghost sm" (click)="verRecibo(i._id)">Recibo</button>
+            <button type="button" class="danger sm" *ngIf="cajaAbierta()" (click)="reversar(i)">Reversar</button>
+          </td>
+        </tr>
+        <tr *ngIf="!items().length">
+          <td colspan="10" class="empty">Sin ingresos en esta sesión de caja</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #cargando><p class="loading">Cargando…</p></ng-template>
+
+  <div class="modal-backdrop auth-anular-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarReversarSupervisor()">
+    <div class="modal card auth-anular-modal" (click)="$event.stopPropagation()">
+      <h3>Autorización para anular ingreso</h3>
+      <p class="hint" *ngIf="ingresoPendienteAnular() as pi">
+        Comprobante {{ pi.numRecibo || '—' }} — ingrese credenciales de un administrador.
+      </p>
+      <label>
+        Usuario administrador
+        <input type="text" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost mini" (click)="cancelarReversarSupervisor()">Cancelar</button>
+        <button type="button" class="danger mini" (click)="confirmarReversarConSupervisor()">Autorizar y reversar</button>
+      </div>
+    </div>
+  </div>
+</section>

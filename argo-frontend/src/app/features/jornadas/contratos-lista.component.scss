@@ -1,0 +1,169 @@
+@use './jornada-live-estado.scss';
+@use './jornadas-shared' as *;
+
+.contratos-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+
+    .title {
+      flex: 1;
+      min-width: 0;
+
+      h1 {
+        margin: 0 0 4px;
+      }
+
+      .hint {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: 0.88rem;
+        line-height: 1.45;
+        max-width: 56rem;
+      }
+    }
+  }
+
+  .live-badge,
+  .jor-live-badge {
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 0.9rem;
+
+    &.ok {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.32);
+      color: #a7f3d0;
+    }
+
+    &.error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.32);
+      color: #fecaca;
+    }
+
+    .close {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line-soft);
+    background: rgba(6, 16, 41, 0.5);
+
+    .search-box {
+      flex: 1 1 280px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 16, 41, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px 10px;
+
+      .ic {
+        color: var(--accent-2);
+      }
+
+      input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 8px 4px;
+      }
+    }
+
+    .filtro-estado {
+      display: flex;
+      flex-direction: column;
+      min-width: 11rem;
+
+      label {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        margin-bottom: 2px;
+      }
+    }
+
+    .count {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+    }
+  }
+
+  .content-wrap {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .loading,
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-soft);
+  }
+
+  .contratos-tabla {
+    width: 100%;
+
+    .contrato-row {
+      cursor: pointer;
+      transition: background 0.12s;
+
+      &:hover {
+        background: rgba(78, 163, 255, 0.08);
+      }
+
+      &.ejecutado {
+        opacity: 0.78;
+
+        td {
+          color: var(--text-dim);
+        }
+      }
+    }
+
+    .col-actions {
+      width: 1%;
+      white-space: nowrap;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.35rem;
+      justify-content: flex-end;
+    }
+
+    .jor-inline-cap {
+      margin-left: 0.4rem;
+    }
+  }
+}

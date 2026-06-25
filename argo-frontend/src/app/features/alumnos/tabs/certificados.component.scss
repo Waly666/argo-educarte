@@ -1,0 +1,86 @@
+.certificados { display: flex; flex-direction: column; gap: 14px; }
+
+.hint { color: var(--text-dim); font-size: .85rem; margin: 0 0 8px; }
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.col-4  { grid-column: span 4; }
+.col-6  { grid-column: span 6; }
+.col-12 { grid-column: span 12; }
+
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.r { text-align: right; }
+.empty { text-align: center; color: var(--text-soft); padding: 22px 8px; }
+.loading { color: var(--text-soft); padding: 8px 4px; }
+.mini { padding: 4px 10px; font-size: .78rem; margin-right: 4px; }
+
+.msg {
+  padding: 8px 10px;
+  background: rgba(78, 163, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: .88rem;
+}
+
+.elegible-info {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+  strong { color: var(--text); }
+}
+
+.sel td { background: rgba(78, 163, 255, 0.1) !important; }
+table.argo tbody tr { cursor: pointer; }
+
+.empty-card { text-align: center; padding: 40px 20px; }
+.hint-inline { color: var(--text-soft); font-size: 0.85rem; font-weight: 400; }
+
+.hint.ok-hint { color: var(--accent-2); margin-top: 6px; }
+.mono { font-family: Consolas, monospace; font-size: 0.82rem; }
+.hint { color: var(--text-dim); font-size: 0.85rem; margin: 4px 0 0; }
+.col-12 { grid-column: span 12; }
+.empty-card p { color: var(--text-dim); }
+
+.edit-card {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(78, 163, 255, 0.04);
+  h3 { margin: 0 0 6px; font-size: 1rem; }
+}
+
+.actions-cell { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .col-4, .col-6 { grid-column: span 12; }
+}
+
+.msg.ok {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #bbf7d0;
+}
+
+.msg.err {
+  background: rgba(248, 114, 114, 0.1);
+  border-color: rgba(248, 114, 114, 0.35);
+  color: #ffd6d6;
+}
+
+.warn-docs {
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 8px;
+
+  ul {
+    margin: 8px 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+}

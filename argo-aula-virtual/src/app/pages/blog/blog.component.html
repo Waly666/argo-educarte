@@ -1,0 +1,49 @@
+<div class="blog-page">
+  <section class="blog-hero">
+    <div class="container blog-hero__inner">
+      <p class="blog-kicker">{{ blog().kicker }}</p>
+      <h1>{{ blog().titulo }}</h1>
+      <p class="blog-hero__lead">{{ blog().lead }}</p>
+    </div>
+  </section>
+
+  <section class="blog-list-section">
+    <div class="container">
+      @if (postsLoading()) {
+        <p class="blog-muted blog-status">Cargando artículos…</p>
+      } @else if (postsError()) {
+        <p class="blog-error blog-status">{{ postsError() }}</p>
+      } @else if (!posts().length) {
+        <div class="blog-empty">
+          <h2>{{ blog().emptyTitulo }}</h2>
+          <p>{{ blog().emptyTexto }}</p>
+        </div>
+      } @else {
+        <div class="blog-grid">
+          @for (post of posts(); track post._id) {
+            <article class="blog-card">
+              @if (cover(post); as img) {
+                <a class="blog-card__cover" [routerLink]="['/blog', post.slug]">
+                  <img [src]="img" [alt]="post.titulo" loading="lazy" />
+                </a>
+              }
+              <div class="blog-card__body">
+                @if (fecha(post)) {
+                  <time class="blog-card__date">{{ fecha(post) }}</time>
+                }
+                <h2>
+                  <a [routerLink]="['/blog', post.slug]">{{ post.titulo }}</a>
+                </h2>
+                @if (excerpt(post)) {
+                  <p class="blog-card__excerpt">{{ excerpt(post) }}</p>
+                }
+                <p class="blog-card__author">Por {{ post.autorNombre }}</p>
+                <a class="blog-card__link" [routerLink]="['/blog', post.slug]">Leer artículo →</a>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>

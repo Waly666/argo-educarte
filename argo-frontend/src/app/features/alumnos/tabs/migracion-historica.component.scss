@@ -1,0 +1,779 @@
+.mig-hist {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.intro {
+  margin: 0;
+  color: var(--text-muted, #64748b);
+  font-size: 0.92rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  padding: 1rem 1.1rem;
+}
+
+.card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.col-6 {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 140px;
+}
+
+.col-fecha:has(argo-date-input.dropdown-open) {
+  position: relative;
+  z-index: 5000;
+}
+
+.col-12 {
+  flex: 1 1 100%;
+}
+
+label {
+  display: block;
+  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
+}
+
+input,
+select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.warn {
+  border-left: 4px solid #f59e0b;
+  padding: 0.75rem 1rem;
+}
+
+.msg {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+}
+
+.msg.ok {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.msg.err {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tbl th,
+.tbl td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.tbl .r {
+  text-align: right;
+}
+
+.primary {
+  margin-top: 0.25rem;
+}
+
+.total-sync-hint {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+.opt {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* Cuotas por semestre (migración) */
+.cuotas-semestre-panel,
+.pago-multicuota-panel {
+  margin: 0.75rem 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.07), rgba(6, 78, 59, 0.06));
+}
+
+.cuotas-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+
+  input {
+    margin-top: 3px;
+  }
+}
+
+.cuotas-check-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.9rem;
+    color: #a7f3d0;
+  }
+
+  small {
+    font-size: 0.76rem;
+    color: var(--text-soft, #94a3b8);
+  }
+}
+
+.cuotas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 8px;
+}
+
+.cuotas-formato-hint {
+  margin: 0 0 8px !important;
+}
+
+.cuotas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cuota-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  background: rgba(6, 24, 20, 0.55);
+  box-shadow: inset 0 1px 0 rgba(52, 211, 153, 0.06);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &--invalid {
+    border-color: rgba(248, 113, 113, 0.55);
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.15);
+    background: rgba(40, 12, 12, 0.45);
+  }
+}
+
+.cuota-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.cuota-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+
+.cuota-nombre {
+  font-size: 0.72rem;
+  color: var(--text-soft, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 55%;
+}
+
+.cuota-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 6px;
+  align-items: center;
+}
+
+.cuota-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft, #94a3b8);
+  margin: 0;
+}
+
+.cuota-catalogo {
+  font-size: 0.82rem;
+  text-align: right;
+  color: var(--text-dim, #cbd5e1);
+}
+
+.cuota-input {
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text, #e2e8f0);
+}
+
+.cuotas-resumen {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  margin-bottom: 8px;
+}
+
+.cuotas-resumen-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-soft, #94a3b8);
+
+  &--total {
+    span {
+      font-weight: 600;
+      color: var(--text, #e2e8f0);
+    }
+
+    strong {
+      color: #6ee7b7;
+      font-size: 1.05rem;
+    }
+  }
+}
+
+.cuotas-motivo label {
+  display: block;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.cuotas-motivo input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pago-cuotas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.pago-cuota-row {
+  display: grid;
+  grid-template-columns: auto 1fr 120px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  background: rgba(6, 24, 20, 0.45);
+
+  &--invalid {
+    border-color: rgba(248, 113, 113, 0.55);
+    background: rgba(40, 12, 12, 0.4);
+  }
+}
+
+.pago-cuota-check {
+  margin: 0;
+}
+
+.pago-cuota-info {
+  min-width: 0;
+}
+
+.pago-cuota-descr {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pago-cuota-saldo {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.pago-cuota-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text, #e2e8f0);
+
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+.ghost.mini {
+  font-size: 0.78rem;
+  padding: 4px 8px;
+}
+
+.header-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat .label {
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.stat .value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+
+.stat .value.warn {
+  color: var(--warn);
+}
+
+.card-registrar-pago {
+  padding: 1.25rem 1.35rem 1.35rem;
+  overflow: visible;
+
+  &:has(argo-catalogo-enum-buscar.dropdown-open) {
+    z-index: 5000;
+    position: relative;
+  }
+}
+
+.liquidar-todo-wrap {
+  margin: -0.25rem 0 1.25rem;
+}
+
+.liquidar-todo-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, rgba(251, 189, 35, 0.12), rgba(251, 189, 35, 0.06));
+  border: 1.5px solid rgba(251, 189, 35, 0.45);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+  color: var(--text);
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(251, 189, 35, 0.2), rgba(251, 189, 35, 0.1));
+    border-color: rgba(251, 189, 35, 0.75);
+    box-shadow: 0 0 18px rgba(251, 189, 35, 0.15);
+  }
+}
+
+.ltb-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.ltb-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ltb-titulo {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--warn);
+}
+
+.ltb-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.ltb-arrow {
+  font-size: 1.2rem;
+  color: var(--warn);
+  opacity: 0.7;
+}
+
+.registro-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.25rem;
+  }
+}
+
+.registro-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  max-width: 42rem;
+  line-height: 1.45;
+}
+
+.registro-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.85fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.registro-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.registro-pago-aside {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: rgba(78, 163, 255, 0.04);
+  border: 1px solid var(--line, rgba(148, 163, 184, 0.25));
+
+  &:has(argo-date-input.dropdown-open) {
+    position: relative;
+    z-index: 5000;
+  }
+}
+
+.bloque-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.paso-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--accent-2, #2563eb);
+  color: #fff;
+}
+
+.saldo-servicios-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.saldo-servicios-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: 100%;
+}
+
+.items-pago-vacio {
+  padding: 1.5rem 1.25rem;
+  border: 1px dashed var(--line, #cbd5e1);
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.vacio-titulo {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.vacio-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+.items-pago-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-pago-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px) auto;
+  gap: 12px 16px;
+  align-items: start;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--line, #e2e8f0);
+  background: rgba(6, 24, 20, 0.35);
+
+  &--invalid {
+    border-color: rgba(248, 113, 113, 0.55);
+  }
+}
+
+.item-pago-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.item-pago-nombre {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.item-pago-saldo {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+.item-pago-valor-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.item-pago-valor-input {
+  flex: 1;
+  text-align: right;
+  font-weight: 600;
+}
+
+.item-pago-parcial {
+  font-size: 0.72rem;
+  color: var(--warn);
+
+  &.ok {
+    color: var(--ok, #059669);
+  }
+}
+
+.campo-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.registro-resumen {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.resumen-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+
+  &.resumen-total strong {
+    font-size: 1.35rem;
+    color: var(--accent-2, #2563eb);
+  }
+}
+
+.resumen-ayuda {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+.btn-registrar {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.cuotas-matriculas-card {
+  border: 1px solid rgba(52, 211, 153, 0.22);
+}
+
+.cuotas-matriculas-head h2 {
+  margin: 0 0 4px;
+}
+
+.cuotas-matricula-item {
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.cuotas-matricula-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(6, 24, 20, 0.35);
+}
+
+.cuotas-mat-meta {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+.cuotas-editor {
+  padding: 14px;
+  border-top: 1px solid rgba(52, 211, 153, 0.15);
+}
+
+.cuotas-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cuota-nombre--full {
+  max-width: none;
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+}
+
+.cuota-estado {
+  font-size: 0.72rem;
+  color: #6ee7b7;
+}
+
+.cuota-saldo-hint {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.saldo-pendiente-cell {
+  font-weight: 600;
+}
+
+.virtual-liq-banner {
+  position: relative;
+  margin: 0 0 12px;
+  padding: 12px 14px 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  background: rgba(99, 102, 241, 0.12);
+  overflow: hidden;
+
+  strong {
+    display: block;
+    color: #c7d2fe;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--text-dim);
+  }
+}
+
+.virtual-liq-banner-pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 0% 50%, rgba(129, 140, 248, 0.22), transparent 55%);
+  animation: argo-virtual-saldo-blink 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.loading {
+  color: var(--text-soft);
+  padding: 8px 4px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 22px 8px;
+}
+
+.r {
+  text-align: right;
+}
+
+@media (max-width: 980px) {
+  .header-row {
+    grid-template-columns: 1fr;
+  }
+
+  .registro-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .item-pago-fila {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,237 @@
+/* Servicios — tema unificado */
+
+.servicios-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: none;
+  width: 100%;
+  padding: 1.1rem 1.25rem 1.5rem;
+}
+
+/* —— Cabecera —— */
+.srv-head,
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.28rem;
+    background: linear-gradient(90deg, #67e8f9 0%, #5eead4 48%, #fde68a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.srv-head-main {
+  min-width: 0;
+}
+
+.srv-badges,
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.breadcrumb {
+  margin: 0 0 0.35rem;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+
+  a {
+    color: #67e8f9;
+    text-decoration: none;
+
+    &:hover {
+      color: #fde68a;
+    }
+  }
+}
+
+.srv-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  &--cyan {
+    color: #67e8f9;
+    background: rgba(34, 211, 238, 0.12);
+    border-color: rgba(34, 211, 238, 0.35);
+  }
+
+  &--teal {
+    color: #5eead4;
+    background: rgba(45, 212, 191, 0.14);
+    border-color: rgba(45, 212, 191, 0.35);
+  }
+
+  &--purple {
+    color: #c4b5fd;
+    background: rgba(139, 92, 246, 0.14);
+    border-color: rgba(139, 92, 246, 0.35);
+  }
+
+  &--amber {
+    color: #fde68a;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+}
+
+.hint,
+.hint-inline {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.hint-inline {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+}
+
+/* —— Mensajes —— */
+.srv-msg {
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  color: #5eead4;
+}
+
+.srv-msg--err {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.22);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* —— Toolbar —— */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 212, 191, 0.16);
+  background: rgba(3, 10, 28, 0.35);
+
+  input[type='search'] {
+    flex: 1 1 12rem;
+    min-width: 10rem;
+    max-width: none;
+  }
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* —— Formulario modal —— */
+.modal-form.argo-form-shell {
+  border: 1px solid rgba(45, 212, 191, 0.16);
+  border-left: 3px solid #14b8a6;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(8, 22, 38, 0.68), rgba(5, 12, 28, 0.5));
+  padding: 0.85rem;
+  overflow: visible;
+}
+
+h3.sec {
+  margin: 0.5rem 0 0.65rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5eead4;
+  background: rgba(45, 212, 191, 0.08);
+  border-left: 3px solid #14b8a6;
+  border-radius: 0 6px 6px 0;
+}
+
+/* —— Tablas —— */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 212, 191, 0.12);
+}
+
+.admin-list-page {
+  table.data-table,
+  table.argo {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+
+    th, td {
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid rgba(45, 212, 191, 0.08);
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr:hover td {
+      background: rgba(45, 212, 191, 0.05);
+    }
+  }
+}
+
+.acciones,
+.actions-cell {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+  min-width: 9rem;
+}
+
+.row-general td {
+  background: rgba(54, 211, 153, 0.04);
+}
+
+.empty,
+.loading {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 1.25rem;
+}
+
+@media (max-width: 520px) {
+  .srv-badges,
+  .head-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

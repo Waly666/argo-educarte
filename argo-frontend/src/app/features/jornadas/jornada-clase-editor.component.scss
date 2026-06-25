@@ -1,0 +1,410 @@
+@use './jornadas-ui.scss';
+
+@keyframes argo-blink-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.editor-host-root {
+  display: contents;
+}
+
+.jornadas-page {
+  .clase-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    .modal-inline-banner {
+      margin: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.28rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    select,
+    input[type='text'] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .hint-compact {
+      margin: 0.25rem 0 0;
+      font-size: 0.78rem;
+      line-height: 1.3;
+    }
+  }
+
+  .clase-modal-datos-grid {
+    display: grid;
+    grid-template-columns:
+      minmax(160px, 2.2fr)
+      minmax(88px, 0.85fr)
+      minmax(88px, 0.75fr)
+      minmax(160px, 2fr)
+      minmax(108px, 0.75fr);
+    gap: 0.55rem 0.75rem;
+    align-items: end;
+  }
+
+  .cm-programa-destacado {
+    width: min(900px, 88%);
+    min-width: min(100%, 640px);
+    margin-top: 0.25rem;
+
+    > label {
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+  }
+
+  .cm-field {
+    min-width: 0;
+    position: relative;
+    z-index: 0;
+
+    &:has(argo-catalogo-enum-buscar.dropdown-open) {
+      z-index: 5001;
+    }
+
+    .instructor-readonly.compact {
+      margin: 0;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(10, 22, 50, 0.55);
+      border: 1px solid rgba(120, 160, 255, 0.18);
+      font-size: 0.88rem;
+    }
+  }
+
+  .cm-matriculados {
+    .clase-matricula-contador.block {
+      width: 100%;
+      justify-content: center;
+      padding: 0.45rem 0.55rem;
+    }
+  }
+
+  .clase-modal-extra-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .cm-panel {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(120, 160, 255, 0.14);
+    background: rgba(10, 22, 50, 0.35);
+  }
+
+  @media (max-width: 1100px) {
+    .clase-modal-datos-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cm-programa-destacado {
+      width: min(100%, 900px);
+      min-width: 0;
+    }
+
+    .clase-modal-extra-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .clase-modal-datos-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .cm-jornada,
+    .cm-instructor {
+      grid-column: 1 / -1;
+    }
+
+    .cm-programa-destacado {
+      width: 100%;
+    }
+  }
+
+  .clase-cronometro {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #7dd3fc;
+    padding: 2px 10px;
+    border-radius: 6px;
+    background: rgba(14, 116, 144, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    animation: argo-blink-soft 1.8s ease-in-out infinite;
+
+    &.final {
+      animation: none;
+      color: #fde68a;
+      border-color: rgba(251, 191, 36, 0.45);
+      background: rgba(120, 80, 10, 0.22);
+    }
+  }
+
+  .fecha-clase-readonly {
+    margin: 0;
+    padding: 0.45rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(10, 22, 50, 0.55);
+    border: 1px solid rgba(120, 160, 255, 0.18);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .hint-warn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    background: rgba(120, 80, 10, 0.22);
+    color: #fde68a;
+  }
+
+  .clase-estado-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: rgba(10, 22, 50, 0.55);
+    border: 1px solid rgba(120, 160, 255, 0.18);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    font-size: 0.88rem;
+
+    .estado-label {
+      font-weight: 600;
+      color: var(--text-muted, #c8d6f5);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.78rem;
+    }
+
+    .hint strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+  }
+
+  .clase-matricula-contador {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.28), rgba(59, 130, 246, 0.18));
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.15);
+    margin-left: auto;
+
+    &.block {
+      margin-left: 0;
+      justify-content: center;
+      min-width: 7.5rem;
+    }
+
+    .contador-num {
+      min-width: 1.5rem;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      color: #e0f2fe;
+    }
+
+    .contador-sub {
+      font-size: 0.76rem;
+      color: #93c5fd;
+      padding-left: 4px;
+      border-left: 1px solid rgba(56, 189, 248, 0.35);
+    }
+  }
+
+  .asis-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .clase-modal-section {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent-2, #7eb8ff);
+  }
+
+  .evidencia-foto-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.35);
+
+    &.compact {
+      padding: 0.5rem;
+      gap: 0.5rem;
+      border: none;
+      background: transparent;
+    }
+  }
+
+  .evidencia-preview {
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .evidencia-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--text);
+
+    input[type='file'] {
+      display: none;
+    }
+
+    span {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      background: rgba(14, 116, 144, 0.2);
+      transition: background 0.12s;
+    }
+
+    &:hover span {
+      background: rgba(14, 116, 144, 0.35);
+    }
+
+    &:has(input:disabled) {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .clase-horario-admin {
+    input[list] {
+      font-family: 'Consolas', 'Courier New', monospace;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  .clase-alumno-buscar {
+    position: relative;
+  }
+
+  .buscar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(6, 16, 41, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px 6px 4px 10px;
+
+    .buscar-ic {
+      color: var(--accent-2);
+      font-size: 0.9rem;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      padding: 8px 4px;
+      flex: 1;
+      box-shadow: none;
+
+      &:focus {
+        box-shadow: none;
+        background: transparent;
+      }
+    }
+  }
+
+  .buscar-dropdown {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(10, 26, 58, 0.98), rgba(6, 16, 41, 0.98));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .buscar-msg {
+    margin: 0;
+    padding: 12px 14px;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+  }
+
+  .buscar-list {
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+
+      &:hover {
+        background: rgba(78, 163, 255, 0.08);
+      }
+    }
+  }
+
+  .buscar-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  .buscar-name {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .buscar-meta {
+    color: var(--text-soft);
+    font-size: 0.78rem;
+  }
+
+  .clase-matricula-list {
+    margin-top: 0.25rem;
+  }
+}

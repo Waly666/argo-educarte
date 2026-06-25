@@ -1,0 +1,79 @@
+<div class="caja-admin-inner">
+  <header class="admin-head">
+    <div>
+      <h2>Cajas abiertas</h2>
+      <p class="hint">
+        Cierre individual de cada cajero (con arqueo en su cuadre). Para el informe consolidado del día use
+        <a routerLink="/app/caja/cierre-general">Cierre general</a>.
+      </p>
+    </div>
+  </header>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <section class="panel">
+    <div class="panel-head-row">
+      <h3 class="panel-title">Sesiones abiertas ({{ cajasAbiertas().length }})</h3>
+      <div class="head-actions" *ngIf="hayCajasAbiertas()">
+        <button type="button" class="ghost sm" (click)="abrirCierreMultiple()">Cierre simultáneo</button>
+      </div>
+    </div>
+    <table class="tabla-cierres">
+      <thead>
+        <tr>
+          <th>Sesión</th>
+          <th>Cajero</th>
+          <th>Ingresos</th>
+          <th>Egresos</th>
+          <th>Esperado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of cajasAbiertas()">
+          <td>#{{ item.sesion.idSesion }}</td>
+          <td>{{ item.sesion.usuario }}</td>
+          <td class="num">{{ item.resumenParcial.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td class="num">{{ item.resumenParcial.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td class="num">{{ item.resumenParcial.efectivoEsperado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>
+            <button type="button" class="ghost sm" (click)="cerrarAjena(item)">Cerrar (admin)</button>
+          </td>
+        </tr>
+        <tr *ngIf="!cajasAbiertas().length">
+          <td colspan="6" class="empty">No hay cajas abiertas</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div class="modal-backdrop no-print" *ngIf="mostrarCierreMultiple()" (click)="mostrarCierreMultiple.set(false)">
+  <div class="modal card" (click)="$event.stopPropagation()">
+    <h2>Cierre simultáneo</h2>
+    <p class="modal-hint">
+      Cada cajero debe cerrar con arqueo desde su cuadre. Use esto solo si un administrador cierra por ellos (indique
+      efectivo contado).
+    </p>
+    <table class="tabla-cierres compact">
+      <thead>
+        <tr><th>Cajero</th><th>Esperado</th><th>Contado</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of cierresPendientes()">
+          <td>{{ p.usuario }} (#{{ p.idSesion }})</td>
+          <td class="num">{{ p.efectivoEsperado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>
+            <input type="number" min="0" [ngModel]="p.efectivoContado" (ngModelChange)="actualizarContado(p.idSesion, $event)" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="modal-actions">
+      <button type="button" class="ghost" (click)="mostrarCierreMultiple.set(false)">Cancelar</button>
+      <button type="button" class="btn-cerrar" [disabled]="loading()" (click)="cerrarTodasLasCajas()">
+        Cerrar {{ cierresPendientes().length }} caja(s)
+      </button>
+    </div>
+  </div>
+</div>

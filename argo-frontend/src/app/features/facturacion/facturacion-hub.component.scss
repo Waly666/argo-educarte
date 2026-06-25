@@ -1,0 +1,120 @@
+.fe-page {
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+.fe-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0 0 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-dim);
+    max-width: 52rem;
+  }
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.kpi-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.kpi-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.kpi-text {
+  font-size: 1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  button {
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+    background: transparent;
+    color: inherit;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+
+    &.active {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  input {
+    flex: 1;
+    min-width: 12rem;
+  }
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actions {
+  text-align: right;
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+}
+
+.truncate {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.center {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.msg.err {
+  color: #fca5a5;
+}
+
+.primary.sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}

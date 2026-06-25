@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-docs-falt-veh"
+  icon="📄"
+  [title]="'Papeles incompletos — vehículos (' + rows().length + ')'"
+  hint="Documentos requeridos sin registrar. Pulse para abrir la ficha del vehículo."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

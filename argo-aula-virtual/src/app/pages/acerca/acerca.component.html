@@ -1,0 +1,93 @@
+<div class="acerca-page">
+  <section class="acerca-hero">
+    <div class="container acerca-hero__inner">
+      <div class="acerca-hero__copy">
+        <p class="acerca-kicker">Instituto técnico y seguridad vial</p>
+        <h1>Acerca de {{ nombreCea() }}</h1>
+        <p class="acerca-hero__lead">
+          Formación, consultoría y campañas de seguridad vial con más de 28 años de experiencia en Colombia.
+        </p>
+      </div>
+      @if (logoUrl(); as logo) {
+        <figure class="acerca-hero__logo">
+          <img [src]="logo" [alt]="nombreCea()" />
+        </figure>
+      }
+    </div>
+  </section>
+
+  <section class="container acerca-body">
+    <div class="acerca-about">
+      <article class="acerca-panel acerca-panel--main">
+        <header class="acerca-panel__head">
+          <p class="acerca-kicker acerca-kicker--light">Quiénes somos</p>
+          <h2>Nuestra institución</h2>
+        </header>
+        <div class="acerca-texto">
+          @for (p of acercaParrafos(); track $index) {
+            <p>{{ p }}</p>
+          }
+        </div>
+        <a routerLink="/cursos" class="btn btn-primary acerca-cta">Ver cursos virtuales</a>
+      </article>
+
+      <aside class="acerca-panel acerca-panel--side" id="contacto">
+        <header class="acerca-panel__head">
+          <p class="acerca-kicker acerca-kicker--light">Contacto</p>
+          <h2>Datos de contacto</h2>
+        </header>
+        <ul class="acerca-contact-list">
+          @if (config()?.direccion) {
+            <li>
+              <span class="acerca-contact-icon" aria-hidden="true">📍</span>
+              <div>
+                <strong>Dirección</strong>
+                <span>{{ config()?.direccion }}@if (config()?.ciudad) {, {{ config()?.ciudad }}}</span>
+              </div>
+            </li>
+          }
+          @if (config()?.telefono) {
+            <li>
+              <span class="acerca-contact-icon" aria-hidden="true">📞</span>
+              <div>
+                <strong>Teléfono</strong>
+                <a [href]="'tel:' + config()?.telefono">{{ config()?.telefono }}</a>
+              </div>
+            </li>
+          }
+          @if (config()?.email) {
+            <li>
+              <span class="acerca-contact-icon" aria-hidden="true">✉️</span>
+              <div>
+                <strong>Correo</strong>
+                <a [href]="'mailto:' + config()?.email">{{ config()?.email }}</a>
+              </div>
+            </li>
+          }
+        </ul>
+        <a routerLink="/fundacion" class="acerca-link">Conocer la fundación →</a>
+      </aside>
+    </div>
+
+    <section class="acerca-valores">
+      <header class="acerca-valores__head">
+        <p class="acerca-kicker acerca-kicker--light">Lo que nos mueve</p>
+        <h2>Nuestro compromiso</h2>
+        <p class="acerca-valores__lead">Educamos para salvar vidas y construir una cultura vial responsable.</p>
+      </header>
+      <div class="acerca-valores__grid">
+        @for (v of valores; track v.title; let i = $index) {
+          <article class="acerca-valor" [class]="'acerca-valor--' + (i % 6)">
+            <span class="acerca-valor__icon" aria-hidden="true">{{ iconoValor(i) }}</span>
+            <h3>{{ v.title }}</h3>
+            <p>{{ v.text }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="acerca-contacto-form" id="contacto-formulario">
+      <av-contacto-form origen="acerca" />
+    </section>
+  </section>
+</div>

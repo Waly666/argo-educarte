@@ -1,0 +1,907 @@
+<section class="egresos-page card">
+
+  <nav class="caja-nav-link">
+    <a routerLink="/app/caja">← Resumen del día</a>
+    <a routerLink="/app/caja/egresos">← Lista egresos de mi caja</a>
+    <a routerLink="/app/caja/ingresos">Cobros / Ingresos</a>
+    <span class="caja-mini" [class.ok]="cajaAbierta()" [class.warn]="!cajaAbierta()">
+      {{ cajaAbierta() ? 'Caja #' + sesionCaja()?.idSesion + ' abierta' : 'Caja cerrada — abra en Resumen' }}
+    </span>
+  </nav>
+
+  <div class="caja-banner hidden-legacy" *ngIf="false" [class.abierta]="cajaAbierta()" [class.cerrada]="!cajaAbierta()">
+    <div class="caja-banner-main">
+      <strong *ngIf="cajaAbierta()">Mi caja abierta — sesión #{{ sesionCaja()?.idSesion }}</strong>
+      <strong *ngIf="!cajaAbierta()">Mi caja cerrada</strong>
+      <span *ngIf="cajaAbierta() && sesionCaja() as s">
+        Cajero: {{ s.usuario }} · desde {{ s.fechaApertura | date: 'dd/MM/yyyy HH:mm' }} · saldo inicial
+        {{ s.saldoInicial | currency: 'COP':'symbol-narrow':'1.0-0' }}
+      </span>
+      <span *ngIf="!cajaAbierta()">Abra su caja personal para registrar ingresos y egresos.</span>
+    </div>
+    <div class="caja-banner-resumen" *ngIf="cajaAbierta() && resumenParcial() as r">
+      <span>Ingresos: {{ r.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ r.cantidadIngresos }})</span>
+      <span>Egresos: {{ r.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ r.cantidadEgresos }})</span>
+      <span>Saldo teórico: {{ r.saldoTeorico | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+    <div class="caja-banner-actions">
+      <button type="button" class="primary sm" *ngIf="!cajaAbierta()" (click)="abrirModalApertura()">
+        Abrir mi caja
+      </button>
+      <button type="button" class="ghost sm" *ngIf="cajaAbierta()" (click)="abrirModalCierre()">
+        Cerrar mi caja
+      </button>
+      <button type="button" class="ghost sm" (click)="cargarEstadoCaja()">Actualizar</button>
+    </div>
+  </div>
+
+  <!-- Admin movido a /app/caja/admin -->
+  <section class="caja-panel-admin card" *ngIf="false">
+    <h2>Cajas abiertas ahora ({{ cajasAbiertasTodas().length }})</h2>
+    <p class="hint">Cada cajero (o admin actuando como cajero) tiene su propia sesión independiente.</p>
+    <table class="tabla" *ngIf="cajasAbiertasTodas().length; else sinAbiertas">
+      <thead>
+        <tr>
+          <th>Sesión</th>
+          <th>Cajero</th>
+          <th>Desde</th>
+          <th>Saldo inicial</th>
+          <th>Ingresos</th>
+          <th>Egresos</th>
+          <th>Saldo teórico</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of cajasAbiertasTodas()">
+          <td>#{{ item.sesion.idSesion }}</td>
+          <td>{{ item.sesion.usuario }}</td>
+          <td>{{ item.sesion.fechaApertura | date: 'dd/MM HH:mm' }}</td>
+          <td>{{ item.sesion.saldoInicial | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>{{ item.resumenParcial.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>{{ item.resumenParcial.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>{{ item.resumenParcial.saldoTeorico | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>
+            <button type="button" class="ghost sm" (click)="cerrarCajaAjena(item)">Cerrar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #sinAbiertas><p>No hay cajas abiertas en este momento.</p></ng-template>
+
+    <h3>Historial del período</h3>
+    <div class="filtros-inline">
+      <argo-date-input label="Desde" [ngModel]="filtroHistDesde()" (ngModelChange)="filtroHistDesde.set($event)" ></argo-date-input>
+      <argo-date-input label="Hasta" [ngModel]="filtroHistHasta()" (ngModelChange)="filtroHistHasta.set($event)" ></argo-date-input>
+      <button type="button" class="ghost sm" (click)="cargarHistorialCajas()">Buscar</button>
+    </div>
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Sesión</th>
+          <th>Cajero</th>
+          <th>Estado</th>
+          <th>Apertura</th>
+          <th>Cierre</th>
+          <th>Saldo final</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of historialCajas()">
+          <td>#{{ s.idSesion }}</td>
+          <td>{{ s.usuario }}</td>
+          <td>{{ s.estado }}</td>
+          <td>{{ s.fechaApertura | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ s.fechaCierre ? (s.fechaCierre | date: 'dd/MM/yyyy HH:mm') : '—' }}</td>
+          <td>
+            {{
+              s.saldoFinal != null
+                ? (s.saldoFinal | currency: 'COP':'symbol-narrow':'1.0-0')
+                : '—'
+            }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="caja-panel-admin card" *ngIf="false">
+    <h2>Cierre de caja general</h2>
+    <p class="hint">Consolida todas las cajas del período (varios cajeros). Regístrelo al final del día.</p>
+    <div class="filtros-inline">
+      <argo-date-input label="Fecha" [ngModel]="fechaGenDesde()" (ngModelChange)="fechaGenDesde.set($event)" ></argo-date-input>
+      <button type="button" class="ghost sm" (click)="cargarPreviewGeneral()">Vista previa</button>
+      <button type="button" class="primary sm" [disabled]="cajaLoading()" (click)="confirmarCierreGeneral()">
+        Registrar cierre general
+      </button>
+    </div>
+    <label>
+      Observaciones
+      <textarea rows="2" [ngModel]="obsCierreGeneral()" (ngModelChange)="obsCierreGeneral.set($event)"></textarea>
+    </label>
+
+    <div class="resumen-general" *ngIf="previewGeneral() as g">
+      <p class="warn" *ngIf="g.tieneCajasAbiertas">
+        Atención: {{ g.cajasAbiertas.length }} caja(s) aún abierta(s):
+        <span *ngFor="let c of g.cajasAbiertas; let last = last"
+          >#{{ c.idSesion }} ({{ c.usuario }})<span *ngIf="!last">, </span></span
+        >
+      </p>
+      <p><strong>{{ g.cantidadCajas }}</strong> cajas en el período</p>
+      <p>Saldo inicial total: {{ g.saldoInicialTotal | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+      <p>Total ingresos: {{ g.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ g.cantidadIngresos }})</p>
+      <p>Total egresos: {{ g.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ g.cantidadEgresos }})</p>
+      <p><strong>Consolidado: {{ g.saldoTeoricoConsolidado | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong></p>
+
+      <h3>Por cajero</h3>
+      <table class="tabla sm">
+        <thead>
+          <tr>
+            <th>Sesión</th>
+            <th>Cajero</th>
+            <th>Ingresos</th>
+            <th>Egresos</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of g.detalleSesiones">
+            <td>#{{ d.idSesion }}</td>
+            <td>{{ d.usuario }}</td>
+            <td>{{ d.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td>{{ d.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td>{{ d.saldoTeorico | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Ingresos por tipo de pago (consolidado)</h3>
+      <ul>
+        <li *ngFor="let t of g.ingresosPorTipo">
+          {{ t.descripcion }}: {{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ t.cantidad }})
+        </li>
+      </ul>
+      <h3>Egresos por tipo (consolidado)</h3>
+      <ul>
+        <li *ngFor="let t of g.egresosPorTipo">
+          {{ t.descripcion }}: {{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ t.cantidad }})
+        </li>
+      </ul>
+    </div>
+
+    <h3>Cierres generales registrados</h3>
+    <ul class="lista-cierres">
+      <li *ngFor="let c of cierresGenerales()">
+        #{{ c.idCierreGeneral }} — {{ c.periodoDesde | date: 'dd/MM/yyyy' }} a
+        {{ c.periodoHasta | date: 'dd/MM/yyyy' }} — {{ c.cantidadCajas }} cajas — por {{ c.usuarioAdmin }}
+      </li>
+    </ul>
+  </section>
+
+  <header class="caja-head page-head" *ngIf="modoSoloForm()">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / <a routerLink="/app/caja/egresos">Egresos</a> / Formulario</p>
+      <h1>{{ editando() ? 'Editar egreso' : 'Nuevo egreso' }}{{ returnUrl()?.includes('egresos-todos') ? ' — historial' : ' — mi caja' }}</h1>
+      <p class="hint">
+        {{ editando() && returnUrl()?.includes('egresos-todos')
+          ? 'Como administrador puede modificar egresos de cualquier sesión. Los préstamos/adelantos de nómina no se editan.'
+          : editando()
+            ? 'Los cambios quedan vinculados a su sesión de caja.'
+            : 'El egreso quedará vinculado a su sesión de caja abierta.' }}
+      </p>
+    </div>
+  </header>
+
+  <header class="caja-head page-head" *ngIf="!modoSoloForm()">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Egresos</p>
+      <h1>Egresos — Flujo de caja</h1>
+      <p class="hint">
+        El <strong>tipo de egreso</strong> define si exige empleado, si es préstamo/adelanto (deducción en nómina) o gasto a tercero.
+        Bonos: solo en <a routerLink="/app/rrhh/novedades">RRHH → Novedades</a> (devengo), no por caja.
+        Tipos: <a routerLink="/app/configuracion/catalogos">Configuración → Catálogos → Tipos de egreso</a>.
+      </p>
+      <p class="filtro-emp hint" *ngIf="filtroNumeroDocumento()">
+        Filtrando documento: <strong>{{ filtroEmpleadoLabel() }}</strong>
+        <button type="button" class="ghost sm" (click)="limpiarFiltro()">Quitar filtro</button>
+      </p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--emerald" *ngIf="cajaAbierta()">Caja #{{ sesionCaja()?.idSesion }} abierta</span>
+      <a routerLink="/app/rrhh/empleados" class="ghost link-btn">RRHH Empleados</a>
+      <button type="button" class="primary" (click)="nuevo()">Nuevo egreso</button>
+    </div>
+  </header>
+
+
+
+  <!-- Modal apertura -->
+  <div class="modal-backdrop" *ngIf="mostrarApertura()" (click)="mostrarApertura.set(false)">
+    <div class="modal card" (click)="$event.stopPropagation()">
+      <h2>Apertura de mi caja</h2>
+      <label>
+        Saldo inicial en efectivo
+        <input type="number" min="0" [ngModel]="saldoInicialApertura()" (ngModelChange)="saldoInicialApertura.set(+$event || 0)" />
+      </label>
+      <label>
+        Observaciones
+        <textarea rows="2" [ngModel]="obsApertura()" (ngModelChange)="obsApertura.set($event)"></textarea>
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost" (click)="mostrarApertura.set(false)">Cancelar</button>
+        <button type="button" class="primary" [disabled]="cajaLoading()" (click)="confirmarApertura()">
+          Abrir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal cierre con resumen -->
+  <div class="modal-backdrop" *ngIf="mostrarCierre()" (click)="cerrarModalCierre()">
+    <div class="modal card modal-cierre" (click)="$event.stopPropagation()">
+      <h2>Cierre de mi caja</h2>
+      <ng-container *ngIf="!resumenCierre(); else resumenFinal">
+        <p>Se cerrará la sesión #{{ sesionCaja()?.idSesion }} y se generará el resumen del turno.</p>
+        <label>
+          Observaciones de cierre
+          <textarea rows="2" [ngModel]="obsCierre()" (ngModelChange)="obsCierre.set($event)"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="ghost" (click)="cerrarModalCierre()">Cancelar</button>
+          <button type="button" class="primary" [disabled]="cajaLoading()" (click)="confirmarCierre()">
+            Confirmar cierre
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #resumenFinal>
+        <div *ngIf="resumenCierre()?.resumen as r" class="resumen-cierre">
+          <p><strong>Saldo inicial:</strong> {{ r.saldoInicial | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+          <p><strong>Total ingresos:</strong> {{ r.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ r.cantidadIngresos }} mov.)</p>
+          <p><strong>Total egresos:</strong> {{ r.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ r.cantidadEgresos }} mov.)</p>
+          <p><strong>Saldo teórico final:</strong> {{ r.saldoTeorico | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+          <h3>Ingresos por tipo de pago</h3>
+          <ul>
+            <li *ngFor="let t of r.ingresosPorTipo">
+              {{ t.descripcion || t.idTipoPago }}: {{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ t.cantidad }})
+            </li>
+            <li *ngIf="!r.ingresosPorTipo?.length">Sin movimientos</li>
+          </ul>
+          <h3>Egresos por tipo</h3>
+          <ul>
+            <li *ngFor="let t of r.egresosPorTipo">
+              {{ t.descripcion || t.tipoEgreso }}: {{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }} ({{ t.cantidad }})
+            </li>
+            <li *ngIf="!r.egresosPorTipo?.length">Sin movimientos</li>
+          </ul>
+        </div>
+        <div class="actions">
+          <button type="button" class="primary" (click)="cerrarModalCierre()">Listo</button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+
+  <div class="toolbar" *ngIf="!modoSoloForm()">
+
+    <input
+
+      type="search"
+
+      placeholder="Buscar concepto, pagado a, transferencia…"
+
+      [ngModel]="busqueda()"
+
+      (ngModelChange)="busqueda.set($event)"
+
+      (keyup.enter)="cargar()"
+
+    />
+
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+
+  </div>
+
+
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+
+
+  <div class="warn-docs card" *ngIf="cantSinSoporte() > 0 && !mostrarForm()">
+    <strong>Aviso: egresos sin soporte adjunto ({{ cantSinSoporte() }})</strong>
+    <p class="hint">Falta imagen de factura, voucher o comprobante. El egreso ya quedó registrado; adjunte el soporte cuando lo tenga.</p>
+    <ul>
+      <li *ngFor="let e of egresosSinSoporte() | slice: 0 : 6">
+        {{ e.numRecibo || '—' }} — {{ e.concepto }}
+        <span class="dim">({{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }})</span>
+      </li>
+    </ul>
+    <p class="hint" *ngIf="cantSinSoporte() > 6">… y {{ cantSinSoporte() - 6 }} más en la lista.</p>
+  </div>
+
+
+
+  <div class="form-card card argo-form-shell" *ngIf="mostrarForm()">
+
+    <h2>{{ editando() ? 'Editar egreso' : 'Nuevo egreso' }}</h2>
+
+
+
+    <div class="row">
+
+      <div class="col-4">
+
+        <argo-date-input label="Fecha egreso *" [ngModel]="form().fechaEgreso" (ngModelChange)="patch('fechaEgreso', $event)" ></argo-date-input>
+
+      </div>
+
+      <div class="col-4">
+
+        <label>Valor egreso *</label>
+
+        <input
+
+          type="number"
+
+          min="0"
+
+          step="0.01"
+
+          [ngModel]="form().valorEgreso"
+
+          (ngModelChange)="patch('valorEgreso', +$event)"
+
+        />
+
+      </div>
+
+      <div class="col-4">
+
+        <label>Tipo de egreso *</label>
+
+        <select [ngModel]="form().tipoEgreso" (ngModelChange)="onTipoEgresoChange($event)">
+
+          <option value="">—</option>
+
+          <option *ngFor="let t of tiposEgreso()" [value]="t.idTipoEgreso">{{ labelTipoEgreso(t) }}</option>
+
+        </select>
+
+        <p class="hint tipo-hint">{{ hintTipoSeleccionado() }}</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row" *ngIf="obligaVehiculo()">
+
+      <div class="col-4">
+
+        <label>Placa vehículo *</label>
+
+        <input
+          type="text"
+          [ngModel]="form().placa"
+          (ngModelChange)="onPlacaChange($event)"
+          (blur)="onPlacaBlur()"
+          placeholder="Ej. ABC123"
+          style="text-transform: uppercase"
+          autocomplete="off"
+          [class.input-invalid]="!!placaVehiculoError()"
+          [class.input-valid]="!!placaVehiculoInfo()"
+        />
+
+        <p class="hint" *ngIf="placaVerificando()">Verificando placa…</p>
+
+        <p class="hint err" *ngIf="placaVehiculoError()">{{ placaVehiculoError() }}</p>
+
+        <p class="hint ok" *ngIf="placaVehiculoInfo() as v">
+
+          {{ v.nombreMarca || '' }} {{ v.nombreLinea || '' }}
+
+          <span *ngIf="v.claseVehiculo"> · {{ v.claseVehiculo }}</span>
+
+        </p>
+
+        <p class="hint">Solo se aceptan placas registradas en <strong>Vehículos</strong>.</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row beneficiario-row">
+
+      <div class="col-12">
+
+        <label>Beneficiario</label>
+
+        <div class="radio-inline" *ngIf="!obligaEmpleado() && !esRetiroCaja()">
+
+          <label>
+
+            <input
+
+              type="radio"
+
+              name="benef"
+
+              [checked]="beneficiarioEmpleado()"
+
+              (change)="setBeneficiarioEmpleado(true)"
+
+            />
+
+            Empleado (RRHH)
+
+          </label>
+
+          <label>
+
+            <input
+
+              type="radio"
+
+              name="benef"
+
+              [checked]="!beneficiarioEmpleado()"
+
+              (change)="setBeneficiarioEmpleado(false)"
+
+            />
+
+            Tercero (proveedor, tienda, servicio…)
+
+          </label>
+
+        </div>
+
+        <p class="hint" *ngIf="obligaEmpleado()">Este tipo solo permite pago a empleado registrado en RRHH.</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row" *ngIf="(beneficiarioEmpleado() || obligaEmpleado()) && !esRetiroCaja()">
+
+      <div class="col-12">
+
+        <label>Empleado {{ obligaEmpleado() ? '*' : '' }}</label>
+
+        <select [ngModel]="empleadoSelId()" (ngModelChange)="onEmpleadoChange($event)">
+
+          <option [ngValue]="null">— Seleccione —</option>
+
+          <option *ngFor="let e of empleados()" [ngValue]="e.idEmpleado">
+
+            {{ e.nombreCompleto }} — {{ e.numeroDocumento }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row">
+
+      <div class="col-4">
+
+        <label>Nº identificación beneficiario *</label>
+
+        <input
+
+          type="text"
+
+          [ngModel]="form().numeroDocumento"
+
+          (ngModelChange)="patch('numeroDocumento', $event)"
+
+          [readonly]="(beneficiarioEmpleado() || obligaEmpleado()) && !!empleadoSelId()"
+
+          [class.readonly]="(beneficiarioEmpleado() || obligaEmpleado()) && !!empleadoSelId()"
+
+          placeholder="CC, NIT, CE…"
+
+        />
+
+      </div>
+
+      <div class="col-8">
+
+        <label>Pagado a (nombre beneficiario) *</label>
+
+        <input
+
+          type="text"
+
+          [ngModel]="form().pagueA"
+
+          (ngModelChange)="patch('pagueA', $event)"
+
+          [readonly]="(beneficiarioEmpleado() || obligaEmpleado()) && !!empleadoSelId()"
+
+          [class.readonly]="(beneficiarioEmpleado() || obligaEmpleado()) && !!empleadoSelId()"
+
+          placeholder="Nombre de quien recibe el pago"
+
+        />
+
+        <p class="hint" *ngIf="!beneficiarioEmpleado() && !obligaEmpleado()">
+
+          Tercero: digite documento y nombre. No tiene que estar en RRHH.
+
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row" *ngIf="esAnticipoNomina() && !editando()">
+
+      <div class="col-6">
+
+        <label>Período de nómina (descuento) *</label>
+
+        <select [ngModel]="form().idPeriodo" (ngModelChange)="patch('idPeriodo', +$event || '')">
+
+          <option value="">— Seleccione —</option>
+
+          <option *ngFor="let p of periodosAbiertos()" [ngValue]="p.idPeriodo">
+
+            {{ p.nombre }} ({{ p.estado }})
+
+          </option>
+
+        </select>
+
+        <p class="hint" *ngIf="periodosAbiertos().length === 0">
+
+          No hay período abierto. Cree uno en <a routerLink="/app/rrhh/nomina">RRHH → Nómina</a>.
+
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="row" *ngIf="editando()?.idNovedadGenerada as idNov">
+
+      <div class="col-12">
+
+        <p class="hint">Vinculado a novedad de deducción #{{ idNov }} — no editable.</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row">
+
+      <div class="col-12">
+
+        <label>Concepto *</label>
+
+        <input type="text" [ngModel]="form().concepto" (ngModelChange)="patch('concepto', $event)" />
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row">
+
+      <div class="col-4">
+
+        <label>Forma de pago</label>
+
+        <select [ngModel]="form().formaPago" (ngModelChange)="patch('formaPago', $event)">
+
+          <option *ngFor="let fp of formasPago" [value]="fp">{{ fp }}</option>
+
+        </select>
+
+      </div>
+
+      <div class="col-4">
+
+        <label>Cuenta origen</label>
+
+        <select [ngModel]="form().cuentaOrigen" (ngModelChange)="patch('cuentaOrigen', $event)">
+
+          <option value="">—</option>
+
+          <option *ngFor="let c of cuentasBancarias()" [value]="c.idCuentaBancaria">
+
+            {{ labelCuenta(c) }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="col-4" *ngIf="requiereRefBancaria()">
+
+        <label>Nº comprobante / referencia *</label>
+
+        <input
+
+          type="text"
+
+          [ngModel]="form().numTransferencia"
+
+          (ngModelChange)="patch('numTransferencia', $event)"
+
+        />
+
+      </div>
+
+    </div>
+
+
+
+    <div class="row" *ngIf="requiereRefBancaria()">
+
+      <div class="col-4">
+
+        <argo-date-input label="Fecha transferencia" [ngModel]="form().fechaTransferencia"
+
+          (ngModelChange)="patch('fechaTransferencia', $event)"
+
+        ></argo-date-input>
+
+      </div>
+
+      <div class="col-4">
+
+        <label>Cuenta destino</label>
+
+        <input type="text" [ngModel]="form().cuentaDestino" (ngModelChange)="patch('cuentaDestino', $event)" />
+
+      </div>
+
+      <div class="col-4">
+
+        <label>Banco destino</label>
+
+        <select [ngModel]="form().bancoDestino" (ngModelChange)="patch('bancoDestino', $event)">
+
+          <option value="">—</option>
+
+          <option *ngFor="let b of bancos()" [value]="b.idBanco || b.idbanco">{{ labelBanco(b) }}</option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="warn-docs card err" *ngIf="requiereRefBancaria() && mensajePagoIntangible() as aviso">
+      <strong>No se puede procesar el pago</strong>
+      <p class="hint">{{ aviso }}</p>
+    </div>
+
+    <div class="row soporte-row">
+
+      <div class="col-12">
+
+        <argo-pago-soporte-field
+          [obligatorio]="requiereRefBancaria()"
+          [previewUrl]="previewSoporte()"
+          [nombreArchivo]="archivoSoporte()?.name ?? null"
+          [hint]="requiereRefBancaria()
+            ? 'Obligatorio para transferencia, cheque, tarjeta, etc.'
+            : 'Opcional en pagos en efectivo.'"
+          (seleccionado)="onSoporteArchivo($event)"
+          (quitado)="quitarSoporte()"
+        />
+
+      </div>
+
+    </div>
+
+
+
+    <div class="auth-retiro-panel card" *ngIf="requiereAutorizacionSupervisor() && !mostrarAuthAnular()">
+      <h3>{{ tituloAutorizacionSupervisor() }}</h3>
+      <p class="hint">
+        Un administrador debe autorizar esta operación. Ingrese sus credenciales (su sesión de cajero no se cierra).
+      </p>
+      <div class="row">
+        <div class="col-6">
+          <label>Usuario administrador *</label>
+          <input
+            type="text"
+            autocomplete="username"
+            [ngModel]="authAdminUser()"
+            (ngModelChange)="authAdminUser.set($event)"
+          />
+        </div>
+        <div class="col-6">
+          <label>Contraseña *</label>
+          <input
+            type="password"
+            autocomplete="current-password"
+            [ngModel]="authAdminPass()"
+            (ngModelChange)="authAdminPass.set($event)"
+          />
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="actions">
+
+      <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving() || !puedeGuardarEgreso()">
+
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+
+
+
+  <div class="table-wrap" *ngIf="!modoSoloForm() && !loading()">
+  <table class="argo">
+
+    <thead>
+
+      <tr>
+
+        <th>Comprobante</th>
+
+        <th>Fecha</th>
+
+        <th>Tipo</th>
+
+        <th>Pagado a</th>
+
+        <th>Concepto</th>
+
+        <th>Nómina</th>
+
+        <th>Forma pago</th>
+
+        <th class="num">Valor</th>
+
+        <th class="col-alertas">Alertas</th>
+
+        <th class="actions-col">Acciones</th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr *ngFor="let e of egresos()" [class.fila-sin-soporte]="!tieneSoporte(e)" [class.row-anulado]="esAnulado(e)">
+
+        <td class="mono comprobante-cell">
+          {{ e.numRecibo || '—' }}
+          <span class="badge err sm" *ngIf="esAnulado(e)">ANULADO</span>
+        </td>
+
+        <td>{{ e.fechaEgreso | date: 'dd/MM/yyyy' }}</td>
+
+        <td>{{ e.tipoEgresoDescr || '—' }}</td>
+
+        <td>
+
+          <span *ngIf="e.numeroDocumento" class="mono sm">{{ e.numeroDocumento }}</span>
+
+          {{ e.empleadoNombre || e.pagueA || '—' }}
+
+        </td>
+
+        <td>{{ e.concepto }}</td>
+
+        <td>
+
+          <span class="tipo-tag anticipo" *ngIf="labelAnticipo(e)">{{ labelAnticipo(e) }}</span>
+
+          <span *ngIf="e.idNovedadGenerada" class="mono sm">#{{ e.idNovedadGenerada }}</span>
+
+          <span *ngIf="!labelAnticipo(e) && !e.idNovedadGenerada">—</span>
+
+        </td>
+
+        <td>{{ e.formaPago || '—' }}</td>
+
+        <td class="num">{{ e.valorEgreso | number: '1.0-0' }}</td>
+
+        <td class="col-alertas">
+          <button
+            type="button"
+            class="row-alarm doc-alarm"
+            *ngIf="!tieneSoporte(e)"
+            (click)="onAlarmaSoporte(e, $event)"
+            [attr.title]="tituloSoporte(e)"
+            [attr.aria-label]="tituloSoporte(e)">
+            <span class="row-alarm-pulse" aria-hidden="true"></span>
+            <span class="row-alarm-icon">!</span>
+            <span class="row-alarm-label">Sop.</span>
+          </button>
+          <span *ngIf="tieneSoporte(e)" class="dim">—</span>
+        </td>
+
+        <td class="actions-cell">
+
+          <div class="actions-wrap">
+
+            <button type="button" class="ghost sm" (click)="imprimirRecibo(e)" title="Imprimir comprobante de egreso">
+              Imprimir
+            </button>
+
+            <button type="button" class="ghost sm" (click)="editar(e)" *ngIf="puedeGestionarEgreso(e) && !esAnulado(e)">Editar</button>
+
+            <button type="button" class="danger sm" *ngIf="!esAnulado(e)" (click)="eliminar(e)">Anular</button>
+
+            <span class="dim sm" *ngIf="esAnulado(e)" [attr.title]="tituloAnulado(e)">Anulado</span>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+      <tr *ngIf="egresos().length === 0">
+
+        <td colspan="10" class="empty">Sin egresos registrados.</td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarAnularSupervisor()">
+    <div class="modal card modal-autorizacion" (click)="$event.stopPropagation()">
+      <h2>{{ tituloAutorizacionSupervisor() }}</h2>
+      <p class="hint" *ngIf="egresoPendienteAnular() as pe">
+        Egreso {{ pe.numRecibo || pe.concepto }} — requiere credenciales de administrador.
+      </p>
+      <label>
+        Usuario administrador
+        <input type="text" autocomplete="username" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" autocomplete="current-password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost" (click)="cancelarAnularSupervisor()">Cancelar</button>
+        <button type="button" class="primary danger" (click)="confirmarAnularConSupervisor()">Autorizar y anular</button>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+

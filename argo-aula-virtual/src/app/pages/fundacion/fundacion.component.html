@@ -1,0 +1,170 @@
+<div class="fund-page">
+  <section class="fund-hero">
+    <div class="container fund-hero__inner">
+      <div class="fund-hero__copy">
+        <p class="fund-kicker">{{ fund().hero.kicker }}</p>
+        <h1>{{ heroTitulo() }}</h1>
+        <p class="fund-hero__lead">{{ fund().hero.lead }}</p>
+        <div class="fund-hero__actions">
+          @if (fund().hero.btnSitioUrl.trim()) {
+            <a [href]="fund().hero.btnSitioUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              {{ fund().hero.btnSitioLabel }}
+            </a>
+          }
+          <a routerLink="/cursos" class="btn btn-outline fund-btn-outline">{{ fund().hero.btnCursosLabel }}</a>
+        </div>
+      </div>
+      <figure class="fund-hero__visual">
+        <img [src]="heroImagen()" [alt]="fund().hero.imagenAlt" loading="eager" />
+        @if (fund().hero.imagenCaption) {
+          <figcaption class="fund-hero__caption">{{ fund().hero.imagenCaption }}</figcaption>
+        }
+      </figure>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--about" id="quienes-somos">
+    <div class="container">
+      <header class="fund-about__head">
+        <p class="fund-kicker fund-kicker--dark">{{ fund().quienes.kicker }}</p>
+        <h2>{{ fund().quienes.titulo }}</h2>
+        <p class="fund-about__lead">{{ fund().quienes.lead }}</p>
+      </header>
+
+      <div class="fund-about__layout">
+        <aside class="fund-about__aside">
+          @if (logoUrl(); as logo) {
+            <div class="fund-about__logo-wrap">
+              <img class="fund-logo" [src]="logo" [alt]="nombreCea()" />
+            </div>
+          }
+          <ul class="fund-about__stats">
+            @for (d of fund().quienes.destacados; track d.label) {
+              <li class="fund-about__stat">
+                <span class="fund-about__stat-icon" aria-hidden="true">{{ d.icon }}</span>
+                <div>
+                  <strong>{{ d.label }}</strong>
+                  <span>{{ d.text }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+          @if (fund().quienes.enlaceUrl.trim()) {
+            <a [href]="fund().quienes.enlaceUrl" target="_blank" rel="noopener noreferrer" class="fund-about__link">
+              {{ fund().quienes.enlaceLabel }}
+            </a>
+          }
+        </aside>
+
+        <div class="fund-about__bloques">
+          @for (b of fund().quienes.bloques; track b.titulo) {
+            <article class="fund-about__bloque">
+              <span class="fund-about__bloque-icon" aria-hidden="true">{{ b.icon }}</span>
+              <div>
+                <h3>{{ b.titulo }}</h3>
+                <p>{{ b.texto }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--soft">
+    <div class="container">
+      <div class="fund-mv">
+        <article class="fund-card">
+          <span class="fund-card__label">Lo que hacemos hoy</span>
+          <h2>Misión</h2>
+          <p>{{ fund().mision }}</p>
+        </article>
+        <article class="fund-card">
+          <span class="fund-card__label">Hacia dónde vamos</span>
+          <h2>Visión</h2>
+          <p>{{ fund().vision }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--warm">
+    <div class="container fund-commit">
+      <p class="fund-kicker fund-kicker--dark">{{ fund().compromiso.kicker }}</p>
+      <h2>{{ fund().compromiso.titulo }}</h2>
+      <p class="fund-commit__text">{{ fund().compromiso.texto }}</p>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--cta" id="lineas-trabajo">
+    <div class="container">
+      <header class="fund-section__head fund-section__head--center">
+        <p class="fund-kicker">{{ fund().lineas.kicker }}</p>
+        <h2>{{ fund().lineas.titulo }}</h2>
+        <p class="fund-section__lead">{{ fund().lineas.lead }}</p>
+      </header>
+      <div class="fund-servicios">
+        @for (s of fund().lineas.items; track s.title) {
+          <article class="fund-servicio">
+            <span class="fund-servicio__icon" aria-hidden="true">{{ s.icon }}</span>
+            <h3>{{ s.title }}</h3>
+            <p>{{ s.text }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--white" id="contacto-fundacion">
+    <div class="container">
+      <header class="fund-section__head fund-section__head--center">
+        <p class="fund-kicker fund-kicker--dark">{{ fund().contacto.kicker }}</p>
+        <h2>{{ fund().contacto.titulo }}</h2>
+        <p class="fund-section__lead">{{ fund().contacto.lead }}</p>
+      </header>
+      <div class="fund-contacto">
+        <dl class="fund-contacto__grid">
+          <div class="fund-contacto__item">
+            <dt>Dirección</dt>
+            <dd>{{ direccion() }}</dd>
+            @if (fund().contacto.sedeNota) {
+              <dd class="fund-muted">{{ fund().contacto.sedeNota }}</dd>
+            }
+          </div>
+          <div class="fund-contacto__item">
+            <dt>Teléfono</dt>
+            <dd>
+              @if (telHref(); as tel) {
+                <a [href]="tel">{{ telefono() }}</a>
+              } @else {
+                {{ telefono() }}
+              }
+            </dd>
+          </div>
+          <div class="fund-contacto__item">
+            <dt>Email</dt>
+            <dd><a [href]="'mailto:' + email()">{{ email() }}</a></dd>
+          </div>
+        </dl>
+        @if (whatsappHref(); as wa) {
+          <a class="btn btn-primary" [href]="wa" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
+        }
+        <av-contacto-form origen="fundacion" />
+      </div>
+    </div>
+  </section>
+
+  <section class="fund-section fund-section--cta">
+    <div class="container fund-cta">
+      <div class="fund-cta__copy">
+        <p class="fund-kicker">{{ fund().cta.kicker }}</p>
+        <h2>{{ fund().cta.titulo }}</h2>
+        <p>{{ fund().cta.texto }}</p>
+      </div>
+      <div class="fund-cta__actions">
+        <a routerLink="/registro" class="btn btn-primary">{{ fund().cta.btnRegistro }}</a>
+        <a routerLink="/" fragment="servicios-empresa" class="btn btn-outline fund-btn-outline">{{ fund().cta.btnServicios }}</a>
+      </div>
+    </div>
+  </section>
+</div>

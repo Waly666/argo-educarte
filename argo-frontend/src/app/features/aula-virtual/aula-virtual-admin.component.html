@@ -1,0 +1,488 @@
+<section class="av-page admin-list-page card">
+  <header class="av-head">
+    <div class="av-head-main">
+      <p class="av-eyebrow">Administración</p>
+      <h1>Aula virtual</h1>
+      <p>
+        Cursos del portal, usuarios registrados y configuración del sitio público.
+        Los alumnos comparten ficha en <strong>Alumnos</strong>.
+      </p>
+    </div>
+    <div class="av-head-actions">
+      @if (!loading() && tab() === 'cursos') {
+        <span class="av-chip">{{ cursos().length }} curso{{ cursos().length === 1 ? '' : 's' }}</span>
+      }
+      <span class="av-chip">Portal :4202</span>
+      <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual/sitio">Editor sitio web</a>
+      <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual/blog">Blog</a>
+      <a class="av-btn av-btn--ghost" [href]="portalUrl" target="_blank" rel="noopener">Abrir portal ↗</a>
+    </div>
+  </header>
+
+  @if (msg()) {
+    <p class="av-banner" [class.av-banner--err]="err()">{{ msg() }}</p>
+  }
+
+  <nav class="av-tabs">
+    <button type="button" [class.active]="tab() === 'cursos'" (click)="setTab('cursos')">Cursos</button>
+    <button type="button" [class.active]="tab() === 'usuarios'" (click)="setTab('usuarios')">
+      Usuarios portal
+      @if (usuariosTotal()) {
+        <span class="av-tab-badge">{{ usuariosTotal() }}</span>
+      }
+    </button>
+    <button type="button" [class.active]="tab() === 'empresa'" (click)="setTab('empresa')">Datos empresa</button>
+    <button type="button" [class.active]="tab() === 'portal'" (click)="setTab('portal')">Textos portal</button>
+  </nav>
+
+  @if (tab() === 'cursos') {
+    @if (loading()) {
+      <p class="av-muted av-loading">Cargando cursos…</p>
+    } @else {
+      <div class="av-cursos-toolbar toolbar">
+        <input
+          type="search"
+          placeholder="Buscar por nombre o código…"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)" />
+        <div class="view-toggle" role="group" aria-label="Modo de vista">
+          <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+          <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+        </div>
+      </div>
+
+      @if (!cursosFiltrados().length) {
+        <p class="av-muted av-empty-msg">
+          No hay cursos virtuales. Asigne <strong>tarifa virtual</strong> en Programas.
+        </p>
+      } @else if (vista() === 'lista') {
+        <div class="table-wrap av-cursos-table-wrap">
+          <table class="argo data-table av-cursos-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Curso</th>
+                <th>Categorías</th>
+                <th>Tarifa</th>
+                <th>Estado</th>
+                <th>Paquete</th>
+                <th class="th-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of cursosFiltrados(); track c.idPrograma) {
+                <tr>
+                  <td><span class="cap cap-cyan cap-sm">{{ c.idPrograma }}</span></td>
+                  <td>
+                    <a [routerLink]="fichaCursoLink(c)" class="av-curso-link"><strong>{{ c.nombreProg }}</strong></a>
+                  </td>
+                  <td>{{ c.categoriaNombres?.join(', ') || '—' }}</td>
+                  <td>${{ c.tarifaVirtual | number: '1.0-0' }}</td>
+                  <td>
+                    @if (c.publicadoPortal) {
+                      <span class="av-pill av-pill--ok">Publicado</span>
+                    } @else {
+                      <span class="av-pill av-pill--off">Borrador</span>
+                    }
+                  </td>
+                  <td>
+                    @if (c.tienePaquete) {
+                      <span class="av-ok">Sí</span>
+                    } @else {
+                      <span class="av-muted">No</span>
+                    }
+                  </td>
+                  <td class="actions-cell">
+                    <a [routerLink]="fichaCursoLink(c)" class="av-link">Abrir ficha</a>
+                    <a [routerLink]="fichaCursoLink(c)" [queryParams]="{ tab: 'alumnos' }" class="av-link">Alumnos</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="cards-grid av-cursos-cards">
+          @for (c of cursosFiltrados(); track c.idPrograma) {
+            <article class="list-card av-curso-card">
+              <a
+                [routerLink]="fichaCursoLink(c)"
+                class="av-curso-cover-link"
+                [attr.aria-label]="'Abrir ficha de ' + c.nombreProg">
+                <figure class="av-curso-cover">
+                  @if (portadaUrl(c); as src) {
+                    <img [src]="src" [alt]="'Portada: ' + c.nombreProg" loading="lazy" />
+                  } @else {
+                    <div class="av-curso-cover-fallback">
+                      <span class="av-curso-cover-glyph" aria-hidden="true">▣</span>
+                      <span class="av-curso-cover-hint">Sin portada</span>
+                    </div>
+                  }
+                  <span class="av-curso-code">{{ c.idPrograma }}</span>
+                  @if (c.publicadoPortal) {
+                    <span class="av-curso-status av-pill av-pill--ok">Publicado</span>
+                  } @else {
+                    <span class="av-curso-status av-pill av-pill--off">Borrador</span>
+                  }
+                </figure>
+              </a>
+              <div class="av-curso-body">
+                <header class="av-curso-head">
+                  <h3>
+                    <a [routerLink]="fichaCursoLink(c)" class="av-curso-link">{{ c.nombreProg }}</a>
+                  </h3>
+                </header>
+                @if (c.tienePaquete || c.nivel) {
+                  <div class="av-curso-tags">
+                    @if (c.tienePaquete) {
+                      <span class="cap cap-emerald cap-sm">Paquete OK</span>
+                    }
+                    @if (c.nivel) {
+                      <span class="cap cap-indigo cap-sm">{{ labelNivel(c.nivel) }}</span>
+                    }
+                  </div>
+                }
+                <dl class="av-curso-meta">
+                  <div>
+                    <dt>Tarifa virtual</dt>
+                    <dd>${{ c.tarifaVirtual | number: '1.0-0' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Horas</dt>
+                    <dd>{{ c.horas ?? '—' }}</dd>
+                  </div>
+                  <div class="av-curso-meta-wide">
+                    <dt>Categorías</dt>
+                    <dd>{{ c.categoriaNombres?.join(', ') || '—' }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <footer class="card-foot av-curso-foot">
+                <span class="card-hint">Curso virtual</span>
+                <div class="card-actions">
+                  <a [routerLink]="fichaCursoLink(c)" class="act open linkish">Ficha</a>
+                  <a [routerLink]="fichaCursoLink(c)" [queryParams]="{ tab: 'contenido' }" class="act doc linkish">Contenido</a>
+                </div>
+              </footer>
+            </article>
+          }
+        </div>
+      }
+    }
+  }
+
+  @if (tab() === 'usuarios') {
+    <section class="av-panel av-panel--wide">
+      <div class="av-users-head">
+        <div>
+          <h2>Usuarios registrados en el portal</h2>
+          <p class="av-muted">
+            Cree acceso al aula virtual desde aquí (ideal para adultos mayores que no se registran solos).
+            Si el alumno no existe en ARGO, se crea la ficha virtual automáticamente.
+          </p>
+        </div>
+        <div class="av-search">
+          <input
+            type="search"
+            placeholder="Buscar por nombre, email o documento…"
+            [(ngModel)]="buscarUsuario"
+            (keyup.enter)="cargarUsuarios()"
+          />
+          <button type="button" class="av-btn av-btn--secondary" (click)="cargarUsuarios()">Buscar</button>
+        </div>
+      </div>
+
+      <div class="av-block av-create-user">
+        <div class="av-create-user-head">
+          <h3>Crear alumno virtual + acceso al portal</h3>
+          <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="mostrarFormUsuario = !mostrarFormUsuario">
+            {{ mostrarFormUsuario ? 'Ocultar formulario' : 'Nuevo usuario' }}
+          </button>
+        </div>
+        @if (mostrarFormUsuario) {
+          <p class="av-muted">
+            Defina correo y contraseña que el alumno usará en el portal. Anote los datos para entregárselos en recepción o por teléfono.
+          </p>
+          <div class="av-grid3">
+            <div class="av-field">
+              <label>Tipo documento</label>
+              <select [(ngModel)]="nuevoUsuario.tipoDoc">
+                <option value="1">Cédula de ciudadanía</option>
+                <option value="2">Tarjeta de identidad</option>
+                <option value="3">Cédula de extranjería</option>
+                <option value="4">Pasaporte</option>
+              </select>
+            </div>
+            <div class="av-field">
+              <label>Número de documento</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.numDoc" placeholder="Ej. 1234567890" />
+            </div>
+            <div class="av-field">
+              <label>Celular</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.celular" placeholder="Opcional" />
+            </div>
+          </div>
+          <div class="av-grid2">
+            <div class="av-field">
+              <label>Primer apellido</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.apellido1" />
+            </div>
+            <div class="av-field">
+              <label>Segundo apellido</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.apellido2" />
+            </div>
+          </div>
+          <div class="av-grid2">
+            <div class="av-field">
+              <label>Primer nombre</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.nombre1" />
+            </div>
+            <div class="av-field">
+              <label>Segundo nombre</label>
+              <input type="text" [(ngModel)]="nuevoUsuario.nombre2" />
+            </div>
+          </div>
+          <div class="av-grid2">
+            <div class="av-field">
+              <label>Correo (usuario del portal)</label>
+              <input type="email" [(ngModel)]="nuevoUsuario.email" placeholder="alumno@correo.com" />
+            </div>
+            <div class="av-field">
+              <label>Contraseña</label>
+              <input
+                type="text"
+                [(ngModel)]="nuevoUsuario.password"
+                placeholder="Mín. 6 caracteres"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+          @if (credencialesCreadas()) {
+            <p class="av-ok av-credenciales">
+              <strong>{{ credencialesCreadas()!.nombre }}</strong> (doc. {{ credencialesCreadas()!.numDoc }})<br />
+              Usuario: <code>{{ credencialesCreadas()!.email }}</code> · Contraseña: <code>{{ credencialesCreadas()!.password }}</code>
+            </p>
+          }
+          <div class="av-create-user-actions">
+            <button
+              type="button"
+              class="av-btn av-btn--primary"
+              [disabled]="creandoUsuario()"
+              (click)="crearUsuarioPortal()"
+            >
+              {{ creandoUsuario() ? 'Creando…' : 'Crear acceso al portal' }}
+            </button>
+            <button type="button" class="av-btn av-btn--ghost" (click)="limpiarFormUsuario()">Limpiar</button>
+          </div>
+        }
+      </div>
+
+      @if (loadingUsuarios()) {
+        <p class="av-muted">Cargando usuarios…</p>
+      } @else if (!usuarios().length) {
+        <p class="av-muted av-empty-msg">Aún no hay usuarios registrados en el portal.</p>
+      } @else {
+        <div class="av-table-wrap">
+          <table class="av-table">
+            <thead>
+              <tr>
+                <th>Alumno</th>
+                <th>Email portal</th>
+                <th>Documento</th>
+                <th>Celular</th>
+                <th>Registro</th>
+                <th>Último acceso</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of usuarios(); track u.id) {
+                <tr>
+                  <td>
+                    <strong>{{ u.nombreCompleto || '—' }}</strong>
+                  </td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ u.numDoc }}</td>
+                  <td>{{ u.celular || '—' }}</td>
+                  <td>{{ fmtFecha(u.createdAt) }}</td>
+                  <td>{{ fmtFecha(u.ultimoAcceso) }}</td>
+                  <td>
+                    @if (u.activo) {
+                      <span class="av-pill av-pill--ok">Activo</span>
+                    } @else {
+                      <span class="av-pill av-pill--off">Inactivo</span>
+                    }
+                  </td>
+                  <td class="av-actions">
+                    <a class="av-link" [routerLink]="['/app/alumnos', u.numDoc]">Ver ficha</a>
+                    <button type="button" class="av-link av-link--danger" (click)="eliminarUsuarioPortal(u)">
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="av-muted av-table-foot">{{ usuariosTotal() }} usuario(s)</p>
+      }
+    </section>
+  }
+
+  @if (tab() === 'empresa') {
+    <section class="av-panel av-panel--wide av-panel--portal">
+      <h2>Datos de la empresa en el portal</h2>
+      <p class="av-muted">
+        Nombre, teléfono, dirección, correo y logo que aparecen en el encabezado, pie de página y Acerca de del portal.
+      </p>
+
+      <div class="av-logo-block">
+        <label class="av-field">
+          <span>Logo del portal</span>
+          <span class="av-muted av-logo-hint">PNG, JPG o WEBP. Máx. 3 MB. Cabecera y pie del sitio.</span>
+        </label>
+        <div class="av-logo-row">
+          @if (portalForm.urlLogoAbsoluta; as logoUrl) {
+            <figure class="av-logo-preview">
+              <img [src]="logoUrl" alt="Logo portal" />
+            </figure>
+          } @else {
+            <div class="av-logo-preview av-logo-preview--empty">Sin logo</div>
+          }
+          <div class="av-logo-actions">
+            <label class="av-btn av-btn--ghost av-btn--file">
+              Subir imagen
+              <input type="file" accept="image/*" hidden (change)="onLogo($event)" [disabled]="saving()" />
+            </label>
+            @if (portalForm.urlLogo) {
+              <button type="button" class="av-btn av-btn--ghost" [disabled]="saving()" (click)="quitarLogo()">
+                Quitar logo del portal
+              </button>
+            }
+          </div>
+        </div>
+        @if (portalForm.logoDesdeRecibos) {
+          <p class="av-muted av-logo-fallback">
+            Mostrando logo de <strong>Configuración → Recibos</strong>. Suba uno aquí para usar un logo distinto en el portal.
+          </p>
+        }
+      </div>
+
+      <div class="av-field">
+        <label>Nombre del CEA / empresa</label>
+        <input type="text" [(ngModel)]="portalForm.nombreEmpresa" placeholder="Ej. Fundación Finstruvial" />
+      </div>
+      <div class="av-grid2">
+        <div class="av-field">
+          <label>NIT</label>
+          <input type="text" [(ngModel)]="portalForm.nit" />
+        </div>
+        <div class="av-field">
+          <label>Teléfono / WhatsApp</label>
+          <input type="text" [(ngModel)]="portalForm.telefono" placeholder="Ej. 313 392 10 11" />
+          <span class="av-muted av-field-hint">Usado en el portal y en el botón flotante de WhatsApp.</span>
+        </div>
+      </div>
+      <div class="av-field">
+        <label>Dirección</label>
+        <input type="text" [(ngModel)]="portalForm.direccion" placeholder="CLL 26 DN # 4-63…" />
+      </div>
+      <div class="av-grid2">
+        <div class="av-field">
+          <label>Ciudad</label>
+          <input type="text" [(ngModel)]="portalForm.ciudad" placeholder="Popayán" />
+        </div>
+        <div class="av-field">
+          <label>Correo electrónico</label>
+          <input type="email" [(ngModel)]="portalForm.email" />
+        </div>
+      </div>
+      <!-- ── Correos del portal ── -->
+      <div class="av-emails-section">
+        <h3 class="av-emails-title">📧 Correos del portal</h3>
+
+        <div class="av-field">
+          <label>Correo destino — formulario de Contacto</label>
+          <input
+            type="email"
+            [(ngModel)]="portalForm.emailContacto"
+            placeholder="contacto@empresa.com"
+          />
+          <span class="av-muted av-field-hint">
+            Los mensajes del formulario de contacto del portal se envían aquí. Si está vacío, se usa el correo general o el de Recibos.
+          </span>
+        </div>
+
+        <div class="av-field">
+          <label>Correo remitente — confirmación de registro</label>
+          <input
+            type="email"
+            [(ngModel)]="portalForm.emailConfirmacion"
+            placeholder="aula@empresa.com"
+          />
+          <span class="av-muted av-field-hint">
+            Dirección desde la que se envían los correos con el código de verificación al registrarse. Si está vacío, se usa el remitente SMTP por defecto.
+          </span>
+        </div>
+
+        <div class="av-field">
+          <label>Correo destino — formulario PQR</label>
+          <input
+            type="email"
+            [(ngModel)]="portalForm.emailPqr"
+            placeholder="pqr@empresa.com"
+          />
+          <span class="av-muted av-field-hint">
+            Peticiones, Quejas, Reclamos y Sugerencias enviadas desde el formulario PQR del aula llegarán aquí. Si está vacío, el formulario PQR no estará visible en el portal.
+          </span>
+        </div>
+      </div>
+
+      @if (portalForm.vistaPreviaEmpresa; as prev) {
+        <div class="av-preview">
+          <p class="av-preview-title">Vista previa en el portal</p>
+          <p><strong>{{ prev.nombreCea }}</strong></p>
+          @if (prev.nit) { <p class="av-muted">NIT: {{ prev.nit }}</p> }
+          <p class="av-muted">{{ prev.direccion }} {{ prev.ciudad }}</p>
+          @if (prev.telefono) { <p class="av-muted">Tel: {{ prev.telefono }}</p> }
+          @if (prev.email) { <p class="av-muted">{{ prev.email }}</p> }
+        </div>
+      }
+
+      <button type="button" class="av-btn av-btn--primary" [disabled]="saving()" (click)="guardarPortal()">
+        Guardar datos empresa
+      </button>
+    </section>
+  }
+
+  @if (tab() === 'portal') {
+    <section class="av-panel av-panel--wide av-panel--portal">
+      <h2>Textos del portal público</h2>
+      <p class="av-muted">Hero, página Acerca de y todas las secciones del landing (inicio del portal).</p>
+
+      <h3 class="av-subtitle">Hero y Acerca de</h3>
+      <div class="av-field">
+        <label>Título hero</label>
+        <input type="text" [(ngModel)]="portalForm.heroTitulo" />
+      </div>
+      <div class="av-field">
+        <label>Subtítulo hero</label>
+        <textarea rows="2" [(ngModel)]="portalForm.heroSubtitulo"></textarea>
+      </div>
+      <div class="av-field">
+        <label>Acerca de (texto)</label>
+        <textarea rows="6" [(ngModel)]="portalForm.acercaDeHtml"></textarea>
+      </div>
+
+      @if (portalForm.landing; as landing) {
+        <h3 class="av-subtitle">Secciones del landing</h3>
+        <argo-portal-landing-editor [landing]="landing" />
+      }
+
+      <button type="button" class="av-btn av-btn--primary" [disabled]="saving()" (click)="guardarPortal()">
+        Guardar textos del portal
+      </button>
+    </section>
+  }
+</section>

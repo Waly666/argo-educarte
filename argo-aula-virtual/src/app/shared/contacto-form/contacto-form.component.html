@@ -1,0 +1,62 @@
+@if (!cargandoConfig() && activo()) {
+  <div class="contacto-form" [class.contacto-form--acerca]="origen === 'acerca'">
+    <header class="contacto-form__head">
+      <p class="contacto-form__kicker">✉️ Escríbenos</p>
+      <h3>Formulario de contacto</h3>
+      <p class="contacto-form__lead">Cuéntenos en qué podemos ayudarle. Le responderemos a la brevedad.</p>
+    </header>
+
+    @if (ok(); as mensaje) {
+      <p class="contacto-form__ok" role="status">{{ mensaje }}</p>
+    }
+    @if (error(); as err) {
+      <p class="contacto-form__err" role="alert">{{ err }}</p>
+    }
+
+    <form class="contacto-form__grid" (ngSubmit)="enviar()" #f="ngForm">
+      <label class="contacto-form__field contacto-form__field--full">
+        <span>Nombre *</span>
+        <input type="text" name="nombre" [(ngModel)]="form.nombre" required minlength="2" autocomplete="name" />
+      </label>
+
+      <label class="contacto-form__field">
+        <span>Correo *</span>
+        <input type="email" name="email" [(ngModel)]="form.email" required autocomplete="email" />
+      </label>
+
+      <label class="contacto-form__field">
+        <span>Teléfono</span>
+        <input type="tel" name="telefono" [(ngModel)]="form.telefono" autocomplete="tel" />
+      </label>
+
+      <label class="contacto-form__field contacto-form__field--full">
+        <span>Asunto</span>
+        <input type="text" name="asunto" [(ngModel)]="form.asunto" />
+      </label>
+
+      <label class="contacto-form__field contacto-form__field--full">
+        <span>Mensaje *</span>
+        <textarea
+          name="mensaje"
+          rows="5"
+          [(ngModel)]="form.mensaje"
+          required
+          minlength="10"
+          placeholder="Escriba su consulta…"
+        ></textarea>
+      </label>
+
+      @if (turnstileSiteKey()) {
+        <div class="contacto-form__turnstile contacto-form__field--full">
+          <av-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+        </div>
+      }
+
+      <div class="contacto-form__actions contacto-form__field--full">
+        <button type="submit" class="btn btn-primary" [disabled]="enviando() || f.invalid">
+          {{ enviando() ? 'Enviando…' : 'Enviar mensaje' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

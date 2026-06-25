@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  [theme]="theme()"
+  icon="⚠"
+  [title]="titulo()"
+  [hint]="'Certificados por vencer — próximos ' + (alertSvc.data()?.diasVentana ?? 15) + ' días hasta el vencimiento'"
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

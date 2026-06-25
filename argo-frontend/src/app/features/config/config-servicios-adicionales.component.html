@@ -1,0 +1,231 @@
+<section class="sa-page card">
+  <header class="sa-head">
+    <div>
+      <h1>Servicios adicionales automáticos</h1>
+      <p>
+        Enlaza servicios del catálogo <strong>sin programa</strong> a reglas por modalidad, tipo de capacitación
+        o forma de pago. Sin hardcodear en código.
+      </p>
+    </div>
+    <a routerLink="/app/servicios" class="sa-link-servicios">Catálogo de servicios</a>
+  </header>
+
+  @if (loading()) {
+    <p class="sa-hint">Cargando…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="sa-msg" [class.sa-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="sa-info card-inner">
+      <strong>Ejemplos de uso</strong>
+      <ul>
+        <li><strong>Derechos de grado</strong> — Al matricular · Modalidad Presencial/Mixta · Prefijo código TEC</li>
+        <li><strong>Pasarela de pago</strong> — Al cobrar recibo · Modalidad Virtual · Tipo de pago pasarela/tarjeta en línea</li>
+      </ul>
+      <p class="sa-hint">
+        Si deja modalidades, tarifas o programas vacíos, aplica a todas las coincidencias del resto de filtros.
+        El valor se toma de <strong>tarifa 1</strong> del servicio en catálogo.
+      </p>
+    </div>
+
+    @if (!reglas().length) {
+      <p class="sa-empty">No hay reglas. Agregue una para empezar.</p>
+    }
+
+    @for (r of reglas(); track r.id; let i = $index) {
+      <article class="sa-regla" [class.sa-regla--off]="!r.activo">
+        <header class="sa-regla-head">
+          <span class="sa-regla-num">Regla {{ i + 1 }}</span>
+          <div class="sa-regla-head-actions">
+            <label class="sa-switch-wrap">
+              <argo-switch [checked]="r.activo" (checkedChange)="patchRegla(i, { activo: $event })" />
+              <span>Activa</span>
+            </label>
+            <button type="button" class="ghost mini danger" (click)="quitarRegla(i)">Quitar</button>
+          </div>
+        </header>
+
+        <div class="sa-grid">
+          <label class="sa-field sa-field--wide">
+            <span class="sa-label">Servicio (sin programa) *</span>
+            <select [ngModel]="r.idServ" (ngModelChange)="patchRegla(i, { idServ: $event })">
+              <option value="">— Seleccione —</option>
+              @for (s of serviciosGlobales(); track s.idServ) {
+                <option [value]="s.idServ">{{ s.label }} — ${{ s.valor | number:'1.0-0' }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="sa-field sa-field--wide">
+            <span class="sa-label">Cuándo cobrar *</span>
+            <select [ngModel]="r.momento" (ngModelChange)="patchRegla(i, { momento: $event })">
+              @for (m of momentos; track m.value) {
+                <option [value]="m.value">{{ m.label }}</option>
+              }
+            </select>
+            <span class="sa-field-hint">{{ r.momento === 'pago' ? momentos[1].hint : momentos[0].hint }}</span>
+          </label>
+        </div>
+
+        <div class="sa-block">
+          <span class="sa-label">Modalidades del programa</span>
+          <div class="sa-checks">
+            @for (m of modalidadesOpts; track m.codigo) {
+              <label class="sa-check">
+                <input
+                  type="checkbox"
+                  [checked]="tieneModalidad(i, m.codigo)"
+                  (change)="toggleModalidad(i, m.codigo, $any($event.target).checked)"
+                />
+                {{ m.label }}
+              </label>
+            }
+          </div>
+          <span class="sa-field-hint">Vacío = todas las modalidades</span>
+        </div>
+
+        @if (r.momento === 'matricula') {
+          <div class="sa-block">
+            <span class="sa-label">Tarifa de matrícula</span>
+            <div class="sa-checks">
+              @for (t of tarifasOpts; track t.value) {
+                <label class="sa-check">
+                  <input
+                    type="checkbox"
+                    [checked]="tieneTarifa(i, t.value)"
+                    (change)="toggleTarifa(i, t.value, $any($event.target).checked)"
+                  />
+                  {{ t.label }}
+                </label>
+              }
+            </div>
+            <span class="sa-field-hint">Vacío = cualquier tarifa</span>
+          </div>
+        }
+
+        @if (r.momento === 'pago') {
+          <div class="sa-block">
+            <span class="sa-label">Tipos de pago *</span>
+            @if (!tiposPago().length) {
+              <p class="sa-field-hint">Cargue tipos de pago en catálogos.</p>
+            }
+            <div class="sa-checks sa-checks--wrap">
+              @for (tp of tiposPago(); track tp.id) {
+                <label class="sa-check">
+                  <input
+                    type="checkbox"
+                    [checked]="tieneTipoPago(i, tp.id)"
+                    (change)="toggleTipoPago(i, tp.id, $any($event.target).checked)"
+                  />
+                  {{ tp.label }}
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="sa-block">
+          <span class="sa-label">Tipo de capacitación (opcional)</span>
+          <div class="sa-checks sa-checks--wrap">
+            @for (tc of tiposCap(); track tc.uid) {
+              <label class="sa-check">
+                <input
+                  type="checkbox"
+                  [attr.name]="'tipcap-' + r.id + '-' + tc.uid"
+                  [checked]="tieneTipCap(i, tc.idTipCap)"
+                  (change)="toggleTipCap(i, tc.idTipCap, $any($event.target).checked)"
+                />
+                {{ tc.label }}
+              </label>
+            }
+          </div>
+        </div>
+
+        <label class="sa-field">
+          <span class="sa-label">Prefijos de código programa (opcional)</span>
+          <input
+            type="text"
+            [ngModel]="prefijosTexto(r)"
+            (ngModelChange)="patchPrefijos(i, $event)"
+            placeholder="TEC, CUR, DIP"
+          />
+          <span class="sa-field-hint">Separados por coma. Ej. TEC para técnicos laborales.</span>
+        </label>
+
+        <div class="sa-block sa-programas">
+          <div class="sa-programas-head">
+            <span class="sa-label">Programas específicos (opcional)</span>
+            @if (cantidadProgramasRegla(r) > 0) {
+              <span class="sa-programas-count">{{ cantidadProgramasRegla(r) }} seleccionado(s)</span>
+              <button type="button" class="ghost mini" (click)="limpiarProgramasRegla(i)">Limpiar</button>
+            }
+          </div>
+          <span class="sa-field-hint">
+            Vacío = aplica a todos los programas que cumplan el resto de filtros. Si elige uno o más, la regla solo
+            aplica a esos programas.
+          </span>
+          @if (!programas().length) {
+            <p class="sa-field-hint">Cargando catálogo de programas…</p>
+          } @else {
+            <input
+              type="search"
+              class="sa-programas-buscar"
+              placeholder="Buscar por código, nombre o ID…"
+              [ngModel]="buscarProgramaRegla(r.id)"
+              (ngModelChange)="setBuscarProgramaRegla(r.id, $event)"
+            />
+            @if (cantidadProgramasRegla(r) > 0) {
+              <div class="sa-programas-chips">
+                @for (pid of r.idProgramas; track pid) {
+                  <span class="sa-chip">{{ programaLabel(pid) }}</span>
+                }
+              </div>
+            }
+            <div class="sa-programas-list">
+              @for (p of programasFiltradosRegla(r.id); track idProgramaStr(p)) {
+                <label
+                  class="sa-pick-row"
+                  [class.selected]="tienePrograma(i, idProgramaStr(p))"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="tienePrograma(i, idProgramaStr(p))"
+                    (change)="togglePrograma(i, idProgramaStr(p), $any($event.target).checked)"
+                  />
+                  <span class="sa-pick-code">{{ p.codigoProg || idProgramaStr(p) }}</span>
+                  <span class="sa-pick-name">{{ p.nombreProg }}</span>
+                </label>
+              } @empty {
+                <p class="sa-field-hint sa-programas-empty">Sin coincidencias para la búsqueda.</p>
+              }
+            </div>
+          }
+        </div>
+
+        @if (r.momento === 'matricula') {
+          <label class="sa-check sa-check--block">
+            <input
+              type="checkbox"
+              [ngModel]="r.repartirSemestres"
+              (ngModelChange)="patchRegla(i, { repartirSemestres: $event })"
+            />
+            Repartir valor entre semestres (cuotas). Desmarcado = ítem aparte del total (recomendado para derechos de grado).
+          </label>
+        }
+
+        <label class="sa-field sa-field--wide">
+          <span class="sa-label">Nota interna (opcional)</span>
+          <input type="text" [ngModel]="r.nota" (ngModelChange)="patchRegla(i, { nota: $event })" maxlength="200" />
+        </label>
+      </article>
+    }
+
+    <footer class="sa-foot">
+      <button type="button" class="ghost" (click)="agregarRegla()">+ Agregar regla</button>
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  }
+</section>

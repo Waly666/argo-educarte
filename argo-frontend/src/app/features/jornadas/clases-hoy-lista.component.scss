@@ -1,0 +1,167 @@
+@use './jornada-live-estado.scss';
+@use './jornadas-shared' as *;
+
+.clases-hoy-page {
+  .head-badges .btn-nueva-clase {
+    white-space: nowrap;
+  }
+
+  .live-badge {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 0.9rem;
+
+    &.error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.32);
+      color: #fecaca;
+    }
+
+    .close {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line-soft);
+    background: rgba(6, 16, 41, 0.5);
+
+    .search-box {
+      flex: 1 1 280px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 16, 41, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px 10px;
+
+      .ic {
+        color: var(--accent-2);
+      }
+
+      input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 8px 4px;
+      }
+    }
+
+    .count {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+    }
+  }
+
+  .content-wrap {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .loading,
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-soft);
+  }
+
+  .hora-cell {
+    font-family: ui-monospace, monospace;
+    font-size: 0.88rem;
+  }
+
+  .col-actions {
+    width: 1%;
+    min-width: 13rem;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .actions-cell {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.35rem;
+    justify-content: flex-end;
+
+    .btn-gestionar {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.9));
+      border: 1px solid rgba(96, 165, 250, 0.6);
+      color: #eff6ff;
+    }
+
+    .btn-editar {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.9));
+      border: 1px solid rgba(52, 211, 153, 0.55);
+      color: #ecfdf5;
+    }
+
+    .btn-operar {
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.9));
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      color: #fffbeb;
+    }
+  }
+}
+
+.clase-crear-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .hint-warn {
+    color: #fcd34d;
+  }
+
+  .crear-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .crear-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(6, 16, 41, 0.65);
+      color: inherit;
+    }
+  }
+}

@@ -1,0 +1,66 @@
+.argo-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+}
+
+.argo-switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.95);
+  border: 1px solid rgba(100, 116, 139, 0.45);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.argo-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.argo-switch.on .argo-switch-track {
+  background: #14532d;
+  border-color: #166534;
+}
+
+.argo-switch.on .argo-switch-thumb {
+  transform: translateX(20px);
+  background: #86efac;
+}
+
+.argo-switch-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-soft, #94a3b8);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  .argo-switch.on & {
+    color: #86efac;
+  }
+}

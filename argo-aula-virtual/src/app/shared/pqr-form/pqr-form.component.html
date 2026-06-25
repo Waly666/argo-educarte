@@ -1,0 +1,81 @@
+@if (!cargandoConfig()) {
+  @if (activo()) {
+    <div class="pqr-form">
+      <header class="pqr-form__head">
+        <p class="pqr-form__kicker">📋 Peticiones, Quejas, Reclamos y Sugerencias</p>
+        <h3>Formulario PQR</h3>
+        <p class="pqr-form__lead">Su opinión es muy importante para nosotros. Diligencia el formulario y le daremos respuesta a la brevedad.</p>
+      </header>
+
+      @if (ok(); as mensaje) {
+        <p class="pqr-form__ok" role="status">✅ {{ mensaje }}</p>
+      }
+      @if (error(); as err) {
+        <p class="pqr-form__err" role="alert">⚠️ {{ err }}</p>
+      }
+
+      <form class="pqr-form__grid" (ngSubmit)="enviar()" #f="ngForm">
+
+        <label class="pqr-form__field">
+          <span>Tipo de solicitud *</span>
+          <select name="tipo" [(ngModel)]="form.tipo" required>
+            @for (t of tipos; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="pqr-form__field">
+          <span>N.º de documento</span>
+          <input type="text" name="numDoc" [(ngModel)]="form.numDoc" placeholder="Cédula o NIT" />
+        </label>
+
+        <label class="pqr-form__field pqr-form__field--full">
+          <span>Nombre completo *</span>
+          <input type="text" name="nombre" [(ngModel)]="form.nombre" required minlength="2" autocomplete="name" />
+        </label>
+
+        <label class="pqr-form__field">
+          <span>Correo electrónico *</span>
+          <input type="email" name="email" [(ngModel)]="form.email" required autocomplete="email" />
+        </label>
+
+        <label class="pqr-form__field">
+          <span>Teléfono</span>
+          <input type="tel" name="telefono" [(ngModel)]="form.telefono" autocomplete="tel" />
+        </label>
+
+        <label class="pqr-form__field pqr-form__field--full">
+          <span>Descripción detallada *</span>
+          <textarea
+            name="mensaje"
+            rows="6"
+            [(ngModel)]="form.mensaje"
+            required
+            minlength="10"
+            placeholder="Describa detalladamente su solicitud, queja o sugerencia…"
+          ></textarea>
+        </label>
+
+        @if (turnstileSiteKey()) {
+          <div class="pqr-form__turnstile pqr-form__field--full">
+            <av-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+          </div>
+        }
+
+        <div class="pqr-form__actions pqr-form__field--full">
+          <button type="submit" class="btn btn-primary" [disabled]="enviando() || f.invalid">
+            {{ enviando() ? 'Enviando…' : 'Enviar PQR' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  } @else {
+    <div class="pqr-form pqr-form--inactivo">
+      <p class="pqr-form__inactive-msg">
+        El formulario PQR no está disponible en este momento.<br />
+        Puede comunicarse directamente con nosotros por los canales de contacto.
+      </p>
+    </div>
+  }
+}

@@ -1,0 +1,178 @@
+<section class="detalle-page">
+  <header class="page-head card">
+    <div class="head-left">
+      <button type="button" class="ghost back" (click)="volver()">{{ etiquetaVolver() }}</button>
+      <button type="button" class="ghost back" *ngIf="esJornadas()" (click)="irHubJornadas()">← Jornadas</button>
+
+      <div class="head-profile" *ngIf="!esNuevo() && alumno() as a">
+        <div class="current">
+          <div class="avatar">
+            <img *ngIf="fotoUrl() as f" [src]="f" alt="" />
+            <span *ngIf="!fotoUrl()">{{ ((a.nombre1 || '?').charAt(0)) + ((a.apellido1 || '').charAt(0)) }}</span>
+          </div>
+          <div class="meta">
+            <strong>{{ nombreCompleto() }}</strong>
+            <span>{{ a.numDoc }}</span>
+            <span class="badge virtual tipo-alumno-badge" *ngIf="esAlumnoVirtual()">Virtual</span>
+            @if (a.empresaNombre) {
+              <span class="empresa-badge-ficha">🏢 {{ a.empresaNombre }}</span>
+            }
+          </div>
+        </div>
+
+        <div
+          class="head-alarms"
+          *ngIf="
+            (alarmas.tiene('alarmas.alumnos.saldos') && saldosPendientesCount() > 0) ||
+            (alarmas.tiene('alarmas.alumnos.documentos') && docsPendientesCount() > 0) ||
+            (alarmas.tiene('alarmas.alumnos.clases_cea_creado') && clasesCeaCreadoCount() > 0 && puedeVerAlertaCea()) ||
+            tieneComprobanteIngresoHoy() ||
+            tieneComprobanteEgresoHoy() ||
+            tieneFacturaHoy()
+          ">
+          <button
+            type="button"
+            class="head-alarm saldo-alarm"
+            *ngIf="alarmas.tiene('alarmas.alumnos.saldos') && saldosPendientesCount() > 0"
+            (click)="irPagos()"
+            [attr.title]="saldosPendientesTitulo()"
+            [attr.aria-label]="'Saldo pendiente total: ' + fmtSaldo(saldoTotalPendiente())">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">$</span>
+            <span class="head-alarm-text">
+              {{ saldosPendientesCount() }} saldo{{ saldosPendientesCount() > 1 ? 's' : '' }} · {{ fmtSaldo(saldoTotalPendiente()) }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm"
+            [class.serv-saldo-alarm]="!esVirtual(it)"
+            [class.virtual-saldo-alarm]="esVirtual(it)"
+            *ngFor="let it of saldosPendientes()"
+            [hidden]="!alarmas.tiene('alarmas.alumnos.saldos')"
+            (click)="irPagos()"
+            [attr.title]="tituloSaldoItem(it.descripcion, fmtSaldo(it.saldo))"
+            [attr.aria-label]="tituloSaldoItem(it.descripcion, fmtSaldo(it.saldo))">
+            <span [class.head-alarm-pulse]="!esVirtual(it)" [class.virtual-saldo-pulse]="esVirtual(it)" aria-hidden="true"></span>
+            <span [class.head-alarm-icon]="!esVirtual(it)" [class.virtual-saldo-icon]="esVirtual(it)" aria-hidden="true">
+              {{ esVirtual(it) ? 'V' : '$' }}
+            </span>
+            <span [class.head-alarm-text]="!esVirtual(it)" [class.virtual-saldo-text]="esVirtual(it)">
+              <ng-container *ngIf="esVirtual(it)">Virtual · </ng-container>{{ etiquetaSaldo(it.descripcion) }} · {{ fmtSaldo(it.saldo) }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm doc-alarm"
+            *ngIf="alarmas.tiene('alarmas.alumnos.documentos') && docsPendientesCount() > 0"
+            (click)="irDocumentos()"
+            [attr.title]="docsPendientesTitulo()"
+            [attr.aria-label]="docsPendientesTitulo()">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">!</span>
+            <span class="head-alarm-text">
+              {{ docsPendientesCount() }} doc. pendiente{{ docsPendientesCount() > 1 ? 's' : '' }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm cea-alarm"
+            *ngFor="let prog of clasesCeaCreadoAlertas()"
+            [hidden]="!alarmas.tiene('alarmas.alumnos.clases_cea_creado') || !puedeVerAlertaCea()"
+            (click)="irProgramacion()"
+            [attr.title]="tituloClaseCeaCreada(prog)"
+            [attr.aria-label]="tituloClaseCeaCreada(prog)">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">⏱</span>
+            <span class="head-alarm-text">{{ tituloClaseCeaCreada(prog) }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm ingreso-alarm"
+            *ngIf="tieneComprobanteIngresoHoy()"
+            (click)="irComprobanteIngresoHoy($event)"
+            [attr.title]="tituloComprobanteIngresoHoy()"
+            [attr.aria-label]="tituloComprobanteIngresoHoy()">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">↓</span>
+            <span class="head-alarm-text">{{ etiquetaComprobanteIngresoHoy() }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm egreso-alarm"
+            *ngIf="tieneComprobanteEgresoHoy()"
+            (click)="irComprobanteEgresoHoy($event)"
+            [attr.title]="tituloComprobanteEgresoHoy()"
+            [attr.aria-label]="tituloComprobanteEgresoHoy()">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">↑</span>
+            <span class="head-alarm-text">{{ etiquetaComprobanteEgresoHoy() }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="head-alarm factura-alarm"
+            *ngIf="tieneFacturaHoy()"
+            (click)="irFacturaHoy($event)"
+            [attr.title]="tituloFacturaHoy()"
+            [attr.aria-label]="tituloFacturaHoy()">
+            <span class="head-alarm-pulse" aria-hidden="true"></span>
+            <span class="head-alarm-icon" aria-hidden="true">FE</span>
+            <span class="head-alarm-text">{{ etiquetaFacturaHoy() }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="title-block" *ngIf="esNuevo()">
+        <h1>{{ tituloPagina() }}</h1>
+        <p *ngIf="!esJornadas()">Complete los datos principales y guarde para habilitar matrículas y pagos.</p>
+        <p *ngIf="esJornadas()">Alta de alumno para jornadas de capacitación. Al guardar volverá a la lista de alumnos jornada.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="loading card" *ngIf="loading() && !esNuevo() && !store.hasAlumno()">Cargando alumno…</div>
+
+  <div class="card err" *ngIf="errorMsg()">
+    {{ errorMsg() }}
+    <button type="button" class="ghost" (click)="volver()">Volver a lista</button>
+  </div>
+
+  <ng-container *ngIf="!errorMsg() && (esNuevo() || store.hasAlumno())">
+    <nav class="tabs">
+      <button
+        *ngFor="let t of tabs()"
+        type="button"
+        class="tab"
+        [class.active]="tab() === t.key"
+        [class.doc-pendiente]="t.key === 'documentos' && docsPendientesCount() > 0"
+        [class.saldo-pendiente]="(t.key === 'pagos' || t.key === 'servicios') && saldosPendientesCount() > 0"
+        [class.guardar-pendiente]="(esNuevo() || store.datosSinGuardar()) && t.key === 'datos'"
+        [class.disabled]="esNuevo() && t.key !== 'datos'"
+        [disabled]="esNuevo() && t.key !== 'datos'"
+        (click)="setTab(t.key)"
+        [title]="esNuevo() && t.key !== 'datos' ? 'Guarde el alumno primero con el botón Crear' : (store.datosSinGuardar() && t.key !== 'datos' ? 'Guarde los cambios en Datos Principales' : '')">
+        {{ t.label }}
+      </button>
+    </nav>
+
+    <div class="tab-body" [class.is-loading]="loading()">
+      <div class="tab-loading" *ngIf="loading() && tab() === 'datos'">Actualizando datos…</div>
+      <argo-datos-principales
+        *ngIf="tab() === 'datos'"
+        [alumno]="store.alumno()"
+        [modo]="modo()"></argo-datos-principales>
+      <argo-servicios                *ngIf="tab() === 'servicios'"></argo-servicios>
+      <argo-pagos                    *ngIf="tab() === 'pagos'"></argo-pagos>
+      <argo-certificados             *ngIf="tab() === 'certificados'"></argo-certificados>
+      <argo-documentos               *ngIf="tab() === 'documentos'"></argo-documentos>
+      <argo-migracion-historica      *ngIf="tab() === 'migracion'"></argo-migracion-historica>
+      <argo-alumno-programacion-cea  *ngIf="tab() === 'programacion'"></argo-alumno-programacion-cea>
+    </div>
+  </ng-container>
+</section>

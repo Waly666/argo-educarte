@@ -1,0 +1,30 @@
+<section class="inf-page card">
+  <header class="inf-head">
+    <div>
+      <h1>Informes académicos</h1>
+      <p>
+        Listados parametrizables de programas, servicios, alumnos, matrículas, certificados y cartera.
+        Elija un informe, aplique filtros y exporte a Excel o imprima.
+      </p>
+    </div>
+  </header>
+
+  @if (error(); as e) {
+    <div class="inf-msg inf-msg--err" role="status">{{ e }}</div>
+  }
+
+  @if (loading()) {
+    <p class="inf-hint">Cargando informes…</p>
+  } @else {
+    <div class="inf-grid">
+      @for (inf of informes(); track inf.id) {
+        <a class="inf-card" [routerLink]="['/app/informes', inf.id]">
+          <span class="inf-card__icon">{{ inf.icono }}</span>
+          <h2>{{ inf.etiqueta }}</h2>
+          <p>{{ inf.descripcion }}</p>
+          <span class="inf-card__cta">Configurar filtros →</span>
+        </a>
+      }
+    </div>
+  }
+</section>

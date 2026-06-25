@@ -1,0 +1,102 @@
+<section class="catalog-page rrhh-page admin-list-page card">
+  <header class="rrhh-head page-head">
+    <div class="rrhh-head-main">
+      <p class="breadcrumb"><a routerLink="/app/rrhh/inicio">RRHH</a> / Contratos</p>
+      <h1>Contratos</h1>
+      <p class="hint">Vincule empleados con salario, tipo y vigencia contractual.</p>
+    </div>
+    <div class="rrhh-badges head-actions">
+      @if (!loading()) {
+        <span class="rrhh-chip rrhh-chip--sky">{{ rows().length }} contrato{{ rows().length === 1 ? '' : 's' }}</span>
+      }
+      <a routerLink="/app/rrhh/empleados" class="ghost link-btn">Empleados</a>
+      <button type="button" class="primary" (click)="nuevo()">Nuevo contrato</button>
+    </div>
+  </header>
+  @if (msg(); as texto) {
+    <div class="rrhh-msg" [class.rrhh-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+  <div class="toolbar row-inline">
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')" title="Vista tabla">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')" title="Vista tarjetas">▦ Cards</button>
+    </div>
+  </div>
+  <div class="form-card card argo-form-shell" *ngIf="mostrarForm()">
+    <div class="row">
+      <div class="col-6">
+        <label>Empleado *</label>
+        <select [ngModel]="$any(form()).empleadoId" (ngModelChange)="patch('empleadoId', +$event)">
+          <option [ngValue]="''">—</option>
+          <option *ngFor="let e of empleados()" [ngValue]="e.idEmpleado">
+            {{ e.nombreCompleto }} ({{ e.numeroDocumento }})
+          </option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Nº contrato</label>
+        <input [ngModel]="$any(form()).numeroContrato" (ngModelChange)="patch('numeroContrato', $event)" />
+      </div>
+      <div class="col-3">
+        <label>Tipo</label>
+        <input [ngModel]="$any(form()).tipoContrato" (ngModelChange)="patch('tipoContrato', $event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3"><label>Inicio</label><argo-date-input [ngModel]="$any(form()).fechaInicio" (ngModelChange)="patch('fechaInicio', $event)" ></argo-date-input></div>
+      <div class="col-3"><label>Fin</label><argo-date-input [ngModel]="$any(form()).fechaFin" (ngModelChange)="patch('fechaFin', $event)" ></argo-date-input></div>
+      <div class="col-3"><label>Salario</label><input type="number" [ngModel]="$any(form()).salario" (ngModelChange)="patch('salario', +$event)" /></div>
+      <div class="col-3"><label>Horas/sem</label><input type="number" [ngModel]="$any(form()).horasSemanales" (ngModelChange)="patch('horasSemanales', +$event)" /></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="ghost" (click)="mostrarForm.set(false)">Cancelar</button>
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">Guardar</button>
+    </div>
+  </div>
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+  <table class="argo" *ngIf="!loading() && vista() === 'lista'">
+    <thead>
+      <tr><th>Empleado</th><th>Contrato</th><th>Tipo</th><th>Inicio</th><th>Salario</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of rows()">
+        <td>{{ r.empleadoNombre }} ({{ r.empleadoDocumento }})</td>
+        <td>{{ r.numeroContrato || '—' }}</td>
+        <td>{{ r.tipoContrato || '—' }}</td>
+        <td>{{ r.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ r.salario | number: '1.0-0' }}</td>
+        <td>
+          <button type="button" class="ghost sm" (click)="editar(r)">Editar</button>
+          <button type="button" class="danger sm" (click)="eliminar(r)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+    <article class="list-card" *ngFor="let r of rows()">
+      <header class="card-title"><h3>{{ r.empleadoNombre }}</h3></header>
+      <div class="card-body">
+        <div class="entity-badge-wrap">
+          <div class="entity-badge tone-purple">{{ r.numeroContrato || 'CTO' }}</div>
+        </div>
+        <div class="card-main">
+          <div class="card-doc mono">{{ r.empleadoDocumento }}</div>
+          <dl class="card-fields">
+            <div><dt>Tipo</dt><dd>{{ r.tipoContrato || '—' }}</dd></div>
+            <div><dt>Inicio</dt><dd>{{ r.fechaInicio | date: 'dd/MM/yyyy' }}</dd></div>
+            <div><dt>Salario</dt><dd>{{ r.salario | number: '1.0-0' }}</dd></div>
+          </dl>
+        </div>
+      </div>
+      <footer class="card-foot">
+        <span class="card-hint">Contrato laboral</span>
+        <div class="card-actions">
+          <button type="button" class="act open" (click)="editar(r)">Editar</button>
+          <button type="button" class="act doc" (click)="eliminar(r)">Eliminar</button>
+        </div>
+      </footer>
+    </article>
+    <div class="empty cards-empty" *ngIf="!rows().length">Sin contratos.</div>
+  </div>
+</section>

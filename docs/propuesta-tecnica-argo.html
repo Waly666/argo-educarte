@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propuesta Técnico-Comercial — ARGO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0f4c81;
+      --primary-light: #1a6bb5;
+      --accent: #00a896;
+      --accent-soft: #e6f7f5;
+      --dark: #0d1b2a;
+      --text: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --gold: #c9a227;
+      --shadow: 0 4px 24px rgba(15, 76, 129, 0.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ── Cover ── */
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d1b2a 0%, #0f4c81 45%, #1a6bb5 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 72px;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      background: rgba(0, 168, 150, 0.15);
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(0,168,150,0.25);
+      border: 1px solid rgba(0,168,150,0.5);
+      color: #7ee8dc;
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .cover h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 52pt;
+      font-weight: 400;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .cover h1 span { color: var(--accent); }
+    .cover-subtitle {
+      font-size: 16pt;
+      font-weight: 400;
+      opacity: 0.88;
+      max-width: 620px;
+      margin-bottom: 48px;
+      position: relative;
+    }
+    .cover-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 720px;
+      position: relative;
+    }
+    .cover-meta-item label {
+      display: block;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+    .cover-meta-item span { font-size: 11pt; font-weight: 500; }
+    .cover-modules {
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .cover-pill {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 9.5pt;
+      font-weight: 500;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 56px;
+      background: var(--card);
+    }
+    .page-break { page-break-before: always; }
+
+    /* ── Typography ── */
+    h2.section-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 22pt;
+      color: var(--dark);
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--accent);
+      display: inline-block;
+    }
+    h3 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 28px 0 12px;
+    }
+    h4 {
+      font-size: 10.5pt;
+      font-weight: 600;
+      color: var(--dark);
+      margin: 20px 0 8px;
+    }
+    p { margin-bottom: 12px; }
+    .lead {
+      font-size: 11.5pt;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      max-width: 780px;
+    }
+    .section { margin-bottom: 36px; }
+
+    /* ── Cards ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 18pt;
+      margin-bottom: 12px;
+    }
+    .card h4 { margin: 0 0 8px; color: var(--primary); }
+    .card p { font-size: 9.5pt; color: var(--text-muted); margin: 0; }
+
+    /* ── Module cards ── */
+    .module-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .module-header {
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .module-header h3 { color: #fff; margin: 0; font-size: 13pt; }
+    .module-num {
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 9pt;
+      font-weight: 600;
+    }
+    .module-body { padding: 20px 24px; background: #fff; }
+    .module-price {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13pt;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      text-align: right;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 9.5pt;
+    }
+    thead th {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+    }
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child { border-radius: 0 8px 0 0; }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) { background: var(--bg); }
+    tbody tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+    tbody tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+    .price-col { font-weight: 700; color: var(--primary); white-space: nowrap; }
+    .total-row td {
+      background: var(--dark) !important;
+      color: #fff;
+      font-weight: 700;
+      font-size: 10.5pt;
+    }
+
+    /* ── Lists ── */
+    ul.feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 20px;
+      margin: 12px 0;
+    }
+    ul.feature-list li {
+      font-size: 9.5pt;
+      padding-left: 18px;
+      position: relative;
+    }
+    ul.feature-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── ISO badge ── */
+    .iso-banner {
+      background: linear-gradient(135deg, #0d1b2a, #1e3a5f);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin: 20px 0;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .iso-badge {
+      background: var(--gold);
+      color: var(--dark);
+      font-weight: 800;
+      font-size: 11pt;
+      padding: 10px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .iso-banner p { color: rgba(255,255,255,0.85); margin: 0; font-size: 9.5pt; }
+
+    /* ── Architecture diagram ── */
+    .arch-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .arch-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .arch-item {
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 130px;
+    }
+    .arch-item.mobile { border-color: var(--accent); color: var(--accent); }
+    .arch-core {
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 10pt;
+      margin: 8px auto;
+      max-width: 400px;
+    }
+    .arch-arrow { color: var(--text-muted); font-size: 16pt; margin: 4px 0; }
+
+    /* ── Pricing highlight ── */
+    .pricing-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #1a6bb5 100%);
+      border-radius: var(--radius);
+      color: #fff;
+      padding: 32px;
+      text-align: center;
+      margin: 24px 0;
+    }
+    .pricing-hero .label {
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+    .pricing-hero .amount {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 36pt;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .pricing-hero .note { font-size: 9.5pt; opacity: 0.8; }
+
+    /* ── Timeline ── */
+    .timeline { margin: 20px 0; }
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    .timeline-dot {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 10pt;
+      flex-shrink: 0;
+    }
+    .timeline-content h4 { margin: 0 0 4px; }
+    .timeline-content p { font-size: 9.5pt; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    .doc-footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: var(--text-muted);
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; }
+      .page { padding: 40px 48px; box-shadow: none; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .module-header, .iso-banner, .pricing-hero, thead th, .total-row td, .arch-core {
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER ═══════════════ -->
+<section class="cover">
+  <div class="cover-badge">Propuesta Técnico-Comercial · 2026</div>
+  <h1>Sistema Integral <span>ARGO</span></h1>
+  <p class="cover-subtitle">ERP vertical para Centros de Enseñanza Automovilística (CEA) y formación vial — Colombia</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>Producto</label><span>ARGO Platform</span></div>
+    <div class="cover-meta-item"><label>Versión</label><span>Producción · Mayo 2026</span></div>
+    <div class="cover-meta-item"><label>Vigencia oferta</label><span>60 días calendario</span></div>
+  </div>
+  <div class="cover-modules">
+    <div class="cover-pill">🖥 Plataforma Web ERP</div>
+    <div class="cover-pill">🎓 Aula Virtual Web</div>
+    <div class="cover-pill">📱 App Móvil Cajero</div>
+    <div class="cover-pill">📲 App Móvil Aula</div>
+  </div>
+</section>
+
+<!-- ═══════════════ PAGE 1 ═══════════════ -->
+<div class="page">
+
+  <div class="section">
+    <h2 class="section-title">1. Resumen ejecutivo</h2>
+    <p class="lead">ARGO es un ERP vertical especializado para CEAs y centros de formación vial en Colombia. Integra en una sola plataforma la operación administrativa, académica, financiera, de certificación, programación CEA, jornadas empresariales, recursos humanos, aula virtual y movilidad operativa.</p>
+    <p>La solución se compone de <strong>cuatro módulos comercializables</strong> sobre una arquitectura unificada con backend centralizado, base de datos MongoDB, autenticación JWT, control de acceso basado en roles (RBAC) y un marco de seguridad alineado con <strong>ISO/IEC 27001:2022</strong>.</p>
+    <p>ARGO no es un ERP genérico adaptado: está diseñado para la normativa, los flujos y la operación real de los CEAs colombianos.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">2. Contexto y necesidad</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">⚠</div>
+        <h4>Problema actual</h4>
+        <p>Fragmentación de sistemas: Excel para cartera, software contable desconectado, certificados en Word, programación manual, portales inexistentes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✓</div>
+        <h4>Solución ARGO</h4>
+        <p>Ecosistema integrado con respaldos cifrados, auditoría completa, MFA obligatorio y controles de acceso de nivel empresarial.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3. Arquitectura</h2>
+    <div class="arch-box">
+      <div class="arch-row">
+        <div class="arch-item">Plataforma Web ERP</div>
+        <div class="arch-item">Aula Virtual Web</div>
+        <div class="arch-item mobile">App Móvil Cajero</div>
+        <div class="arch-item mobile">App Móvil Aula</div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-core">API REST · Node.js / Express · JWT · RBAC · MFA</div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-core" style="background: linear-gradient(90deg, #00a896, #028090); max-width: 280px;">MongoDB · Respaldos cifrados</div>
+    </div>
+    <table>
+      <thead><tr><th>Capa</th><th>Tecnología</th><th>Observación</th></tr></thead>
+      <tbody>
+        <tr><td>Backend API</td><td>Node.js 20+, Express 4, Mongoose 8</td><td>API REST unificada /api/*</td></tr>
+        <tr><td>Base de datos</td><td>MongoDB 6</td><td>Datos transaccionales y catálogos</td></tr>
+        <tr><td>Frontend ERP</td><td>Angular 19 (standalone, signals)</td><td>SPA personal operativo</td></tr>
+        <tr><td>Portal alumnos</td><td>Angular 19</td><td>Aula virtual web</td></tr>
+        <tr><td>Apps móviles</td><td>Expo 54 / React Native 0.81</td><td>APK Android (iOS disponible)</td></tr>
+        <tr><td>Tiempo real</td><td>Socket.io</td><td>Alertas y foro de cursos</td></tr>
+        <tr><td>Despliegue</td><td>Docker, nginx, Certbot</td><td>HTTPS, firewall, WAF Cloudflare</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PAGE 2 — MODULES ═══════════════ -->
+<div class="page page-break">
+
+  <div class="section">
+    <h2 class="section-title">4. Módulos de la solución</h2>
+
+    <!-- Module 1 -->
+    <div class="module-card">
+      <div class="module-header">
+        <h3>Módulo 1 — Plataforma Web ERP</h3>
+        <span class="module-num">STAFF</span>
+      </div>
+      <div class="module-body">
+        <p>Aplicación web Angular para administradores, recepción, cajeros, instructores, RRHH y consulta.</p>
+        <ul class="feature-list">
+          <li>Dashboard ejecutivo con KPIs</li>
+          <li>Gestión de alumnos + OCR cédula</li>
+          <li>Matrículas, liquidaciones, cartera</li>
+          <li>Caja por turno con arqueo</li>
+          <li>Certificados (7 tipos + QR)</li>
+          <li>Programación CEA</li>
+          <li>Jornadas empresariales</li>
+          <li>Cohortes académicas</li>
+          <li>Flota vehicular</li>
+          <li>RRHH y nómina</li>
+          <li>Facturación electrónica (Factus)</li>
+          <li>Respaldos cifrados ISO</li>
+        </ul>
+      </div>
+      <div class="module-price">$ 18.000.000 COP</div>
+    </div>
+
+    <!-- Module 2 -->
+    <div class="module-card">
+      <div class="module-header" style="background: linear-gradient(90deg, #028090, #00a896);">
+        <h3>Módulo 2 — Aula Virtual Web</h3>
+        <span class="module-num">ALUMNOS</span>
+      </div>
+      <div class="module-body">
+        <p>Portal web Angular para estudiantes y visitantes con branding personalizable.</p>
+        <ul class="feature-list">
+          <li>Catálogo y tienda de cursos</li>
+          <li>Reproductor HTML/JS (ZIP)</li>
+          <li>Login con Turnstile</li>
+          <li>Consulta pública certificados</li>
+          <li>CMS: Inicio, Acerca, PQR</li>
+          <li>Branding desde ERP</li>
+          <li>Foro en tiempo real</li>
+          <li>Cohortes presenciales + Meet</li>
+        </ul>
+      </div>
+      <div class="module-price">$ 15.000.000 COP</div>
+    </div>
+
+    <!-- Module 3 -->
+    <div class="module-card">
+      <div class="module-header" style="background: linear-gradient(90deg, #6d28d9, #8b5cf6);">
+        <h3>Módulo 3 — App Móvil Cajero</h3>
+        <span class="module-num">ANDROID</span>
+      </div>
+      <div class="module-body">
+        <p>App nativa Expo/React Native para operación de caja y consulta en campo.</p>
+        <ul class="feature-list">
+          <li>Caja: turno, cobros, movimientos</li>
+          <li>Búsqueda y ficha de alumnos</li>
+          <li>Certificados desde móvil</li>
+          <li>Facturación móvil</li>
+          <li>Alertas con sonido/vibración</li>
+          <li>Secure Store para tokens</li>
+        </ul>
+      </div>
+      <div class="module-price">$ 6.000.000 COP</div>
+    </div>
+
+    <!-- Module 4 -->
+    <div class="module-card">
+      <div class="module-header" style="background: linear-gradient(90deg, #b45309, #d97706);">
+        <h3>Módulo 4 — App Móvil Aula</h3>
+        <span class="module-num">ANDROID</span>
+      </div>
+      <div class="module-body">
+        <p>App nativa para el alumno — experiencia unificada virtual + presencial.</p>
+        <ul class="feature-list">
+          <li>Tablero personal</li>
+          <li>Mis cursos con progreso</li>
+          <li>Clases presenciales + Meet</li>
+          <li>Puntajes y evaluaciones</li>
+          <li>Certificados descargables</li>
+          <li>Foro del curso</li>
+          <li>Branding dinámico del CEA</li>
+        </ul>
+      </div>
+      <div class="module-price">$ 6.000.000 COP</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PAGE 3 — SECURITY ═══════════════ -->
+<div class="page page-break">
+
+  <div class="section">
+    <h2 class="section-title">5. Seguridad ISO/IEC 27001:2022</h2>
+
+    <div class="iso-banner">
+      <div class="iso-badge">ISO/IEC<br>27001:2022</div>
+      <div>
+        <p style="font-size: 11pt; font-weight: 600; color: #fff; margin-bottom: 8px;">Seguridad integrada en arquitectura, documentada y operacionalizada</p>
+        <p>ARGO implementa controles del Anexo A de ISO/IEC 27001:2022 en respaldos, acceso, criptografía, auditoría y continuidad del negocio. Documentación técnica disponible en módulo Sistema del ERP.</p>
+      </div>
+    </div>
+
+    <h3>5.1 Autenticación y control de acceso</h3>
+    <table>
+      <thead><tr><th>Control</th><th>Implementación ARGO</th></tr></thead>
+      <tbody>
+        <tr><td>Autenticación staff</td><td>JWT Bearer (expiración configurable, default 12h)</td></tr>
+        <tr><td>Contraseñas</td><td>bcrypt con salt</td></tr>
+        <tr><td>MFA (2FA)</td><td>TOTP obligatorio en ERP web — Google/Microsoft Authenticator</td></tr>
+        <tr><td>Secretos TOTP</td><td>Cifrados AES-256-GCM en reposo</td></tr>
+        <tr><td>RBAC</td><td>Roles en BD + catálogo de permisos granulares</td></tr>
+        <tr><td>Multi-sede</td><td>Usuarios acotados a sedes asignadas</td></tr>
+        <tr><td>Re-autenticación</td><td>Restaurar/reset exigen contraseña + TOTP + frase confirmación</td></tr>
+        <tr><td>Break-glass</td><td>Cuenta soporte maestro auditada, siempre con TOTP</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.2 Protección perimetral</h3>
+    <table>
+      <thead><tr><th>Medida</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>HTTPS</td><td>nginx + Certbot (TLS 1.2+)</td></tr>
+        <tr><td>Headers seguridad</td><td>Helmet (backend) + snippets nginx</td></tr>
+        <tr><td>Rate limiting</td><td>Login staff, auth portal, búsqueda alumnos</td></tr>
+        <tr><td>Cloudflare Turnstile</td><td>Captcha en login/registro ERP y portal</td></tr>
+        <tr><td>Firewall</td><td>UFW: solo puertos 80/443 públicos</td></tr>
+        <tr><td>Minimización datos</td><td>API buscar-alumno no expone datos sensibles completos</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.3 Mapa controles ISO — Anexo A</h3>
+    <table>
+      <thead><tr><th>Control ISO</th><th>Cumplimiento ARGO</th></tr></thead>
+      <tbody>
+        <tr><td>5.15 / 8.2 Control de acceso</td><td>RBAC granular; módulo Sistema solo admin; re-auth crítica</td></tr>
+        <tr><td>5.29 Continuidad</td><td>Respaldos automáticos diarios; restauración E2E; custodia externa</td></tr>
+        <tr><td>8.10 Eliminación información</td><td>Puesta en cero controlada con respaldo previo entregable</td></tr>
+        <tr><td>8.12 Prevención fuga datos</td><td>Descarga respaldos auditada; cifrado AES-256-GCM en reposo</td></tr>
+        <tr><td>8.13 Respaldo información</td><td>Copia automática programable + manual; rotación configurable</td></tr>
+        <tr><td>8.15 Registro eventos</td><td>Colección auditoría + logs diarios; fallos en logs/auth/</td></tr>
+        <tr><td>8.24 Criptografía</td><td>Respaldos .argobk AES-256-GCM; TOTP cifrado; bcrypt</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PAGE 4 — DIFFERENTIATORS + PRICING ═══════════════ -->
+<div class="page page-break">
+
+  <div class="section">
+    <h2 class="section-title">6. Diferenciadores ARGO</h2>
+    <ul class="feature-list" style="grid-template-columns: 1fr;">
+      <li>Verticalización CEA colombiana — certificados por tipo normativo (licencia, MP, jornada, técnico)</li>
+      <li>Doble flujo de alumnos: Regular y Jornadas de Capacitación empresarial</li>
+      <li>Certificado automático en jornadas al cumplir N sesiones</li>
+      <li>Programación CEA nativa: teoría/taller/práctica con rastreo por alumno</li>
+      <li>Cohortes académicas con Google Meet, evaluaciones y progresión secuencial</li>
+      <li>Caja por turno con arqueo, descuadres con autorización admin, cierre general multi-caja</li>
+      <li>OCR de cédula para precarga de datos en registro (Tesseract.js)</li>
+      <li>Flota vehicular con alertas de vencimiento e inspección preoperacional</li>
+      <li>Alarmas operativas configurables por rol</li>
+      <li>Aula virtual integrada: paquetes HTML/ZIP, foro, portal brandeable, apps sincronizadas</li>
+      <li>RRHH y nómina colombiana (EPS, AFP, ARL)</li>
+      <li>Multi-sede con filtro por sede y permisos granulares</li>
+      <li>Trazabilidad total — auditoría de cada operación crítica</li>
+      <li>Migración desde Access/Excel sin pérdida de histórico</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">7. Plan de implementación</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">1</div>
+        <div class="timeline-content"><h4>Diagnóstico y configuración — Semanas 1–2</h4><p>Levantamiento de procesos, configuración empresa/sedes/usuarios/roles</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">2</div>
+        <div class="timeline-content"><h4>Migración de datos — Semanas 2–3</h4><p>Importación alumnos, matrículas, pagos, certificados</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">3</div>
+        <div class="timeline-content"><h4>Capacitación staff — Semanas 3–4</h4><p>Cajeros, recepción, instructores, administradores (16 horas)</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">4</div>
+        <div class="timeline-content"><h4>Aula virtual y apps — Semanas 4–5</h4><p>Portal alumnos, branding, publicación APKs</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">5</div>
+        <div class="timeline-content"><h4>Go-live — Semana 6</h4><p>Puesta en producción, monitoreo, ajustes finos</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">8. Propuesta económica</h2>
+
+    <h3>Licenciamiento por módulo (pago único — perpetuo)</h3>
+    <table>
+      <thead><tr><th>#</th><th>Módulo</th><th>Valor (COP)</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Plataforma Web ERP</td><td class="price-col">$ 18.000.000</td></tr>
+        <tr><td>2</td><td>Aula Virtual Web</td><td class="price-col">$ 15.000.000</td></tr>
+        <tr><td>3</td><td>App Móvil Cajero</td><td class="price-col">$ 6.000.000</td></tr>
+        <tr><td>4</td><td>App Móvil Aula</td><td class="price-col">$ 6.000.000</td></tr>
+        <tr class="total-row"><td colspan="2">SUBTOTAL LICENCIAS (4 módulos)</td><td>$ 45.000.000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Servicios de implementación</h3>
+    <table>
+      <thead><tr><th>Concepto</th><th>Valor (COP)</th></tr></thead>
+      <tbody>
+        <tr><td>Instalación y despliegue VPS (Docker, nginx, SSL, firewall)</td><td class="price-col">$ 1.000.000</td></tr>
+        <tr><td>Migración de datos (hasta 5.000 registros alumnos)</td><td class="price-col">$ 1.000.000</td></tr>
+        <tr><td>Capacitación (hasta 5 suarios, 16 horas)</td><td class="price-col">$ GRATIS</td></tr>
+        <tr><td>Configuración inicial (empresa, sedes, roles, catálogos)</td><td class="price-col">$ 1.000.000</td></tr>
+        <tr class="total-row"><td>SUBTOTAL IMPLEMENTACIÓN</td><td>$ 3.000.000</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pricing-hero">
+      <div class="label">Inversión total con descuento paquete integral (8%)</div>
+      <div class="amount">$ 48.000.000</div>
+      <div class="note">COP · Licencias perpetuas + implementación · IVA no incluido  - Descuentos no incluidos Vigencia 60 días</div>
+    </div>
+
+    <h3>Forma de pago sugerida</h3>
+    <table>
+      <thead><tr><th>Hito</th><th>%</th><th>Monto (COP)</th></tr></thead>
+      <tbody>
+        <tr><td>Firma de contrato</td><td>40%</td><td class="price-col">$ 20.000.000</td></tr>
+        <tr><td>Entrega ERP + caja operativa</td><td>35%</td><td class="price-col">$ 15.000.000</td></tr>
+        <tr><td>Go-live completo (4 módulos)</td><td>25%</td><td class="price-col">$ 10.000.000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Soporte anual (opcional)</h3>
+    <table>
+      <thead><tr><th>Plan</th><th>Cobertura</th><th>Valor anual</th></tr></thead>
+      <tbody>
+        <tr><td>Soporte Estándar</td><td>1 AÑOS DE SOPORTE ILIMITADO</td></tr>
+        <tr><td>Soporte Premium</td><td>1 AÑOS DE SOPORTE ILIMITADO</td><td class="price-col">1 AÑOS DE SOPORTE ILIMITADO</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">9. Referencia de producción</h2>
+    <p>ARGO opera en producción en <strong>Finstruvial</strong> (<em>finstruvial.edu.co</em> / <em>app.finstruvial.edu.co</em>), con MFA obligatorio en ERP, portal de alumnos activo, respaldos cifrados programados y auditoría operativa.</p>
+  </div>
+
+  <div class="doc-footer">
+    <span>ARGO — Propuesta Técnico-Comercial · Confidencial</span>
+    <span>18 de junio de 2026</span>
+  </div>
+
+</div>
+
+</body>
+</html>

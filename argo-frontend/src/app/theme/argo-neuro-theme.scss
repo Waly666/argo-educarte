@@ -1,0 +1,222 @@
+/* NeuroBank-inspired surfaces + dashboard polish */
+
+.dash-page {
+  gap: 1.35rem;
+}
+
+.dash-page .dash-head {
+  padding: 0.25rem 0 0.5rem;
+  border-bottom: 1px solid var(--line-soft);
+
+  .eyebrow {
+    color: var(--accent);
+    letter-spacing: 0.14em;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .sub {
+    font-size: 0.95rem;
+    max-width: 42rem;
+  }
+}
+
+.dash-page .pill {
+  background: var(--surface-muted);
+  border-color: var(--line-soft);
+}
+
+.dash-page .date-filter {
+  background: var(--surface-elevated);
+  border-color: var(--line-soft);
+  box-shadow: var(--shadow-sm);
+  padding: 1.1rem 1.25rem;
+
+  .df-head h2 {
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: 1.05rem;
+    color: var(--text);
+  }
+}
+
+.dash-page .kpi-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 14px;
+}
+
+.dash-page .dash-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dash-page .kpi-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 14px;
+}
+
+.dash-page .dash-section-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.dash-page .kpi-secondary-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dash-page .kpi-spark {
+  display: block;
+  width: 100%;
+  height: 2rem;
+  margin-top: 0.35rem;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.dash-page .kpi-hero-grid .kpi-card {
+  min-height: 128px;
+}
+
+.dash-page .kpi-card {
+  padding: 1.15rem 1.1rem 1.1rem;
+  min-height: 118px;
+  background: var(--surface-elevated);
+  border-color: var(--line-soft);
+  box-shadow: var(--shadow-sm);
+
+  &:not(.static):hover {
+    transform: none;
+    border-color: rgba(78, 163, 255, 0.28);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.dash-page .kpi-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  background: var(--surface-muted);
+  border: 1px solid var(--line-soft);
+}
+
+.dash-page .kpi-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.dash-page .mega-stats,
+.dash-page .panel,
+.dash-page .caja-mes-banner {
+  background: var(--surface-elevated);
+  border-color: var(--line-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-page .mega-title,
+.dash-page .panel h2 {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.dash-page .mega-card {
+  background: var(--surface-muted);
+  border-color: var(--line-soft);
+  border-radius: var(--radius);
+  padding: 1rem 0.95rem;
+  min-height: 96px;
+}
+
+.dash-page .chip {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 8.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+
+  &:hover {
+    border-color: rgba(78, 163, 255, 0.35);
+    color: var(--accent-2);
+  }
+}
+
+.dash-page .chip-teal { border-color: rgba(20, 184, 166, 0.35); color: #5eead4; }
+.dash-page .chip-blue { border-color: rgba(59, 130, 246, 0.35); color: #93c5fd; }
+.dash-page .chip-emerald { border-color: rgba(16, 185, 129, 0.35); color: #6ee7b7; }
+.dash-page .chip-indigo { border-color: rgba(99, 102, 241, 0.35); color: #a5b4fc; }
+.dash-page .chip-purple { border-color: rgba(139, 92, 246, 0.35); color: #c4b5fd; }
+.dash-page .chip-cyan { border-color: rgba(6, 182, 212, 0.35); color: #67e8f9; }
+.dash-page .chip-orange { border-color: rgba(249, 115, 22, 0.35); color: #fdba74; }
+.dash-page .chip-red { border-color: rgba(239, 68, 68, 0.35); color: #fca5a5; }
+
+.dash-page .metodo-card {
+  background: var(--surface-muted);
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+}
+
+.argo-cal,
+.jornadas-page,
+.cea-clases {
+  .cal-toolbar {
+    padding: 0.35rem 0.15rem 0.65rem;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 0.75rem;
+  }
+
+  .cal-mes-head-cell {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+/* Shell topbar/content — sidebar sin cambios */
+.shell .topbar {
+  background: var(--surface-elevated);
+  border-bottom-color: var(--line-soft);
+  padding: 14px 22px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.shell .welcome-title {
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+.shell .status-bar {
+  max-width: none;
+  background: var(--surface-muted);
+  border-color: var(--line-soft);
+  box-shadow: none;
+}
+
+.shell .content {
+  padding: 20px 22px 28px;
+}
+
+.shell .btn-icon {
+  background: var(--surface-muted);
+  border-color: var(--line-soft);
+  box-shadow: none;
+}

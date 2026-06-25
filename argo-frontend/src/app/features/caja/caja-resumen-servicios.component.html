@@ -1,0 +1,72 @@
+<section class="resumen-servicios-panel" *ngIf="hayDatos()">
+  <h2 class="panel-title">{{ titulo() }}</h2>
+
+  <ng-container *ngIf="modo() === 'compacto'; else tablaAgrupada">
+    <p class="hint">Totales consolidados por servicio (todas las cajas del cierre).</p>
+    <div class="table-wrap">
+      <table class="tabla-servicios">
+        <thead>
+          <tr>
+            <th>Servicio</th>
+            <th class="num">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filasCompacto()">
+            <td>{{ s.servicio }}</td>
+            <td class="num total-cell">{{ s.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td class="num total-cell">
+              <strong>{{ totalCompacto() | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </ng-container>
+
+  <ng-template #tablaAgrupada>
+    <p class="hint">Totales agrupados por servicio o concepto de cobro del turno.</p>
+    <div class="table-wrap">
+      <table class="tabla-servicios">
+        <thead>
+          <tr>
+            <th>Servicio</th>
+            <th class="num">Recibos</th>
+            <th class="num">Efectivo</th>
+            <th class="num">Otros medios</th>
+            <th class="num">Total servicio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filas()">
+            <td>{{ s.descripcion || s.servicio }}</td>
+            <td class="num">{{ s.cantidad }}</td>
+            <td class="num">{{ (s.efectivo ?? 0) | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td class="num">{{ (s.otros ?? 0) | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td class="num total-cell">{{ s.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Total general</strong></td>
+            <td class="num"><strong>{{ totales().cantidad }}</strong></td>
+            <td class="num">
+              <strong>{{ totales().efectivo | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+            </td>
+            <td class="num">
+              <strong>{{ totales().otros | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+            </td>
+            <td class="num total-cell">
+              <strong>{{ totales().total | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </ng-template>
+</section>

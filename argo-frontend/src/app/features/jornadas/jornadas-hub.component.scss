@@ -1,0 +1,1766 @@
+@use './jornadas-ui.scss';
+@use './jornadas-shared' as *;
+
+.panel-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+
+  h2 {
+    margin: 0 0 4px;
+  }
+
+  .panel-head-title .hint {
+    margin: 0;
+    max-width: 36rem;
+  }
+
+  .panel-head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .link-btn {
+    text-decoration: none;
+  }
+}
+
+.cert-encabezado-hoy {
+  white-space: normal;
+  line-height: 1.35;
+  max-width: 520px;
+  text-align: left;
+}
+
+@keyframes argo-blink-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes argo-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
+}
+
+@keyframes argo-blink-bg {
+  0%, 100% {
+    background: rgba(45, 100, 220, 0.18);
+    border-color: rgba(96, 165, 250, 0.55);
+  }
+  50% {
+    background: rgba(45, 100, 220, 0.42);
+    border-color: rgba(186, 230, 253, 0.95);
+  }
+}
+
+.estado-blink {
+  animation: argo-blink-soft 1.1s ease-in-out infinite;
+}
+
+.jornadas-page {
+  .jornada-alerta-proceso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(96, 165, 250, 0.55);
+    background: rgba(30, 70, 160, 0.22);
+    color: #e0ecff;
+    font-size: 0.9rem;
+    animation: argo-blink-bg 1.4s ease-in-out infinite;
+
+    .ja-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #38bdf8;
+      animation: argo-pulse-ring 1.4s ease-out infinite;
+      flex-shrink: 0;
+    }
+
+    .ja-texto strong {
+      color: #ffffff;
+    }
+
+    .ja-detalle {
+      color: rgba(224, 236, 255, 0.85);
+    }
+  }
+
+  .contrato-form {
+    --cf-label-h: 2.35rem;
+    --cf-gap-x: 0.8rem;
+    --cf-gap-y: 0.55rem;
+    --cf-input-h: 2.05rem;
+    overflow: visible;
+
+    .row-fields {
+      overflow: visible;
+    }
+
+    .field {
+      position: relative;
+      z-index: 0;
+
+      &:has(argo-catalogo-enum-buscar.dropdown-open),
+      &:has(argo-municipio-buscar.dropdown-open) {
+        z-index: 5001;
+      }
+    }
+
+    .form-block:has(argo-catalogo-enum-buscar.dropdown-open),
+    .form-block:has(argo-municipio-buscar.dropdown-open) {
+      position: relative;
+      z-index: 5000;
+    }
+
+    .form-block {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--line-soft, rgba(120, 170, 255, 0.1));
+    }
+
+    .form-block:last-of-type {
+      border-bottom: none;
+    }
+
+    .form-block-title {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2, #7eb8ff);
+    }
+
+    .contrato-form-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem 1rem;
+      margin-bottom: 1rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid rgba(78, 163, 255, 0.28);
+      background: linear-gradient(135deg, rgba(30, 58, 95, 0.55), rgba(15, 23, 42, 0.35));
+    }
+
+    .contrato-form-banner-label {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+    }
+
+    .contrato-form-banner-cod {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e8f2ff;
+    }
+
+    .contrato-form-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+
+      @media (max-width: 960px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .contrato-block-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .contrato-block-sub {
+      margin: 0.2rem 0 0;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--text-soft);
+
+      a {
+        color: var(--accent-2, #7eb8ff);
+      }
+    }
+
+    .contrato-block-icon {
+      flex: 0 0 2rem;
+      width: 2rem;
+      height: 2rem;
+      margin-top: 0.1rem;
+      border-radius: 8px;
+      background:
+        linear-gradient(145deg, rgba(56, 189, 248, 0.22), rgba(37, 99, 235, 0.12)),
+        rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        width: 0.95rem;
+        height: 0.75rem;
+        border: 2px solid rgba(186, 230, 253, 0.85);
+        border-radius: 2px;
+        box-shadow: inset 0 -4px 0 rgba(186, 230, 253, 0.35);
+      }
+
+      &--doc::after {
+        width: 0.7rem;
+        height: 0.9rem;
+        border-radius: 1px;
+        box-shadow: none;
+      }
+
+      &--money::after {
+        width: 0.55rem;
+        height: 0.85rem;
+        border-radius: 50%;
+        border-width: 2px;
+        box-shadow: none;
+      }
+    }
+
+    .contrato-empresa-block,
+    .contrato-identidad-block {
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--line-soft, rgba(120, 170, 255, 0.12));
+      background: rgba(8, 16, 32, 0.22);
+    }
+
+    .contrato-empresa-block {
+      border-color: rgba(56, 189, 248, 0.22);
+      background: linear-gradient(160deg, rgba(14, 40, 68, 0.45), rgba(8, 16, 32, 0.2));
+
+      &:has(argo-catalogo-enum-buscar.dropdown-open) {
+        position: relative;
+        z-index: 5000;
+      }
+    }
+
+    .empresa-picker {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .empresa-picker-buscar {
+      flex: 1 1 16rem;
+      min-width: 0;
+
+      argo-catalogo-enum-buscar {
+        display: block;
+      }
+    }
+
+    .empresa-picker-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      padding-bottom: 0.15rem;
+    }
+
+    .empresa-resumen-card {
+      padding: 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      background: rgba(2, 8, 20, 0.35);
+    }
+
+    .empresa-resumen-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.65rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .empresa-avatar {
+      flex: 0 0 2.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #e0f2fe;
+      background: linear-gradient(145deg, #0369a1, #0c4a6e);
+      border: 1px solid rgba(125, 211, 252, 0.35);
+    }
+
+    .empresa-resumen-titulo {
+      flex: 1 1 12rem;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .empresa-nombre-principal {
+      font-size: 0.95rem;
+      line-height: 1.25;
+      color: #f1f5f9;
+    }
+
+    .empresa-nombre-comercial {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .empresa-nit {
+      font-size: 0.8rem;
+      color: #93c5fd;
+    }
+
+    .empresa-editar {
+      margin-left: auto;
+    }
+
+    .empresa-datos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.55rem 0.75rem;
+      margin: 0 0 0.75rem;
+
+      @media (max-width: 720px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .empresa-dato {
+      margin: 0;
+      padding: 0.45rem 0.55rem;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+
+      dt {
+        margin: 0 0 0.2rem;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-dim);
+      }
+
+      dd {
+        margin: 0;
+        font-size: 0.84rem;
+        line-height: 1.3;
+        color: #e2e8f0;
+        word-break: break-word;
+      }
+
+      &--wide {
+        grid-column: 1 / -1;
+      }
+
+      .sep {
+        margin: 0 0.25rem;
+        color: var(--text-dim);
+      }
+    }
+
+    .empresa-fiscal {
+      margin-top: 0;
+      padding-top: 0.65rem;
+      border-top: 1px dashed rgba(148, 163, 184, 0.2);
+    }
+
+    .empresa-empty-state {
+      padding: 1rem 1.1rem;
+      border-radius: 10px;
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.25);
+      text-align: center;
+
+      p {
+        margin: 0;
+        font-size: 0.82rem;
+        color: var(--text-soft);
+        line-height: 1.4;
+      }
+
+      p strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: #cbd5e1;
+      }
+    }
+
+    .field-objeto-full {
+      margin-top: 0.35rem;
+
+      textarea {
+        width: 100%;
+        min-height: 7.5rem;
+        resize: vertical;
+        line-height: 1.45;
+        font-size: 0.9rem;
+        padding: 0.55rem 0.65rem;
+        box-sizing: border-box;
+      }
+
+      .field-hint {
+        display: block;
+        margin-top: 0.35rem;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+      }
+    }
+
+    .form-block-factura {
+      margin-top: 0.25rem;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(34, 197, 94, 0.18);
+      background: linear-gradient(160deg, rgba(6, 40, 28, 0.28), rgba(8, 16, 32, 0.18));
+    }
+
+    .factura-valor-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 0.65rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .field-valor-contrato {
+      min-width: 11rem;
+    }
+
+    .input-money-wrap {
+      display: flex;
+      align-items: stretch;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .input-money-prefix {
+      display: flex;
+      align-items: center;
+      padding: 0 0.55rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.12);
+      border-right: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .input-money {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      height: var(--cf-input-h);
+      padding: 0.4rem 0.55rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ecfdf5;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    .factura-valor-hint {
+      margin: 0;
+      padding-bottom: 0.35rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #86efac;
+    }
+
+    .factura-contrato-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .factura-badge-ok {
+      font-size: 0.82rem;
+    }
+
+    .preview-factura-contrato {
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      background: rgba(2, 12, 8, 0.35);
+    }
+
+    .preview-factura-title {
+      margin: 0 0 0.55rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #86efac;
+    }
+
+    .preview-factura-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem 1rem;
+      margin: 0;
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
+
+      > div {
+        margin: 0;
+      }
+
+      dt {
+        margin: 0 0 0.15rem;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+      }
+
+      dd {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        color: #e2e8f0;
+      }
+    }
+
+    .preview-factura-total dd strong {
+      font-size: 0.95rem;
+      color: #bbf7d0;
+    }
+
+    .form-block-inline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 1rem 1.25rem;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .contrato-finalizar-block {
+      padding-top: 0.35rem;
+      border-top: 1px dashed var(--line-soft);
+      width: 100%;
+
+      label {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+      }
+
+      input[type='date'] {
+        min-width: 10.5rem;
+      }
+    }
+
+    .btn-finalizar-contrato {
+      background: linear-gradient(180deg, rgba(100, 116, 139, 0.95), rgba(51, 65, 85, 0.98));
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: var(--btn-radius);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        filter: brightness(1.08);
+      }
+
+      &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+    }
+
+    .block-hint {
+      margin: 0.25rem 0 0;
+      font-size: 0.8rem;
+    }
+
+    .row-fields {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--cf-gap-y) var(--cf-gap-x);
+      margin-bottom: 0.45rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-width: 0;
+
+      > label {
+        display: flex;
+        align-items: flex-end;
+        min-height: var(--cf-label-h);
+        margin: 0 0 0.3rem;
+        padding: 0;
+        font-size: 0.72rem;
+        line-height: 1.15;
+        color: var(--text-dim);
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      input,
+      select {
+        width: 100%;
+        max-width: 100%;
+        height: var(--cf-input-h);
+        box-sizing: border-box;
+        font-size: 0.92rem;
+        padding: 0.4rem 0.55rem;
+      }
+
+      select {
+        padding-right: 1.75rem;
+      }
+    }
+
+    .field-muni argo-municipio-buscar {
+      display: block;
+
+      label {
+        display: flex;
+        align-items: flex-end;
+        min-height: var(--cf-label-h);
+        margin: 0 0 0.3rem;
+        font-size: 0.72rem;
+        line-height: 1.15;
+      }
+
+      input {
+        height: var(--cf-input-h);
+        font-size: 0.92rem;
+        padding: 0.4rem 0.55rem;
+      }
+    }
+
+    .field-cod-contrato {
+      > label {
+        color: var(--accent-2, #7eb8ff);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .input-cod-contrato {
+        border: 2px solid rgba(78, 163, 255, 0.75);
+        background: rgba(78, 163, 255, 0.1);
+        box-shadow:
+          0 0 0 1px rgba(78, 163, 255, 0.35),
+          0 0 12px rgba(78, 163, 255, 0.15);
+        font-weight: 600;
+        color: #e8f2ff;
+
+        &:focus {
+          outline: none;
+          border-color: #6eb3ff;
+          box-shadow:
+            0 0 0 2px rgba(110, 179, 255, 0.55),
+            0 0 16px rgba(78, 163, 255, 0.35);
+        }
+      }
+    }
+
+    /* +25% respecto a tamaños compactos anteriores */
+    .col-w-cod {
+      flex: 0 1 163px;
+      min-width: 125px;
+      max-width: 188px;
+    }
+
+    .col-w-sm {
+      flex: 0 1 188px;
+      min-width: 150px;
+      max-width: 225px;
+    }
+
+    .col-w-md {
+      flex: 0 1 250px;
+      min-width: 175px;
+      max-width: 300px;
+    }
+
+    .col-w-lg {
+      flex: 1 1 325px;
+      min-width: 225px;
+      max-width: 400px;
+    }
+
+    .col-w-sup {
+      flex: 1 1 375px;
+      min-width: 280px;
+      max-width: 475px;
+    }
+
+    .col-w-cert {
+      flex: 1 1 100%;
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+    }
+
+    .field-certificado-encabezado {
+      input {
+        font-size: 0.95rem;
+        padding: 0.5rem 0.65rem;
+      }
+    }
+
+    .col-w-full {
+      flex: 1 1 100%;
+      width: 100%;
+      max-width: none;
+    }
+
+    .field-objeto-contrato textarea {
+      width: 100%;
+      min-height: 9rem;
+      max-height: 24rem;
+      resize: vertical;
+      line-height: 1.45;
+      padding: 0.55rem 0.65rem;
+    }
+
+    .col-w-num {
+      flex: 0 1 110px;
+      min-width: 90px;
+      max-width: 125px;
+    }
+
+    .col-w-date {
+      flex: 0 1 188px;
+      min-width: 163px;
+      max-width: 213px;
+    }
+
+    .sup-nuevo .inline {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      height: var(--cf-input-h);
+
+      input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+      }
+
+      button.mini {
+        flex-shrink: 0;
+        height: var(--cf-input-h);
+        min-width: var(--cf-input-h);
+        padding: 0;
+      }
+    }
+  }
+
+  .filter-compact {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    overflow: visible;
+    position: relative;
+    z-index: 2;
+
+    .col-w-filter {
+      flex: 0 1 280px;
+      min-width: 200px;
+      max-width: 360px;
+      position: relative;
+      z-index: 0;
+
+      &:has(argo-catalogo-enum-buscar.dropdown-open) {
+        z-index: 5001;
+      }
+    }
+  }
+
+  .contrato-tabla .mono {
+    white-space: nowrap;
+  }
+
+  table.argo .col-cert-encabezado {
+    min-width: 22rem;
+    max-width: 36rem;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+
+  .contrato-lista-titulo {
+    margin: 1.25rem 0 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-2, #7eb8ff);
+  }
+
+  .contrato-row {
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+
+    &:hover {
+      background: rgba(78, 163, 255, 0.08);
+    }
+
+    &.sel {
+      background: rgba(78, 163, 255, 0.14);
+      box-shadow: inset 3px 0 0 var(--accent, #4ea3ff);
+    }
+
+    &.ejecutado {
+      opacity: 0.78;
+
+      td {
+        color: var(--text-dim);
+      }
+    }
+  }
+
+  .estado-select {
+    padding: 3px 6px;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    background: rgba(6, 16, 41, 0.7);
+    border: 1px solid var(--line);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .estado-form {
+    width: auto;
+    min-width: 11rem;
+  }
+
+  .estado-label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-right: 0.5rem;
+  }
+
+  .clase-panel {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+  }
+
+  .asis-row {
+    align-items: flex-end;
+    margin: 1rem 0;
+  }
+
+  .progreso-preview {
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0.75rem;
+  }
+
+  .edit-panel,
+  .edit-clase {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(6, 16, 41, 0.5);
+    overflow: visible;
+    position: relative;
+    z-index: 0;
+
+    &:has(argo-catalogo-enum-buscar.dropdown-open),
+    &:has(argo-municipio-buscar.dropdown-open) {
+      z-index: 5000;
+    }
+
+    .jornada-edit-fila-meta {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 0.35rem;
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        label {
+          margin: 0 0 0.3rem;
+          font-size: 0.72rem;
+          color: var(--text-dim);
+        }
+
+        input {
+          width: 100%;
+          box-sizing: border-box;
+        }
+      }
+
+      .field-fecha {
+        flex: 0 0 11.5rem;
+      }
+
+      .field-meta {
+        flex: 0 0 6.5rem;
+      }
+
+      .field-supervisor {
+        flex: 1 1 10rem;
+        min-width: 8.5rem;
+
+        select {
+          width: 100%;
+          box-sizing: border-box;
+          height: var(--cf-input-h, 2.05rem);
+          padding: 0.35rem 0.5rem;
+        }
+      }
+
+      .field-sup-nuevo {
+        flex: 1 1 11rem;
+        min-width: 9rem;
+
+        .inline {
+          display: flex;
+          gap: 0.4rem;
+          align-items: center;
+          height: var(--cf-input-h, 2.05rem);
+
+          input {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+          }
+
+          button.mini {
+            flex-shrink: 0;
+            height: var(--cf-input-h, 2.05rem);
+            min-width: var(--cf-input-h, 2.05rem);
+            padding: 0;
+          }
+        }
+      }
+    }
+
+    .jornada-edit-fila-muni {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: flex-end;
+      gap: 0.75rem 1rem;
+      margin-bottom: 0.35rem;
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        > label {
+          margin: 0 0 0.3rem;
+          font-size: 0.72rem;
+          color: var(--text-dim);
+        }
+
+        input {
+          width: 100%;
+          box-sizing: border-box;
+          height: var(--cf-input-h, 2.05rem);
+        }
+      }
+
+      .field-muni {
+        flex: 1 1 14rem;
+        min-width: 10rem;
+
+        argo-municipio-buscar {
+          display: block;
+
+          label {
+            margin: 0 0 0.3rem;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+          }
+
+          input {
+            width: 100%;
+            box-sizing: border-box;
+            height: var(--cf-input-h, 2.05rem);
+          }
+        }
+      }
+
+      .field-depto {
+        flex: 0 0 10rem;
+      }
+
+      .field-cod-muni {
+        flex: 0 0 7.5rem;
+      }
+    }
+
+    .meta-hint {
+      margin: 0 0 0.75rem;
+      font-size: 0.82rem;
+    }
+
+    .jornada-edit-fila-ubicacion {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: flex-end;
+      gap: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        label {
+          margin: 0 0 0.3rem;
+          font-size: 0.72rem;
+          color: var(--text-dim);
+        }
+
+        input {
+          width: 100%;
+          box-sizing: border-box;
+        }
+      }
+
+      .field-direccion {
+        flex: 1 1 14rem;
+        min-width: 10rem;
+      }
+
+      .field-lat,
+      .field-lng {
+        flex: 0 0 6.75rem;
+      }
+
+      .field-geo-origen {
+        flex: 0 0 8.5rem;
+
+        .geo-origen-valor {
+          margin: 0;
+          min-height: var(--cf-input-h, 2.05rem);
+          display: flex;
+          align-items: center;
+          padding: 0 0.1rem;
+          font-size: 0.88rem;
+        }
+      }
+    }
+
+    .mapa-desplegable {
+      margin: 0.35rem 0 0.75rem;
+
+      .mapa-toggle {
+        margin-bottom: 0.45rem;
+      }
+    }
+  }
+
+  .actions-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  button.mini.danger {
+    background: linear-gradient(180deg, var(--btn-red), var(--btn-red-d));
+    border: none;
+    color: #fff;
+  }
+
+  .mono {
+    font-family: Consolas, monospace;
+    font-size: 0.82rem;
+  }
+
+  .direccion-cell {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .georef-readonly {
+    margin: 0.35rem 0 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius, 8px);
+    background: rgba(120, 170, 255, 0.08);
+    border: 1px solid var(--line, rgba(120, 170, 255, 0.18));
+    color: var(--text-dim, #9fb3e0);
+    font-size: 0.9rem;
+  }
+
+  .georef-hint {
+    margin: 0.35rem 0 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .clases-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+
+    .toolbar-hint {
+      margin: 0;
+      flex: 1 1 100%;
+    }
+
+    &.admin-filtros {
+      align-items: flex-end;
+    }
+
+    .filtro-field {
+      display: flex;
+      flex-direction: column;
+      min-width: 12rem;
+
+      label {
+        font-size: 0.72rem;
+        margin-bottom: 0.25rem;
+        color: var(--text-dim);
+      }
+    }
+  }
+
+  .modo-clases {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(6, 16, 41, 0.55);
+
+    button {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 6px 12px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+
+      &:hover {
+        color: var(--text);
+      }
+
+      &.active {
+        background: rgba(78, 163, 255, 0.18);
+        color: var(--text);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .clase-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    .modal-inline-banner {
+      margin: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.28rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    select,
+    input[type='text'] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .hint-compact {
+      margin: 0.25rem 0 0;
+      font-size: 0.78rem;
+      line-height: 1.3;
+    }
+  }
+
+  .clase-modal-datos-grid {
+    display: grid;
+    grid-template-columns:
+      minmax(160px, 2.2fr)
+      minmax(88px, 0.85fr)
+      minmax(88px, 0.75fr)
+      minmax(160px, 2fr)
+      minmax(108px, 0.75fr);
+    gap: 0.55rem 0.75rem;
+    align-items: end;
+
+    &.sin-matriculados {
+      grid-template-columns:
+        minmax(180px, 2.4fr)
+        minmax(96px, 0.9fr)
+        minmax(96px, 0.85fr)
+        minmax(180px, 2.2fr);
+    }
+  }
+
+  .cm-programa-destacado {
+    width: min(900px, 88%);
+    min-width: min(100%, 640px);
+    margin-top: 0.25rem;
+
+    > label {
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .select-programa-destacado {
+      display: block;
+      width: 100%;
+      min-height: 4.5rem;
+      padding: 1.1rem 1.15rem;
+      font-size: 1.05rem;
+      line-height: 1.35;
+      appearance: auto;
+      text-transform: none;
+      letter-spacing: normal;
+      white-space: normal;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(6, 16, 41, 0.85);
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: none;
+
+      option {
+        color: var(--text);
+        background: #0a1629;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-transform: none;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+        background: rgba(10, 26, 58, 0.92);
+      }
+    }
+  }
+
+  .cm-field {
+    min-width: 0;
+    position: relative;
+    z-index: 0;
+
+    &:has(argo-catalogo-enum-buscar.dropdown-open) {
+      z-index: 5001;
+    }
+
+    .instructor-readonly.compact {
+      margin: 0;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(10, 22, 50, 0.55);
+      border: 1px solid rgba(120, 160, 255, 0.18);
+      font-size: 0.88rem;
+    }
+  }
+
+  .cm-matriculados {
+    .clase-matricula-contador.block {
+      width: 100%;
+      justify-content: center;
+      padding: 0.45rem 0.55rem;
+    }
+  }
+
+  .clase-modal-extra-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .cm-panel {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(120, 160, 255, 0.14);
+    background: rgba(10, 22, 50, 0.35);
+  }
+
+  .cm-horario-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem 0.65rem;
+    align-items: end;
+  }
+
+  @media (max-width: 1100px) {
+    .clase-modal-datos-grid,
+    .clase-modal-datos-grid.sin-matriculados {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cm-programa-destacado {
+      width: min(100%, 900px);
+      min-width: 0;
+    }
+
+    .clase-modal-extra-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .clase-modal-datos-grid,
+    .clase-modal-datos-grid.sin-matriculados {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .cm-jornada,
+    .cm-instructor {
+      grid-column: 1 / -1;
+    }
+
+    .cm-programa-destacado {
+      width: 100%;
+    }
+
+    .cm-horario-fields {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .clase-cronometro {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #7dd3fc;
+    padding: 2px 10px;
+    border-radius: 6px;
+    background: rgba(14, 116, 144, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    animation: argo-blink-soft 1.8s ease-in-out infinite;
+
+    &.final {
+      animation: none;
+      color: #fde68a;
+      border-color: rgba(251, 191, 36, 0.45);
+      background: rgba(120, 80, 10, 0.22);
+    }
+  }
+
+  .fecha-clase-readonly {
+    margin: 0;
+    padding: 0.45rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(10, 22, 50, 0.55);
+    border: 1px solid rgba(120, 160, 255, 0.18);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .hint-warn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    background: rgba(120, 80, 10, 0.22);
+    color: #fde68a;
+  }
+
+  .clase-estado-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: rgba(10, 22, 50, 0.55);
+    border: 1px solid rgba(120, 160, 255, 0.18);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    font-size: 0.88rem;
+
+    .estado-label {
+      font-weight: 600;
+      color: var(--text-muted, #c8d6f5);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.78rem;
+    }
+
+    .hint strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+  }
+
+  .clase-modal-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+
+    .clase-modal-section {
+      margin-bottom: 0;
+    }
+  }
+
+  .instructor-matriculados-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .campo-instructor {
+      flex: 1 1 12rem;
+      min-width: 0;
+    }
+
+    .campo-matriculados {
+      flex: 0 0 auto;
+      position: sticky;
+      top: 0;
+      z-index: 6;
+    }
+
+    .instructor-readonly {
+      margin: 0.35rem 0 0;
+    }
+  }
+
+  .clase-matricula-contador {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.28), rgba(59, 130, 246, 0.18));
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.15);
+    margin-left: auto;
+
+    &.block {
+      margin-left: 0;
+      justify-content: center;
+      min-width: 7.5rem;
+    }
+
+    &.inline {
+      margin-left: 0;
+    }
+
+    .contador-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #bae6fd;
+    }
+
+    .contador-num {
+      min-width: 1.5rem;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      color: #e0f2fe;
+    }
+
+    .contador-sub {
+      font-size: 0.76rem;
+      color: #93c5fd;
+      padding-left: 4px;
+      border-left: 1px solid rgba(56, 189, 248, 0.35);
+    }
+  }
+
+  .asis-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .clase-panel-info {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 12px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 16px;
+    font-size: 0.88rem;
+
+    li strong {
+      color: var(--text-muted, #c8d6f5);
+      margin-right: 6px;
+    }
+  }
+
+  .clase-modal-section {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent-2, #7eb8ff);
+  }
+
+  .evidencia-foto-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.35);
+
+    &.compact {
+      padding: 0.5rem;
+      gap: 0.5rem;
+      border: none;
+      background: transparent;
+    }
+  }
+
+  .evidencia-preview {
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .evidencia-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--text);
+
+    input[type='file'] {
+      display: none;
+    }
+
+    span {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      background: rgba(14, 116, 144, 0.2);
+      transition: background 0.12s;
+    }
+
+    &:hover span {
+      background: rgba(14, 116, 144, 0.35);
+    }
+
+    &:has(input:disabled) {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .clase-horario-admin {
+    input[list] {
+      font-family: 'Consolas', 'Courier New', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .duracion-readonly {
+      margin: 0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-weight: 600;
+      color: #7dd3fc;
+    }
+  }
+
+  .clase-alumno-buscar {
+    position: relative;
+  }
+
+  .buscar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(6, 16, 41, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px 6px 4px 10px;
+
+    .buscar-ic {
+      color: var(--accent-2);
+      font-size: 0.9rem;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      padding: 8px 4px;
+      flex: 1;
+      box-shadow: none;
+
+      &:focus {
+        box-shadow: none;
+        background: transparent;
+      }
+    }
+  }
+
+  .buscar-dropdown {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(10, 26, 58, 0.98), rgba(6, 16, 41, 0.98));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .buscar-msg {
+    margin: 0;
+    padding: 12px 14px;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+  }
+
+  .buscar-list {
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+
+      &:hover {
+        background: rgba(78, 163, 255, 0.08);
+      }
+    }
+  }
+
+  .buscar-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  .buscar-name {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .buscar-meta {
+    color: var(--text-soft);
+    font-size: 0.78rem;
+  }
+
+  .clase-matricula-list {
+    margin-top: 0.25rem;
+  }
+}
+
+.cliente-fe-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cliente-fe-fiscal,
+.empresa-fiscal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+
+.icon-btn {
+  min-width: 2.1rem;
+  padding-inline: 0.45rem;
+}
+
+.fiscal-tag {
+  display: inline-flex;
+  padding: 0.12rem 0.4rem;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  &--tipo.on {
+    color: #bae6fd;
+    background: rgba(56, 189, 248, 0.14);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    max-width: 100%;
+  }
+
+  &.on {
+    color: #86efac;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+  }
+
+  &.off {
+    color: var(--text-soft);
+    opacity: 0.55;
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+  }
+}
+
+.linkish {
+  font-size: 0.72rem;
+}

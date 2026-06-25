@@ -1,0 +1,1525 @@
+<section class="jornadas-page argo-cal card admin-list-page">
+  <header class="jor-head jor-page-header">
+    <div class="jor-head-main jor-page-title">
+      <p class="breadcrumb"><a routerLink="/app">Inicio</a> / Jornadas</p>
+      <h1>Jornadas de Capacitación</h1>
+      <p class="hint-block">
+        Contratación con empresas, programación de carpas, clases en campo y certificados automáticos.
+      </p>
+    </div>
+    <div class="jor-badges jor-flow-chips" aria-label="Flujo operativo">
+      @if (jornadasEnProcesoAhora().length > 0) {
+        <span class="jor-chip jor-chip--emerald">{{ jornadasEnProcesoAhora().length }} en proceso</span>
+      }
+      <span class="jor-chip jor-chip--indigo">Contratación</span>
+      <span class="jor-flow-arrow">→</span>
+      <span class="jor-chip jor-chip--sky">Jornadas</span>
+      <span class="jor-flow-arrow">→</span>
+      <span class="jor-chip jor-chip--orange">Clases</span>
+      <span class="jor-flow-arrow">→</span>
+      <span class="jor-chip jor-chip--emerald">Asistencia</span>
+    </div>
+  </header>
+
+  @if (msg(); as texto) {
+    <div
+      class="jor-banner"
+      [class.jor-banner--ok]="msgTipo() === 'ok'"
+      [class.jor-banner--error]="msgTipo() === 'error'"
+      [class.jor-banner--warn]="msgTipo() === 'warn'"
+      [class.jor-banner--info]="msgTipo() === 'info'"
+      [class.alerta-blink]="direccionAlertaActiva()"
+      role="alert">
+      <span class="jor-banner-icon" aria-hidden="true">{{ iconoJorMsg(msgTipo()) }}</span>
+      <div class="jor-banner-body">
+        <strong class="jor-banner-title">{{ msgTitulo() }}</strong>
+        <span>{{ texto }}</span>
+      </div>
+      <button type="button" class="jor-banner-close" (click)="cerrarMsg()" aria-label="Cerrar mensaje">×</button>
+    </div>
+  }
+
+  <nav class="tabs tabs-flow">
+    <button type="button" [class.active]="tab() === 'contratos'" (click)="setTab('contratos')">1. Contratación</button>
+    <button type="button" [class.active]="tab() === 'jornadas'" (click)="setTab('jornadas')">2. Jornadas</button>
+    <button type="button" [class.active]="tab() === 'clases'" (click)="setTab('clases')">3. Clases</button>
+    <button type="button" [class.active]="tab() === 'certificados'" (click)="setTab('certificados')">4. Certificados</button>
+    <button type="button" class="ghost" (click)="listaAlumnosJornada()">Alumnos jornada</button>
+    <button type="button" class="ghost" (click)="nuevoAlumnoJornada()">+ Nuevo alumno</button>
+  </nav>
+
+  <div class="row filter filter-compact">
+    <div class="col-w-filter">
+      <argo-catalogo-enum-buscar
+        label="Contratación"
+        placeholder="Seleccione o escriba contrato…"
+        [textoInicial]="textoContratoSel()"
+        [modoCombo]="true"
+        [remoto]="false"
+        [minLength]="1"
+        [opcionesLocales]="opcionesContratosToolbar()"
+        (seleccionado)="onContratoToolbarPick($event)"
+        (limpiado)="onContratoToolbarLimpiar()"
+      />
+    </div>
+    <div class="col-w-filter" *ngIf="tab() === 'clases'">
+      <argo-catalogo-enum-buscar
+        label="Jornada de hoy (EN PROCESO)"
+        placeholder="Seleccione jornada…"
+        [textoInicial]="textoJornadaSel()"
+        [modoCombo]="true"
+        [remoto]="false"
+        [minLength]="1"
+        [opcionesLocales]="opcionesJornadasHoyToolbar()"
+        (seleccionado)="onJornadaToolbarPick($event)"
+        (limpiado)="onJornadaToolbarLimpiar()"
+      />
+      <p class="hint" *ngIf="contratoSel() && jornadasOperablesHoy().length === 0">
+        <span class="cap cap-amber cap-sm cap-text">Sin jornada hoy</span>
+        No hay jornada EN PROCESO para este contrato (debe coincidir con la fecha del equipo).
+      </p>
+    </div>
+  </div>
+
+  @if (tab() === 'contratos') {
+    <div class="panel contrato-panel">
+      <h2>Contratación con empresas</h2>
+
+      <div class="contrato-form argo-form-shell">
+        @if (formContrato()._id) {
+          <div class="contrato-form-banner">
+            <div class="contrato-form-banner-main">
+              <span class="contrato-form-banner-label">Editando contrato</span>
+              <span class="contrato-form-banner-cod mono">{{ formContrato().codContrato || 'Sin código' }}</span>
+            </div>
+            <span [ngClass]="estadoContratoLiveClass(formContrato().estado)">
+              {{ labelEstadoContrato(formContrato().estado) }}
+            </span>
+          </div>
+        }
+
+        <div class="contrato-form-layout">
+          <section class="form-block contrato-empresa-block">
+            <header class="contrato-block-head">
+              <span class="contrato-block-icon" aria-hidden="true"></span>
+              <div>
+                <h3 class="form-block-title">Empresa contratante</h3>
+                <p class="contrato-block-sub">
+                  Seleccione del
+                  <a routerLink="/app/configuracion/clientes" target="_blank">catálogo de clientes</a>.
+                  Los mismos datos se usan al facturar.
+                </p>
+              </div>
+            </header>
+
+            <div class="empresa-picker">
+              <div class="empresa-picker-buscar">
+                <argo-catalogo-enum-buscar
+                  label="Empresa *"
+                  placeholder="Escriba razón social, nombre o NIT…"
+                  [textoInicial]="textoClienteContrato()"
+                  [modoCombo]="true"
+                  [remoto]="false"
+                  [minLength]="1"
+                  [opcionesLocales]="opcionesClientesContrato()"
+                  (seleccionado)="onClienteContratoPick($event)"
+                  (limpiado)="onClienteContratoLimpiar()"
+                />
+              </div>
+              <div class="empresa-picker-actions">
+                <button type="button" class="ghost sm" (click)="abrirCrearClienteFe()">+ Nuevo cliente</button>
+                <button type="button" class="ghost sm icon-btn" (click)="recargarClientesFe()" title="Actualizar lista">↻</button>
+              </div>
+            </div>
+
+            @if (clienteFeSeleccionado(); as cli) {
+              <div class="empresa-resumen-card">
+                <div class="empresa-resumen-top">
+                  <div class="empresa-avatar" aria-hidden="true">{{ inicialesCliente(cli) }}</div>
+                  <div class="empresa-resumen-titulo">
+                    <strong class="empresa-nombre-principal">{{ nombreMostrarCliente(cli) }}</strong>
+                    @if (cli.nombreComercial && cli.nombreComercial !== nombreMostrarCliente(cli)) {
+                      <span class="empresa-nombre-comercial">{{ cli.nombreComercial }}</span>
+                    }
+                    <span class="empresa-nit mono">{{ cli.identificacion }}</span>
+                  </div>
+                  <button type="button" class="ghost sm linkish empresa-editar" (click)="abrirCrearClienteFe()">
+                    Editar en Clientes
+                  </button>
+                </div>
+
+                <dl class="empresa-datos-grid">
+                  <div class="empresa-dato">
+                    <dt>Razón social</dt>
+                    <dd>{{ cli.razonSocial || cli.nombres || '—' }}</dd>
+                  </div>
+                  <div class="empresa-dato">
+                    <dt>Nombre comercial</dt>
+                    <dd>{{ cli.nombreComercial || '—' }}</dd>
+                  </div>
+                  <div class="empresa-dato">
+                    <dt>Identificación</dt>
+                    <dd class="mono">{{ cli.identificacion || '—' }}</dd>
+                  </div>
+                  @if (cli.correo || cli.telefono) {
+                    <div class="empresa-dato empresa-dato--wide">
+                      <dt>Contacto</dt>
+                      <dd>
+                        @if (cli.correo) { <span>{{ cli.correo }}</span> }
+                        @if (cli.correo && cli.telefono) { <span class="sep">·</span> }
+                        @if (cli.telefono) { <span>{{ cli.telefono }}</span> }
+                      </dd>
+                    </div>
+                  }
+                </dl>
+
+                <div class="cliente-fe-fiscal empresa-fiscal">
+                  <span class="fiscal-tag fiscal-tag--tipo" [class.on]="!!cli.tipoContratoCap" [class.off]="!cli.tipoContratoCap">
+                    {{ cli.tipoContratoCapLabel || labelTipoContratoCap(cli.tipoContratoCap) || 'Sin tipo fiscal' }}
+                  </span>
+                  <span class="fiscal-tag" [class.on]="cli.granContribuyente" [class.off]="!cli.granContribuyente">
+                    Gran contribuyente
+                  </span>
+                  <span class="fiscal-tag" [class.on]="cli.autoretenedor" [class.off]="!cli.autoretenedor">
+                    Autorretenedor{{ cli.autoretenedor && cli.porcentajeReteFuente ? ' ' + cli.porcentajeReteFuente + '%' : '' }}
+                  </span>
+                  <span class="fiscal-tag" [class.on]="cli.agenteRetenedorIva" [class.off]="!cli.agenteRetenedorIva">
+                    ReteIVA{{ cli.agenteRetenedorIva && cli.porcentajeReteIva ? ' ' + cli.porcentajeReteIva + '%' : '' }}
+                  </span>
+                </div>
+              </div>
+            } @else {
+              <div class="empresa-empty-state">
+                <p><strong>Sin empresa seleccionada</strong></p>
+                <p>Busque y elija la empresa contratante. Si no existe, créela en Clientes y vuelva aquí.</p>
+              </div>
+            }
+          </section>
+
+          <section class="form-block contrato-identidad-block">
+            <header class="contrato-block-head">
+              <span class="contrato-block-icon contrato-block-icon--doc" aria-hidden="true"></span>
+              <div>
+                <h3 class="form-block-title">Datos del contrato</h3>
+                <p class="contrato-block-sub">Código interno y objeto contractual (detalle de la factura).</p>
+              </div>
+            </header>
+
+            <div class="row row-fields contrato-identidad-fields">
+              <div class="field col-w-cod field-cod-contrato">
+                <label title="codContrato">Código contrato</label>
+                <input
+                  type="text"
+                  class="mono input-cod-contrato"
+                  [ngModel]="formContrato().codContrato"
+                  (ngModelChange)="patchContrato('codContrato', $event)"
+                  placeholder="Ej. JOR-2025-001" />
+              </div>
+            </div>
+
+            <div class="field field-objeto-contrato field-objeto-full">
+              <label>Objeto del contrato</label>
+              <textarea
+                rows="5"
+                [ngModel]="formContrato().objetoContrato"
+                (ngModelChange)="patchContrato('objetoContrato', $event)"
+                placeholder="Alcance, programa, obligaciones, lugar de ejecución… Este texto será la línea de detalle al facturar."></textarea>
+              <span class="field-hint">Describa con claridad: será el detalle visible en la factura electrónica.</span>
+            </div>
+          </section>
+        </div>
+
+        <section class="form-block form-block-factura" *ngIf="puedeFacturarContrato()">
+          <header class="contrato-block-head">
+            <span class="contrato-block-icon contrato-block-icon--money" aria-hidden="true"></span>
+            <div>
+              <h3 class="form-block-title">Facturación</h3>
+              <p class="contrato-block-sub">
+                Una factura por contrato. Perfil fiscal según el cliente y
+                <a routerLink="/app/configuracion/contratos-cap-fiscal" target="_blank">reglas de capacitación</a>.
+              </p>
+            </div>
+          </header>
+
+          <div class="factura-valor-row">
+            <div class="field field-valor-contrato">
+              <label>Valor del contrato *</label>
+              <div class="input-money-wrap">
+                <span class="input-money-prefix">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  class="input-money"
+                  [ngModel]="formContrato().valorContrato"
+                  (ngModelChange)="patchContrato('valorContrato', +$event); previewFacturaContrato.set(null)" />
+              </div>
+            </div>
+            @if (formContrato().valorContrato) {
+              <p class="factura-valor-hint">
+                {{ fmtMoney(formContrato().valorContrato) }}
+              </p>
+            }
+          </div>
+
+          <div class="factura-contrato-actions" *ngIf="formContrato()._id">
+            <ng-container *ngIf="!contratoYaFacturado(); else yaFacturado">
+              <button type="button" class="ghost" (click)="calcularPreviewFacturaContrato()">Calcular factura</button>
+              <button
+                type="button"
+                class="primary"
+                (click)="emitirFacturaContrato()"
+                [disabled]="emitiendoFactura() || !previewFacturaContrato()">
+                {{ emitiendoFactura() ? 'Emitiendo…' : 'Emitir factura' }}
+              </button>
+            </ng-container>
+            <ng-template #yaFacturado>
+              <span class="badge ok factura-badge-ok">
+                Facturado: {{ estadoFacturaContrato()?.factura?.numeroFactura || '—' }}
+              </span>
+            </ng-template>
+          </div>
+
+          <div class="preview-factura-contrato" *ngIf="previewFacturaContrato() as p">
+            <h4 class="preview-factura-title">Vista previa</h4>
+            <dl class="preview-factura-grid">
+              <div><dt>Línea</dt><dd>{{ p.detalle?.descripcion }}</dd></div>
+              <div><dt>Cliente</dt><dd>{{ p.adquirente?.nombre }}</dd></div>
+              <div><dt>Perfil</dt><dd>{{ p.regla?.label }} · IVA {{ p.regla?.condicionIva }}</dd></div>
+              <div class="preview-factura-total">
+                <dt>Total</dt>
+                <dd>
+                  <strong>{{ fmtMoney(p.totales?.total) }}</strong>
+                  <span *ngIf="p.retenciones?.reteIva?.aplica"> · ReteIVA {{ fmtMoney(p.retenciones.reteIva.valor) }}</span>
+                  <span *ngIf="p.retenciones?.reteFuente?.aplica"> · ReteFuente {{ fmtMoney(p.retenciones.reteFuente.valor) }}</span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="form-block">
+          <h3 class="form-block-title">Ubicación sede / cliente</h3>
+          <div class="row row-fields">
+            <div class="field col-w-lg field-muni">
+              <argo-municipio-buscar
+                label="Ciudad"
+                placeholder="Seleccione o escriba ciudad…"
+                [modoCombo]="true"
+                [textoInicial]="ciudadContratoTexto()"
+                (seleccionado)="onMuniContrato($event)" />
+            </div>
+            <div class="field col-w-sm">
+              <label>Departamento</label>
+              <input type="text" [ngModel]="formContrato().departamento" readonly class="readonly" />
+            </div>
+            <div class="field col-w-cod">
+              <label>Cód. municipio</label>
+              <input type="text" [ngModel]="formContrato().codMunicipio" readonly class="readonly mono" />
+            </div>
+          </div>
+        </section>
+
+        <section class="form-block">
+          <h3 class="form-block-title">Programación</h3>
+          <div class="row row-fields">
+            <div class="field col-w-sup">
+              <argo-catalogo-enum-buscar
+                label="Supervisor"
+                placeholder="Seleccione o escriba supervisor…"
+                [textoInicial]="textoSupervisorContrato()"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesSupervisores()"
+                (seleccionado)="onSupervisorContratoPick($event)"
+                (limpiado)="onSupervisorContratoLimpiar()"
+              />
+            </div>
+            <div class="field col-w-md sup-nuevo">
+              <label>Nuevo supervisor</label>
+              <div class="inline">
+                <input type="text" [ngModel]="supNuevoNombre()" (ngModelChange)="supNuevoNombre.set($event)" />
+                <button type="button" class="mini ghost" (click)="crearSupervisor()">+</button>
+              </div>
+            </div>
+            <div class="field col-w-date">
+              <argo-date-input label="Inicio jornadas" [ngModel]="formContrato().fechaInicJornadas" (ngModelChange)="patchContrato('fechaInicJornadas', $event)" ></argo-date-input>
+            </div>
+          </div>
+          <div class="row row-fields">
+            <div class="field col-w-num">
+              <label>Nº jornadas</label>
+              <input type="number" min="1" [ngModel]="formContrato().numerojornadas" (ngModelChange)="patchContrato('numerojornadas', $event)" />
+            </div>
+            <div class="field col-w-num">
+              <label>Por día</label>
+              <input type="number" min="1" max="20" [ngModel]="formContrato().jornadasPorDia" (ngModelChange)="patchContrato('jornadasPorDia', $event)" />
+            </div>
+            <div class="field col-w-num">
+              <label>Nº alumnos</label>
+              <input type="number" min="0" [ngModel]="formContrato().numeroAlumnos" (ngModelChange)="patchContrato('numeroAlumnos', $event)" />
+            </div>
+            <div class="field col-w-num">
+              <label>Sesiones cert.</label>
+              <input type="number" min="1" [ngModel]="formContrato().numSesCert" (ngModelChange)="patchContrato('numSesCert', $event)" />
+            </div>
+          </div>
+          <p class="hint block-hint">Por día: varias jornadas el mismo calendario. Certificado automático al completar las sesiones indicadas.</p>
+        </section>
+
+        <section class="form-block">
+          <h3 class="form-block-title">Certificado</h3>
+          <div class="row row-fields">
+            <div class="field col-w-full field-certificado-encabezado">
+              <label>Encabezado certificado</label>
+              <input type="text" [ngModel]="formContrato().nombreCertificacion" (ngModelChange)="patchContrato('nombreCertificacion', $event)" />
+            </div>
+          </div>
+          <div class="row row-fields">
+            <div class="field col-w-sm">
+              <label>Horas cert.</label>
+              <input type="text" [ngModel]="formContrato().numeroHorascert" (ngModelChange)="patchContrato('numeroHorascert', $event)" />
+            </div>
+          </div>
+        </section>
+
+        <section class="form-block form-block-inline">
+          <label><input type="checkbox" [ngModel]="formContrato().incluiSab" (ngModelChange)="patchContrato('incluiSab', $event)" /> Sábados</label>
+          <label><input type="checkbox" [ngModel]="formContrato().incluiDom" (ngModelChange)="patchContrato('incluiDom', $event)" /> Domingos</label>
+          <label><input type="checkbox" [ngModel]="formContrato().incluiFest" (ngModelChange)="patchContrato('incluiFest', $event)" /> Festivos</label>
+        </section>
+
+        <section class="form-block form-block-inline" *ngIf="formContrato()._id">
+          <label class="estado-label">Estado del contrato</label>
+          @if (contratoFormEjecutado()) {
+            <span [ngClass]="estadoContratoLiveClass(formContrato().estado)">{{ labelEstadoContrato(formContrato().estado) }}</span>
+            @if (formContrato().fechaFinalizacion) {
+              <span class="hint">Finalizado el {{ fmtFecha(formContrato().fechaFinalizacion) }}</span>
+            }
+          } @else {
+            <span [ngClass]="estadoContratoLiveClass(formContrato().estado)">
+              {{ labelEstadoContrato(formContrato().estado) }}
+            </span>
+            <span class="hint">Use «Finalizar contrato» para cerrarlo y quitar alertas.</span>
+          }
+        </section>
+
+        @if (formContrato()._id && !contratoFormEjecutado()) {
+          <section class="form-block form-block-inline contrato-finalizar-block">
+            <argo-date-input label="Fecha de finalización" inputId="fecha-finalizacion-contrato" [ngModel]="fechaFinalizacionContrato()"
+              (ngModelChange)="fechaFinalizacionContrato.set($event)" ></argo-date-input>
+            <button
+              type="button"
+              class="btn-finalizar-contrato"
+              (click)="finalizarContratoActual()"
+              [disabled]="loading()">
+              Finalizar contrato
+            </button>
+          </section>
+        }
+      </div>
+
+      <div class="actions">
+        <button type="button" class="ghost" (click)="nuevoContratoForm()">Nuevo</button>
+        <button type="button" class="primary" (click)="guardarContrato()" [disabled]="loading() || contratoFormEjecutado()">Guardar</button>
+        <button type="button" class="primary" (click)="generarJornadas()" [disabled]="loading() || contratoFormEjecutado()">
+          Generar faltantes
+        </button>
+      </div>
+
+      <h3 class="sec contrato-lista-titulo">Listado de contrataciones</h3>
+      <p class="hint">
+        Haga clic en una fila para abrir las <strong>jornadas</strong> del contrato. Use
+        <strong>Finalizar contrato</strong> en el formulario cuando ya no se opere (quita alertas del header).
+        Use «Editar» para cargar los datos en el formulario.
+      </p>
+      <div class="table-wrap">
+      <table class="argo contrato-tabla">
+        <thead>
+          <tr>
+            <th>Cód. contrato</th>
+            <th>Cliente</th>
+            <th>Ciudad</th>
+            <th>Estado</th>
+            <th>Jornadas</th>
+            <th>Ses. cert.</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let c of contratos()"
+            (click)="abrirContratoEnJornadas(c, $event)"
+            class="click contrato-row"
+            [class.sel]="contratoSel() === c._id"
+            [ngClass]="rowContratoClass(c.estado)"
+            [title]="'Abrir jornadas del contrato ' + (c.codContrato || '')">
+            <td><span [ngClass]="capCodContrato(c.codContrato)">{{ c.codContrato || '—' }}</span></td>
+            <td><span [ngClass]="capCliente(labelClienteContrato(c))">{{ labelClienteContrato(c) }}</span></td>
+            <td><span [ngClass]="capMunicipioJor(c.ciudad)">{{ c.ciudad || '—' }}</span></td>
+            <td>
+              <span [ngClass]="estadoContratoLiveClass(c.estado)">{{ labelEstadoContrato(c.estado) }}</span>
+            </td>
+            <td>
+              <span [ngClass]="capMetaNum(c.numerojornadas)">{{ c.numerojornadas }}</span>
+              <span [ngClass]="capGenerado(c.jornadasGeneradas)" class="jor-inline-cap">{{ etiquetaGenerado(c.jornadasGeneradas) }}</span>
+            </td>
+            <td><span [ngClass]="capSesCert(c.numSesCert)">{{ c.numSesCert }}</span></td>
+            <td class="actions-cell">
+              <button
+                type="button"
+                class="mini primary"
+                (click)="abrirContratoEnJornadas(c, $event)">
+                Abrir
+              </button>
+              <button type="button" class="mini ghost" (click)="editarContrato(c); $event.stopPropagation()">Editar</button>
+            </td>
+          </tr>
+          <tr *ngIf="contratos().length === 0">
+            <td colspan="7" class="empty jor-empty">
+              <span class="jor-empty-icon">🏢</span>
+              <p>Aún no hay contratos de capacitación. Complete el formulario y pulse <strong>Guardar</strong>.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'jornadas') {
+    <div class="panel">
+      @if (jornadasEnProcesoAhora().length > 0) {
+        <div class="jornada-alerta-proceso" role="alert">
+          <span class="ja-dot" aria-hidden="true"></span>
+          <span class="ja-texto">
+            <strong>{{ jornadasEnProcesoAhora().length }}</strong>
+            jornada{{ jornadasEnProcesoAhora().length === 1 ? '' : 's' }}
+            <strong>EN PROCESO</strong> ahora
+            <span class="ja-detalle">
+              · {{ jornadasEnProcesoAhora()[0].municipio || '—' }}{{ jornadasEnProcesoAhora().length > 1 ? ' y otras' : '' }}
+            </span>
+          </span>
+        </div>
+      }
+      <div class="vista-toolbar">
+        <h2>Jornadas de la contratación</h2>
+        <div class="vista-toggle">
+          <button type="button" [class.active]="vistaJornadas() === 'lista'" (click)="setVistaJornadas('lista')">
+            Lista
+          </button>
+          <button type="button" [class.active]="vistaJornadas() === 'calendario'" (click)="setVistaJornadas('calendario')">
+            Calendario
+          </button>
+        </div>
+      </div>
+      <p class="hint">
+        El estado se actualiza solo: <strong>INACTIVO</strong> (antes del día),
+        <strong>EN PROCESO</strong> (solo el día programado),
+        <strong>FINALIZADO</strong> (después).
+        Puede <strong>eliminar</strong> jornadas y usar «Generar faltantes» en Contratación.
+        @if (vistaJornadas() === 'calendario' && !contratoSel()) {
+          <span class="cal-hint-all"> Calendario: <strong>todos los contratos</strong> (filtre arriba para uno solo).</span>
+        }
+      </p>
+
+      <div id="jornada-edit-panel" class="edit-panel argo-form-shell" *ngIf="jornadaEdit() as je">
+        <h3>Editar jornada — {{ labelJornada(je) }}</h3>
+        <p
+          class="msg error panel-msg alerta-direccion"
+          [class.alerta-blink]="direccionAlertaActiva()"
+          *ngIf="jornadaEditError()"
+          role="alert">
+          {{ jornadaEditError() }}
+        </p>
+        <p class="hint">Defina la <strong>fecha</strong>, la <strong>dirección</strong> y las coordenadas. El mapa está plegado hasta que lo abra.</p>
+        <div class="jornada-edit-fila-meta">
+          <div class="field field-fecha">
+            <argo-date-input label="Fecha programación *" [ngModel]="jornadaEditFecha()" (ngModelChange)="jornadaEditFecha.set($event)" ></argo-date-input>
+          </div>
+          <div class="field field-meta">
+            <label>Meta alumnos</label>
+            <input type="text" [ngModel]="je.numeObjeJornada ?? '—'" readonly class="readonly" />
+          </div>
+          <div class="field field-supervisor">
+            <argo-catalogo-enum-buscar
+              label="Supervisor"
+              placeholder="Seleccione o escriba supervisor…"
+              [textoInicial]="textoSupervisorJornadaEdit()"
+              [modoCombo]="true"
+              [remoto]="false"
+              [minLength]="1"
+              [opcionesLocales]="opcionesSupervisores()"
+              (seleccionado)="onSupervisorJornadaPick($event)"
+              (limpiado)="onSupervisorJornadaLimpiar()"
+            />
+          </div>
+          <div class="field field-sup-nuevo">
+            <label>Nuevo supervisor</label>
+            <div class="inline">
+              <input type="text" [ngModel]="supNuevoNombreJornada()" (ngModelChange)="supNuevoNombreJornada.set($event)" placeholder="Nombre" />
+              <button type="button" class="mini ghost" (click)="crearSupervisorJornada()" title="Agregar supervisor">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint meta-hint">
+          La meta se calcula al generar jornadas:
+          <strong>total alumnos del contrato ÷ número de jornadas</strong> (redondeo hacia arriba).
+          Ej.: 100 alumnos y 8 jornadas → meta 13 por jornada.
+        </p>
+        <div class="jornada-edit-fila-ubicacion">
+          <div class="field field-direccion">
+            <label>Dirección *</label>
+            <input
+              id="jornada-edit-direccion"
+              type="text"
+              [class.input-alerta-blink]="direccionAlertaActiva()"
+              [ngModel]="jornadaEditDireccion()"
+              (ngModelChange)="onDireccionJornadaChange($event)"
+              placeholder="Ej: Carrera 10 # 20-30, barrio Centro" />
+          </div>
+          <div class="field field-lat">
+            <label>Latitud</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              [ngModel]="jornadaEditLat()"
+              (ngModelChange)="jornadaEditLat.set($event); onCoordsManualChange()"
+              placeholder="4.7110" />
+          </div>
+          <div class="field field-lng">
+            <label>Longitud</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              [ngModel]="jornadaEditLng()"
+              (ngModelChange)="jornadaEditLng.set($event); onCoordsManualChange()"
+              placeholder="-74.0721" />
+          </div>
+          <div class="field field-geo-origen">
+            <label>Georreferenciación</label>
+            <p class="geo-origen-valor">
+              <span [ngClass]="capDeteGeorefe(jornadaEditDeteGeorefe())">{{ etiquetaDeteGeorefe(jornadaEditDeteGeorefe()) }}</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="mapa-desplegable">
+          <button
+            type="button"
+            class="ghost mini mapa-toggle"
+            (click)="toggleMapaJornadaEdit()"
+            [attr.aria-expanded]="jornadaEditMapaAbierto()">
+            {{ jornadaEditMapaAbierto() ? '▾ Ocultar mapa' : '▸ Mostrar mapa' }}
+          </button>
+          @if (jornadaEditMapaAbierto() && je._id) {
+            <argo-jornada-mapa-picker
+              [lat]="jornadaEditLatNum()"
+              [lng]="jornadaEditLngNum()"
+              (coordsChange)="onMapaCoords($event)" />
+          }
+        </div>
+
+        <div class="jornada-edit-fila-muni">
+          <div class="field field-muni">
+            <argo-municipio-buscar
+              label="Municipio (Divipola)"
+              placeholder="Seleccione o escriba municipio…"
+              [modoCombo]="true"
+              [textoInicial]="jornadaEditMunicipioTexto()"
+              (seleccionado)="onMunicipioJornada($event)" />
+          </div>
+          <div class="field field-depto">
+            <label>Departamento</label>
+            <input type="text" [ngModel]="jornadaEditDepto() || '—'" readonly class="readonly" />
+          </div>
+          <div class="field field-cod-muni">
+            <label>Código municipio</label>
+            <input type="text" [ngModel]="jornadaEditCodMunicipio() || '—'" readonly class="readonly mono" />
+          </div>
+        </div>
+        @if (georefLoading()) {
+          <p class="hint georef-hint">Actualizando municipio por georreferenciación…</p>
+        }
+        <p class="hint georef-hint">
+          Elija municipio en Divipola (el departamento se asigna solo) o fije coordenadas en el mapa/GPS para actualizar ambos.
+        </p>
+
+        <div class="actions">
+          <button type="button" class="primary" (click)="guardarEdicionJornada($event)" [disabled]="loading()">Guardar jornada</button>
+          <button type="button" class="ghost" (click)="cancelarEdicionJornada()">Cancelar</button>
+        </div>
+      </div>
+
+      @if (vistaJornadas() === 'calendario') {
+        <div class="cal-panel cal-mes-panel">
+          <div class="cal-toolbar">
+            <button type="button" class="ghost mini" (click)="mesAnterior()" aria-label="Mes anterior">‹</button>
+            <h3 class="cal-title">{{ tituloMesCal() }}</h3>
+            <button type="button" class="ghost mini" (click)="mesSiguiente()" aria-label="Mes siguiente">›</button>
+            <button type="button" class="ghost mini" (click)="irMesHoy()">Hoy</button>
+          </div>
+
+          <div class="cal-resumen" *ngIf="!loadingCalJornadas()">
+            <span><strong>{{ jornadasMesResumen().total }}</strong> jornada{{ jornadasMesResumen().total === 1 ? '' : 's' }} en el mes</span>
+            @if (jornadasMesResumen().proceso > 0) {
+              <span class="cal-resumen-chip cap-emerald">{{ jornadasMesResumen().proceso }} EN PROCESO</span>
+            }
+            @if (jornadasMesResumen().inactivo > 0) {
+              <span class="cal-resumen-chip cap-amber">{{ jornadasMesResumen().inactivo }} INACTIVO</span>
+            }
+            @if (jornadasMesResumen().finalizado > 0) {
+              <span class="cal-resumen-chip cap-slate">{{ jornadasMesResumen().finalizado }} FINALIZADO</span>
+            }
+          </div>
+
+          <div class="cal-legend">
+            <span class="cal-legend-item"><i class="cal-legend-dot cap-amber"></i> INACTIVO</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cap-emerald"></i> EN PROCESO</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cap-slate"></i> FINALIZADO</span>
+          </div>
+
+          @if (loadingCalJornadas()) {
+            <p class="cal-loading">Cargando calendario…</p>
+          } @else {
+            <div class="cal-mes-head">
+              @for (d of diasSemanaLabels; track d) {
+                <div class="cal-mes-head-cell" [class.fin-semana]="$index >= 5">{{ d }}</div>
+              }
+            </div>
+            <div class="cal-mes-grid">
+              @for (cel of calCeldas(); track cel.key || $index) {
+                <div
+                  class="cal-mes-dia"
+                  [class.otro-mes]="cel.otroMes"
+                  [class.hoy]="cel.key === hoyKey()"
+                  [class.fin-semana]="cel.fecha && esFinDeSemana(cel.fecha)"
+                  [class.expandido]="calDiaExpandido() === cel.key"
+                  [class.tiene-eventos]="jornadasEnDia(cel.key).length > 0">
+                  @if (cel.fecha) {
+                    <div class="cal-mes-dia-top">
+                      <span class="cal-mes-num">{{ cel.fecha.getDate() }}</span>
+                      @if (jornadasEnDia(cel.key).length > 0) {
+                        <span class="cal-mes-badge">{{ jornadasEnDia(cel.key).length }}</span>
+                      }
+                    </div>
+                    <div class="cal-mes-eventos">
+                      @for (j of jornadasEnDiaVisibles(cel.key); track j._id) {
+                        <button
+                          type="button"
+                          class="cal-evento"
+                          [ngClass]="estadoJornadaCalClass(j.estado)"
+                          [title]="labelJornada(j) + ' — ' + j.estado"
+                          (click)="abrirJornadaCalendario(j)">
+                          <span class="cal-evento-tit">{{ chipJornadaCal(j) }}</span>
+                          <span class="cal-evento-est">{{ j.estado }}</span>
+                        </button>
+                      }
+                      @if (jornadasEnDiaOcultas(cel.key) > 0) {
+                        <button
+                          type="button"
+                          class="cal-evento cal-evento-mas"
+                          (click)="toggleDiaCalExpandido(cel.key, $event)">
+                          +{{ jornadasEnDiaOcultas(cel.key) }} más
+                        </button>
+                      }
+                      @if (calDiaExpandido() === cel.key && jornadasEnDia(cel.key).length > calMaxEventosDia) {
+                        <button
+                          type="button"
+                          class="cal-evento cal-evento-mas"
+                          (click)="toggleDiaCalExpandido(cel.key, $event)">
+                          Ver menos
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            @if (jornadasMesResumen().total === 0) {
+              <p class="cal-empty">No hay jornadas programadas en este mes{{ contratoSel() ? ' para el contrato seleccionado' : '' }}.</p>
+            }
+          }
+        </div>
+      } @else {
+      <div class="table-wrap">
+      <table id="jornadas-listado" class="argo">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Municipio</th>
+            <th>Dirección</th>
+            <th>Meta alumnos</th>
+            <th>Supervisor</th>
+            <th>Carpa #</th>
+            <th>Coordenadas</th>
+            <th>Origen GPS</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let j of jornadas()" [class.sel]="jornadaEnEdicion(j._id)" [ngClass]="rowJornadaClass(j.estado)">
+            <td><span [ngClass]="capFechaJor(j.fechaProgramacion)">{{ fmtFecha(j.fechaProgramacion) }}</span></td>
+            <td><span [ngClass]="capMunicipioJor(j.municipio)">{{ j.municipio || '—' }}</span></td>
+            <td class="direccion-cell" [title]="j.direccion || ''">
+              <span [ngClass]="capCliente(j.direccion)">{{ j.direccion || '—' }}</span>
+            </td>
+            <td><span [ngClass]="capMetaNum(j.numeObjeJornada)">{{ j.numeObjeJornada ?? '—' }}</span></td>
+            <td><span [ngClass]="capCliente(j.supervisor)">{{ j.supervisor || '—' }}</span></td>
+            <td><span [ngClass]="capMetaNum(j.indiceEnDia)">#{{ j.indiceEnDia || 1 }}</span></td>
+            <td>
+              <span *ngIf="j.lat != null && j.lng != null" [ngClass]="capFechaJor('x')" class="cap-mono">{{ j.lat }}, {{ j.lng }}</span>
+              <span *ngIf="j.lat == null || j.lng == null" class="cap cap-slate cap-sm">Sin GPS</span>
+            </td>
+            <td><span [ngClass]="capDeteGeorefe(j.deteGeorefe)">{{ etiquetaDeteGeorefe(j.deteGeorefe) }}</span></td>
+            <td>
+              <span [ngClass]="estadoJornadaLiveClass(j.estado)">{{ j.estado }}</span>
+            </td>
+            <td class="actions-cell">
+              <button type="button" class="mini ghost" (click)="editarJornada(j, $event)">Editar</button>
+              <button type="button" class="mini danger" (click)="eliminarJornada(j, $event)">Borrar</button>
+              <button
+                type="button"
+                class="mini primary"
+                (click)="abrirJornadaEnClases(j); $event.stopPropagation()"
+                [disabled]="j.estado !== 'EN PROCESO'"
+                [title]="j.estado !== 'EN PROCESO' ? 'Solo opera el día programado (EN PROCESO)' : ''">
+                Clases
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="jornadas().length === 0">
+            <td colspan="10" class="empty jor-empty">
+              <span class="jor-empty-icon">📅</span>
+              <p>Seleccione una contratación o genere jornadas desde el paso <strong>1. Contratación</strong>.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'clases') {
+    <div class="panel">
+      <div class="vista-toolbar">
+        <h2>Clases de jornada</h2>
+        <div class="vista-toggle">
+          <button type="button" [class.active]="vistaClases() === 'lista'" (click)="setVistaClases('lista')">
+            Lista
+          </button>
+          <button type="button" [class.active]="vistaClases() === 'calendario'" (click)="setVistaClases('calendario')">
+            Calendario
+          </button>
+        </div>
+      </div>
+
+      <p class="hint">
+        Listado completo de clases. Pulse <strong>Crear clase</strong> para registrar una nueva (debe haber una jornada
+        EN PROCESO de hoy). Use la vista <strong>Calendario</strong> para revisar la semana.
+        <span *ngIf="contratoActivo()?.numSesCert">
+          Certificado automático al completar <strong>{{ contratoActivo()?.numSesCert }}</strong> asistencias en este contrato.
+        </span>
+        @if (vistaClases() === 'calendario') {
+          <span class="cal-hint-all"> Calendario semanal por horas ({{ horasCal[0] }}:00–{{ horasCal[horasCal.length - 1] + 1 }}:00).</span>
+        }
+      </p>
+
+      <div class="clases-toolbar">
+        <button type="button" class="primary" (click)="abrirModalCrearClase()">+ Crear clase</button>
+        <button type="button" class="ghost mini" (click)="irInstructor()">Vista instructor</button>
+        <div class="filtro-field" *ngIf="vistaClases() === 'lista' || vistaClases() === 'calendario'">
+          <label>Filtrar estado</label>
+          <select [ngModel]="filtroAdminEstado()" (ngModelChange)="onFiltroAdminEstadoChange($event)">
+            <option value="">Todos</option>
+            <option value="PROGRAMADA">PROGRAMADA</option>
+            <option value="EN PROCESO">EN PROCESO</option>
+            <option value="FINALIZADO">FINALIZADO</option>
+          </select>
+        </div>
+        <p class="hint toolbar-hint" *ngIf="contratoSel()">
+          Filtrando por contrato <strong>{{ labelContratoCorto(contratoSel()) }}</strong>.
+        </p>
+      </div>
+
+      <div class="table-wrap" *ngIf="vistaClases() === 'lista'">
+      <table class="argo">
+        <thead>
+          <tr>
+            <th>Contrato</th>
+            <th>Fecha jornada</th>
+            <th>Programa</th>
+            <th>Ubicación</th>
+            <th>Instructor</th>
+            <th>Estado</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of clases()" [class.sel]="claseSel() === c._id" [ngClass]="rowClaseClass(c.estado)" (click)="seleccionarClase(c)">
+            <td><span [ngClass]="capCodContrato(labelContratoCortoClase(c))">{{ labelContratoCortoClase(c) }}</span></td>
+            <td><span [ngClass]="capFechaJor(c.fechaJornada)">{{ fmtFecha(c.fechaJornada) }}</span></td>
+            <td><span [ngClass]="capPrograma(c.idPrograma)">{{ nombrePrograma(c.idPrograma) }}</span></td>
+            <td><span [ngClass]="capUbicacionClase(c.ubicacion)">{{ c.ubicacion }}</span></td>
+            <td><span [ngClass]="capInstructor(labelInstructorClase(c))">{{ labelInstructorClase(c) }}</span></td>
+            <td><span [ngClass]="estadoClaseLiveClass(c.estado)">{{ c.estado }}</span></td>
+            <td><span [ngClass]="capHoraJor(c.horaInicio)">{{ fmtHora(c.horaInicio) }}</span></td>
+            <td><span [ngClass]="capHoraJor(c.horaFin)">{{ fmtHora(c.horaFin) }}</span></td>
+            <td class="actions-cell">
+              <button type="button" class="mini" (click)="seleccionarClase(c); $event.stopPropagation()">Operar</button>
+              <button type="button" class="mini ghost" (click)="abrirModalEditarClase(c); $event.stopPropagation()">Editar</button>
+              @if (puedeEliminarClase() && claseJornadaSePuedeEliminar(c.estado)) {
+                <button type="button" class="mini danger" (click)="eliminarClase(c); $event.stopPropagation()">Borrar</button>
+              }
+            </td>
+          </tr>
+          <tr *ngIf="clases().length === 0">
+            <td colspan="9" class="empty jor-empty">
+              <span class="jor-empty-icon">🎓</span>
+              <p>Sin clases registradas. Pulse <strong>+ Crear clase</strong> para añadir una.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      @if (vistaClases() === 'calendario') {
+        <div class="cal-panel cal-horas-panel">
+          <div class="cal-toolbar">
+            <button type="button" class="ghost mini" (click)="semanaAnterior()" aria-label="Semana anterior">‹</button>
+            <h3 class="cal-title">{{ tituloSemanaCal() }}</h3>
+            <button type="button" class="ghost mini" (click)="semanaSiguiente()" aria-label="Semana siguiente">›</button>
+            <button type="button" class="ghost mini" (click)="irSemanaHoy()">Esta semana</button>
+          </div>
+
+          <div class="cal-resumen">
+            <span><strong>{{ clasesSemanaResumen().total }}</strong> clase{{ clasesSemanaResumen().total === 1 ? '' : 's' }} esta semana</span>
+            @if (clasesSemanaResumen().programada > 0) {
+              <span class="cal-resumen-chip cal-clase-programada"> {{ clasesSemanaResumen().programada }} PROGRAMADA</span>
+            }
+            @if (clasesSemanaResumen().proceso > 0) {
+              <span class="cal-resumen-chip cal-clase-proceso"> {{ clasesSemanaResumen().proceso }} EN PROCESO</span>
+            }
+            @if (clasesSemanaResumen().finalizado > 0) {
+              <span class="cal-resumen-chip cal-clase-finalizada"> {{ clasesSemanaResumen().finalizado }} FINALIZADO</span>
+            }
+          </div>
+
+          <div class="cal-legend cal-legend-clases">
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-programada"></i> PROGRAMADA</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-proceso"></i> EN PROCESO</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-finalizada"></i> FINALIZADO</span>
+            <span class="cal-legend-item cal-legend-muted"><i class="cal-legend-dot sin-hora"></i> Sin horario</span>
+          </div>
+
+          @if (clasesSinHorarioSemana().length > 0) {
+            <div class="cal-sin-horario">
+              <span class="cal-sin-horario-label">Sin horario definido</span>
+              @for (c of clasesSinHorarioSemana(); track c._id) {
+                <button
+                  type="button"
+                  class="cal-evento cal-evento-clase sin-hora"
+                  [class.sel]="claseSel() === c._id"
+                  [ngClass]="estadoClaseCalBlockClass(c.estado)"
+                  [title]="chipClaseCal(c) + ' — ' + (c.estado || '')"
+                  (click)="seleccionarClaseCalendario(c)">
+                  {{ fmtFecha(c.fechaJornada) }} · {{ chipClaseCalCorto(c) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="cal-horas-scroll">
+            <div class="cal-horas-grid">
+              <div class="cal-horas-corner"></div>
+              @for (d of diasSemanaClases(); track d.key) {
+                <div
+                  class="cal-horas-dayhead"
+                  [class.hoy]="d.key === hoyKey()"
+                  [class.fin-semana]="esFinDeSemana(d.fecha)">
+                  <span class="cal-day-name">{{ fmtDiaCal(d.fecha) }}</span>
+                  @if (conteoClasesDia(d.key) > 0) {
+                    <span class="cal-day-count">{{ conteoClasesDia(d.key) }}</span>
+                  }
+                </div>
+              }
+              @for (h of horasCal; track h) {
+                <div class="cal-horas-time">{{ h }}:00</div>
+                @for (d of diasSemanaClases(); track d.key) {
+                  <div
+                    class="cal-horas-slot"
+                    [class.hoy]="d.key === hoyKey()"
+                    [class.fin-semana]="esFinDeSemana(d.fecha)"></div>
+                }
+              }
+              <div class="cal-horas-events-layer">
+                @for (d of diasSemanaClases(); track 'col-' + d.key) {
+                  <div class="cal-horas-events-col" [class.hoy]="d.key === hoyKey()">
+                    @if (d.key === hoyKey() && semanaIncluyeHoy() && ahoraCalTopPct() != null) {
+                      <div class="cal-now-line" [style.top.%]="ahoraCalTopPct()!" aria-hidden="true"></div>
+                    }
+                    @let diaClases = clasesEnDia(d.key);
+                    @let layoutsDia = layoutsCalendarioDia(diaClases);
+                    @for (c of diaClases; track c._id) {
+                      @if (layoutsDia.get(c._id); as lay) {
+                        <button
+                          type="button"
+                          class="cal-clase-block"
+                          [class.sel]="claseSel() === c._id"
+                          [ngClass]="[estadoClaseCalBlockClass(c.estado), estadoClaseCalAccentClass(c.estado)]"
+                          [style.top.%]="lay.topPct"
+                          [style.height.%]="lay.heightPct"
+                          [style.left.%]="lay.leftPct"
+                          [style.width.%]="lay.widthPct"
+                          [title]="chipClaseCal(c) + ' — ' + fmtHora(c.horaInicio) + (c.horaFin ? ' – ' + fmtHora(c.horaFin) : '')"
+                          (click)="seleccionarClaseCalendario(c)">
+                          <span class="cal-clase-hora">{{ fmtHora(c.horaInicio) }}@if (c.horaFin) { – {{ fmtHora(c.horaFin) }} }</span>
+                          <span class="cal-clase-tit">{{ chipClaseCalCorto(c) }}</span>
+                          <span class="cal-clase-inst">{{ labelInstructorClase(c) }}</span>
+                          <span class="cal-clase-est">{{ c.estado }}</span>
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (clasesSemanaResumen().total === 0) {
+            <p class="cal-empty">No hay clases en esta semana{{ filtroAdminEstado() ? ' con el filtro aplicado' : '' }}.</p>
+          }
+        </div>
+      }
+
+      <div id="clase-panel-ops" class="clase-panel" *ngIf="claseActiva() as cl">
+        <h3>Clase seleccionada</h3>
+        <p class="hint">
+          Use <strong>Editar clase</strong> para gestionar los datos, matricular alumnos, registrar asistencia o iniciar / finalizar la sesión.
+        </p>
+        <ul class="clase-panel-info">
+          <li><strong>Programa:</strong> <span [ngClass]="capPrograma(nombrePrograma(cl.idPrograma))">{{ nombrePrograma(cl.idPrograma) }}</span></li>
+          <li><strong>Estado:</strong> <span [ngClass]="estadoClaseLiveClass(cl.estado)">{{ cl.estado }}</span></li>
+          <li><strong>Ubicación:</strong> {{ cl.ubicacion || '—' }}</li>
+          <li><strong>Instructor:</strong> <span [ngClass]="capInstructor(labelInstructorClase(cl))">{{ labelInstructorClase(cl) }}</span></li>
+        </ul>
+        <div class="actions">
+          <button type="button" class="primary" (click)="abrirModalEditarClase(cl)">Editar clase</button>
+          @if (puedeEliminarClaseActiva()) {
+            <button type="button" class="danger" (click)="eliminarClase(cl)">Borrar clase</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <argo-form-modal
+    [open]="modalCrearClase()"
+    [title]="modalModoClase() === 'editar' ? 'Editar clase' : 'Crear clase'"
+    [xwide]="true"
+    (closed)="cerrarModalCrearClase()">
+    <section class="clase-modal-form argo-form-shell">
+      <div class="clase-estado-bar" *ngIf="modalModoClase() === 'editar' && claseActiva() as cl">
+        <span class="estado-label">Estado</span>
+        <span [ngClass]="estadoClaseLiveClass(cl.estado)">{{ cl.estado }}</span>
+        @if (claseModalEnProceso() && cl.horaInicio) {
+          <span class="clase-cronometro" aria-live="polite">{{ cronometroDisplay() }}</span>
+        }
+        @if (cl.estado === 'FINALIZADO' && cl.duracionSegundos != null) {
+          <span class="clase-cronometro final">⏳ {{ formatDuracion(cl.duracionSegundos) }}</span>
+        }
+        <span class="hint" *ngIf="cl.horaInicio">⏱ Inicio: <strong>{{ fmtHora(cl.horaInicio) }}</strong></span>
+        <span class="hint" *ngIf="cl.horaFin">⏹ Fin: <strong>{{ fmtHora(cl.horaFin) }}</strong></span>
+        @if (cl.estado === 'FINALIZADO' && cl.duracionSegundos != null) {
+          <span class="hint">Duración: <strong>{{ formatDuracion(cl.duracionSegundos) }}</strong></span>
+        }
+      </div>
+
+      @if (modalMsg(); as modalTexto) {
+        <div
+          class="jor-banner modal-inline-banner"
+          [class.jor-banner--ok]="modalMsgTipo() === 'ok'"
+          [class.jor-banner--error]="modalMsgTipo() === 'error'"
+          [class.jor-banner--warn]="modalMsgTipo() === 'warn'"
+          [class.jor-banner--info]="modalMsgTipo() === 'info'"
+          role="status">
+          <span class="jor-banner-icon" aria-hidden="true">{{ iconoJorMsg(modalMsgTipo()) }}</span>
+          <div class="jor-banner-body">
+            <strong class="jor-banner-title">{{ modalMsgTitulo() }}</strong>
+            <span>{{ modalTexto }}</span>
+          </div>
+          <button type="button" class="jor-banner-close" (click)="limpiarMsgModal()" aria-label="Cerrar">×</button>
+        </div>
+      }
+
+      @if (modalModoClase() === 'editar' && claseActiva(); as cl) {
+        @if (!esFechaHoy(cl.fechaClase || cl.fechaJornada) && cl.estado !== 'FINALIZADO' && !cl.horaInicio) {
+          <p class="hint hint-warn">
+            Esta clase es de otro día. Solo puede <strong>iniciarla el día programado</strong> (hoy).
+          </p>
+        } @else if (!jornadaClaseModalOperable() && cl.estado !== 'FINALIZADO' && !cl.horaInicio) {
+          <p class="hint hint-warn">
+            La jornada aún no está <strong>EN PROCESO</strong>. Podrá iniciar la clase el día programado de la jornada.
+          </p>
+        }
+      }
+
+      <h3 class="clase-modal-section">Datos de la clase</h3>
+      <div
+        class="clase-modal-datos-grid"
+        [class.sin-matriculados]="modalModoClase() !== 'editar' && totalAlumnosMatriculadosModal() === 0">
+        <div class="cm-field cm-jornada">
+          <argo-catalogo-enum-buscar
+            label="Jornada"
+            placeholder="Seleccione jornada…"
+            [textoInicial]="textoJornadaModal()"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [disabled]="modalModoClase() === 'editar'"
+            [opcionesLocales]="opcionesJornadasCrear()"
+            (seleccionado)="onJornadaModalPick($event)"
+            (limpiado)="onJornadaModalLimpiar()"
+          />
+          <p class="hint hint-compact" *ngIf="modalModoClase() === 'nuevo' && jornadasParaCrear().length === 0">
+            No hay jornadas en la ventana de creación.
+          </p>
+        </div>
+        <div class="cm-field cm-fecha">
+          <label>Fecha</label>
+          <p class="fecha-clase-readonly" [ngClass]="capFechaJor(modalFechaClase())">
+            {{ modalFechaClase() ? fmtFecha(modalFechaClase()) : '—' }}
+          </p>
+        </div>
+        <div class="cm-field cm-ubicacion">
+          <argo-catalogo-enum-buscar
+            label="Ubicación"
+            placeholder="Seleccione ubicación…"
+            [textoInicial]="textoUbicacionClase()"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [opcionesLocales]="opcionesUbicacionClase()"
+            (seleccionado)="onUbicacionClasePick($event)"
+            (limpiado)="onUbicacionClaseLimpiar()"
+          />
+        </div>
+        <div class="cm-field cm-instructor">
+          @if (puedeAsignarInstructor()) {
+            <argo-catalogo-enum-buscar
+              label="Instructor"
+              placeholder="Seleccione instructor…"
+              [textoInicial]="textoInstructorModal()"
+              [modoCombo]="true"
+              [remoto]="false"
+              [minLength]="1"
+              [opcionesLocales]="opcionesInstructoresModal()"
+              (seleccionado)="onInstructorModalPick($event)"
+              (limpiado)="onInstructorModalLimpiar()"
+            />
+          } @else {
+            <label>Instructor</label>
+            <p class="instructor-readonly compact">
+              <span [ngClass]="capInstructor(instructorSesionNombre())">{{ instructorSesionNombre() }}</span>
+            </p>
+          }
+        </div>
+        @if (modalModoClase() === 'editar' || totalAlumnosMatriculadosModal() > 0) {
+          <div class="cm-field cm-matriculados">
+            <label>Matriculados</label>
+            <span class="clase-matricula-contador block" aria-live="polite">
+              <strong class="contador-num">{{ totalAlumnosMatriculadosModal() }}</strong>
+              @if (modalModoClase() === 'editar' && inscritosConAsistencia() > 0) {
+                <span class="contador-sub">{{ inscritosConAsistencia() }} asist.</span>
+              }
+              @if (modalModoClase() === 'editar' && inscritosCertificadosContrato() > 0) {
+                <span class="contador-sub">{{ inscritosCertificadosContrato() }} cert.</span>
+              }
+              @if (modalModoClase() === 'editar' && inscritosSinAsistencia() > 0) {
+                <span class="contador-sub">{{ inscritosSinAsistencia() }} sin asist.</span>
+              }
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="cm-field cm-programa cm-programa-destacado">
+        <argo-catalogo-enum-buscar
+          label="Programa"
+          placeholder="Seleccione o escriba programa…"
+          [textoInicial]="textoProgramaModalCombo()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [opcionesLocales]="opcionesProgramasModal()"
+          (seleccionado)="onProgramaModalPick($event)"
+          (limpiado)="onProgramaModalLimpiar()"
+        />
+        @if (programasJornada().length === 0) {
+          <p class="hint hint-compact hint-warn">No se cargaron programas. Verifique permisos o recargue la página.</p>
+        }
+      </div>
+
+      <h3 class="clase-modal-section">Alumnos</h3>
+      <p class="hint">
+        Busque por <strong>nombre</strong> o <strong>número de cédula</strong> en la base de datos y agréguelos.
+        Un alumno <strong>ya certificado en el contrato</strong> no puede inscribirse en más clases del mismo contrato.
+        @if (modalModoClase() === 'editar') {
+          @if (claseActiva()?.estado === 'FINALIZADO' && puedeEliminarClase()) {
+            Puede agregar alumnos y registrar asistencia aunque la clase esté <strong>FINALIZADA</strong>.
+          } @else {
+            Se inscriben a esta clase y se matriculan al programa si aún no lo estaban. Marque la asistencia cuando la clase esté <strong>EN PROCESO</strong>.
+          }
+        } @else {
+          Quedarán inscritos a la clase y matriculados al programa al guardar.
+        }
+      </p>
+
+      <div class="clase-alumno-buscar">
+        <div class="buscar-wrap">
+          <span class="buscar-ic" aria-hidden="true">◎</span>
+          <input
+            type="text"
+            placeholder="Buscar alumno por nombre o cédula…"
+            [ngModel]="alumnoBusqueda()"
+            (ngModelChange)="onAlumnoBusquedaInput($event)"
+            (focus)="focusAlumnoBusqueda()"
+            autocomplete="off" />
+          <button type="button" class="ghost mini" (click)="nuevoAlumnoJornada()">+ Nuevo alumno</button>
+        </div>
+
+        @if (alumnoBusquedaOpen()) {
+          <div class="buscar-dropdown">
+            @if (alumnoBusquedaLoading()) {
+              <p class="buscar-msg">Buscando…</p>
+            } @else if (alumnoBusquedaResults().length === 0) {
+              <p class="buscar-msg">Sin resultados. Verifique el texto o cree un alumno nuevo.</p>
+            } @else {
+              <ul class="buscar-list">
+                @for (r of alumnoBusquedaResults(); track r._id) {
+                  <li>
+                    <div class="buscar-info">
+                      <span class="buscar-name">{{ nombreAlumnoItem(r) }}</span>
+                      <span class="buscar-meta">{{ r.tipoDoc || 'CC' }} {{ r.numDoc }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="mini primary"
+                      (click)="agregarAlumnoMatricula(r)"
+                      [disabled]="alumnoYaEnLista(r) || guardandoInscripcion()">
+                      {{ alumnoYaEnLista(r) ? 'Agregado' : guardandoInscripcion() ? '…' : 'Agregar' }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+
+      @if (modalModoClase() === 'editar') {
+        <table class="argo mini clase-matricula-list">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Nombre</th>
+              <th>Asistencia</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of inscritos(); track a.numDoc) {
+              <tr>
+                <td><span [ngClass]="capDocAsis(a.numDoc)">{{ a.numDoc }}</span></td>
+                <td><span [ngClass]="capAlumnoNombre(a.nombreCompleto)">{{ a.nombreCompleto || '—' }}</span></td>
+                <td>
+                  @if (a.yaCertificadoContrato && !a.tieneAsistencia) {
+                    <div class="asis-cell">
+                      <span class="cap cap-violet cap-sm cap-text" title="Certificado vigente en este contrato">
+                        ✓ Certificado{{ a.certificadoCodigo ? ' (' + a.certificadoCodigo + ')' : '' }}
+                      </span>
+                      <button type="button" class="mini ghost" (click)="imprimirCertificadoInscrito(a)">
+                        Imprimir certificado
+                      </button>
+                    </div>
+                  } @else if (a.tieneAsistencia) {
+                    <div class="asis-cell">
+                      <span class="cap cap-emerald cap-sm cap-text">✓ Asistió {{ fmtHora(a.asistenciaAt || undefined) }}</span>
+                      @if (puedeBorrarAsistenciaDeClase()) {
+                        <button
+                          type="button"
+                          class="mini danger"
+                          [disabled]="guardandoAsistencia() === a.numDoc"
+                          (click)="borrarAsistenciaInscrito(a.numDoc, a.nombreCompleto)"
+                          title="Borrar solo la asistencia de este alumno (no se desmatricula)">
+                          {{ guardandoAsistencia() === a.numDoc ? '…' : '✕ Borrar asistencia' }}
+                        </button>
+                      }
+                    </div>
+                  } @else if (puedeMarcarAsistenciaAlumno(a)) {
+                    <button
+                      type="button"
+                      class="mini primary"
+                      [disabled]="guardandoAsistencia() === a.numDoc"
+                      (click)="marcarAsistenciaInscrito(a.numDoc)">
+                      {{ guardandoAsistencia() === a.numDoc ? '…' : 'Marcar' }}
+                    </button>
+                  } @else if (a.yaCertificadoContrato) {
+                    <div class="asis-cell">
+                      <span class="cap cap-violet cap-sm cap-text">Certificado en contrato</span>
+                      <button type="button" class="mini ghost" (click)="imprimirCertificadoInscrito(a)">
+                        Imprimir certificado
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="cap cap-slate cap-sm cap-text">Pendiente</span>
+                  }
+                </td>
+                <td class="actions-cell">
+                  @if (puedeQuitarInscritoDeClase()) {
+                    <button
+                      type="button"
+                      class="mini danger"
+                      [disabled]="guardandoAsistencia() === a.numDoc"
+                      (click)="quitarInscritoDeClase(a.numDoc, a.nombreCompleto, { tieneAsistencia: a.tieneAsistencia })"
+                      title="Quitar al alumno de esta clase (no se desmatricula del programa)">
+                      {{ guardandoAsistencia() === a.numDoc ? '…' : '✕ Quitar' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+            @if (inscritos().length === 0) {
+              <tr>
+                <td colspan="4" class="empty jor-empty-mini">Ningún alumno inscrito aún.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <table class="argo mini clase-matricula-list">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Nombre</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of alumnosMatricular(); track a._id) {
+              <tr>
+                <td><span [ngClass]="capDocAsis(a.numDoc)">{{ a.numDoc }}</span></td>
+                <td><span [ngClass]="capAlumnoNombre(nombreAlumnoItem(a))">{{ nombreAlumnoItem(a) }}</span></td>
+                <td class="actions-cell">
+                  <button type="button" class="mini danger" (click)="quitarAlumnoMatricula(a)">Quitar</button>
+                </td>
+              </tr>
+            }
+            @if (alumnosMatricular().length === 0) {
+              <tr>
+                <td colspan="3" class="empty jor-empty-mini">Ningún alumno agregado aún.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      @if (modalModoClase() === 'editar' && claseActiva()?.estado === 'FINALIZADO' && inscritosConAsistencia() > 0) {
+        <p class="hint">
+          Sesión finalizada con <strong>{{ inscritosConAsistencia() }}</strong> asistencia(s) registrada(s).
+          Las clases finalizadas no se pueden eliminar.
+        </p>
+      }
+
+      @if (modalModoClase() === 'editar' && claseActiva()?.estado === 'FINALIZADO' && inscritosSinAsistencia() > 0) {
+        <p class="hint hint-warn">
+          Hay <strong>{{ inscritosSinAsistencia() }}</strong> inscrito(s) pendiente(s) de asistencia.
+          El certificado automático cuenta <strong>asistencias</strong>, no solo inscripción o finalizar la clase.
+          Los alumnos <strong>ya certificados</strong> en el contrato no requieren asistencia en esta clase.
+        </p>
+        <button type="button" class="mini primary" (click)="sincronizarAsistenciasClaseModal()">
+          Registrar asistencia de todos los inscritos ({{ inscritosSinAsistencia() }})
+        </button>
+      }
+
+      @if (modalModoClase() === 'editar' && puedeEliminarClaseActiva() && inscritosConAsistencia() > 0) {
+        <p class="hint hint-warn">
+          Hay <strong>{{ inscritosConAsistencia() }}</strong> asistencia(s) registrada(s).
+          Si elimina la clase, también se borrarán esas asistencias e inscripciones.
+        </p>
+      }
+
+      @if (modalModoClase() === 'editar' && (puedeAsignarInstructor() || claseSel())) {
+        <div class="clase-modal-extra-grid">
+          @if (puedeAsignarInstructor()) {
+            <div class="cm-panel cm-horario argo-form-section variant-horario">
+              <h3 class="clase-modal-section">Horario</h3>
+              <div class="clase-horario-admin horario-manual">
+                <div class="cm-field horario-manual-col">
+                  <label>Inicio</label>
+                  <argo-hora-12-input
+                    [minuteStep]="15"
+                    [value]="modalHoraInicio() || '08:00'"
+                    (valueChange)="modalHoraInicio.set($event)" />
+                </div>
+                <div class="cm-field horario-manual-col">
+                  <label>Fin</label>
+                  <argo-hora-12-input
+                    [minuteStep]="15"
+                    [value]="modalHoraFin() || '10:00'"
+                    (valueChange)="modalHoraFin.set($event)" />
+                </div>
+                <div class="cm-field horario-manual-col">
+                  <label>Duración</label>
+                  <p class="horario-readonly-val">{{ lapsoClaseEtiqueta() || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          }
+          @if (claseSel()) {
+            <div class="cm-panel cm-evidencia">
+              <h3 class="clase-modal-section">Evidencia fotográfica</h3>
+              <div class="evidencia-foto-panel compact">
+                @if (claseActiva()?.urlforo) {
+                  <img
+                    [src]="urlFotoEvidencia(claseActiva()!.urlforo)"
+                    alt="Evidencia de clase"
+                    class="evidencia-preview" />
+                } @else {
+                  <p class="hint hint-compact">Sin foto cargada.</p>
+                }
+                <label class="evidencia-upload">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    (change)="onFotoEvidenciaSelected($event)"
+                    [disabled]="subiendoFotoEvidencia()" />
+                  <span>{{ subiendoFotoEvidencia() ? 'Subiendo…' : '📷 Cargar foto' }}</span>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </section>
+
+    <div modal-actions>
+      <button type="button" class="ghost" (click)="cerrarModalCrearClase()" [disabled]="guardandoClase()">
+        Cerrar
+      </button>
+      @if (modalModoClase() === 'nuevo') {
+        <button
+          type="button"
+          class="primary"
+          (click)="guardarClaseConMatriculas()"
+          [disabled]="guardandoClase() || !nuevaClaseProg() || !modalCrearJornadaId()">
+          {{ guardandoClase() ? 'Guardando…' : 'Crear clase' + (alumnosMatricular().length ? ' y matricular' : '') }}
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="ghost"
+          (click)="guardarCambiosClaseModal()"
+          [disabled]="!nuevaClaseProg()"
+          title="Guardar cambios de programa, ubicación, instructor u horario">
+          💾 Guardar clase
+        </button>
+        @if (claseActiva()?.estado !== 'FINALIZADO') {
+          <button
+            type="button"
+            class="primary"
+            (click)="iniciarClaseModal()"
+            [disabled]="!claseModalIniciable()"
+            [title]="tituloBotonIniciarClase()">
+            ▶ Iniciar clase
+          </button>
+          <button
+            type="button"
+            class="danger"
+            (click)="finalizarClaseModal()"
+            [disabled]="!claseModalFinalizable()"
+            [title]="claseModalFinalizable() ? 'Finalizar clase y registrar hora de fin' : 'Solo se puede finalizar una clase EN PROCESO'">
+            ■ Finalizar clase
+          </button>
+        }
+      }
+    </div>
+  </argo-form-modal>
+
+  @if (tab() === 'certificados') {
+    <div class="panel">
+      <div class="panel-head-row">
+        <div class="panel-head-title">
+          <h2>Certificados del contrato</h2>
+          <p class="hint">
+            Todos los certificados emitidos para este contrato. Los generados <strong>hoy</strong> se resaltan en verde parpadeante.
+          </p>
+        </div>
+        <div class="panel-head-actions">
+          @if (certsHoyCount() > 0) {
+            <span class="jor-live-badge">{{ certsHoyCount() }} emitido(s) hoy</span>
+          }
+          <a routerLink="/app/jornadas/certificados" class="mini ghost link-btn">Ver listado completo →</a>
+        </div>
+      </div>
+      <div class="table-wrap">
+      <table class="argo">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Alumno</th>
+            <th>Doc</th>
+            <th class="col-cert-encabezado">Encabezado</th>
+            <th>Horas</th>
+            <th>Emisión</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of certsGenerados()" [ngClass]="rowCertificadoHoyClass(c.fechaEmision)">
+            <td><span [ngClass]="capCertCodigo(c.codigoCert)">{{ c.codigoCert }}</span></td>
+            <td><span [ngClass]="capAlumnoNombre(c.nombreCompleto)">{{ c.nombreCompleto }}</span></td>
+            <td><span [ngClass]="capDocAsis(c.numDoc)">{{ c.numDoc }}</span></td>
+            <td class="col-cert-encabezado">
+              @if (esFechaHoy(c.fechaEmision)) {
+                <span
+                  class="serv-saldo-inline encabezado-hoy-blink cert-encabezado-hoy"
+                  [attr.title]="'Certificado emitido hoy · ' + fmtFecha(c.fechaEmision)">
+                  {{ c.encabezado || '—' }}
+                </span>
+              } @else {
+                <span [ngClass]="capCliente(c.encabezado)">{{ c.encabezado || '—' }}</span>
+              }
+            </td>
+            <td><span [ngClass]="capHorasCert(c.horasCert)">{{ c.horasCert }}</span></td>
+            <td>
+              @if (esFechaHoy(c.fechaEmision)) {
+                <span
+                  class="serv-saldo-inline encabezado-hoy-blink"
+                  [attr.title]="'Emitido hoy'">
+                  {{ fmtFecha(c.fechaEmision) }}
+                </span>
+              } @else {
+                <span [ngClass]="capFechaJor(c.fechaEmision)">{{ fmtFecha(c.fechaEmision) }}</span>
+              }
+            </td>
+            <td><button type="button" class="mini ghost" (click)="imprimirCert(c)">Imprimir</button></td>
+          </tr>
+          <tr *ngIf="certsGenerados().length === 0">
+            <td colspan="7" class="empty jor-empty">
+              <span class="jor-empty-icon">📜</span>
+              <p>Los certificados automáticos aparecerán aquí cuando un alumno complete las sesiones del contrato.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  }
+</section>

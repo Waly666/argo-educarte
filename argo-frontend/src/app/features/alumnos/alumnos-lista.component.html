@@ -1,0 +1,456 @@
+<section class="lista-page" [class.lista-jornadas]="esJornadas()">
+  <header class="page-head card">
+    <div class="head-row">
+      <button type="button" class="ghost back" *ngIf="esJornadas()" (click)="irHubJornadas()">← Jornadas</button>
+      <div class="title">
+        <h1>{{ esJornadas() ? 'Alumnos — Jornadas de Capacitación' : 'Alumnos' }}</h1>
+      </div>
+      <button type="button" class="primary" (click)="nuevo()">
+        {{ esJornadas() ? '+ Nuevo alumno jornada' : '+ Crear alumno' }}
+      </button>
+    </div>
+  </header>
+
+  @if (msg(); as t) {
+    <div class="list-msg card" [class.list-msg-error]="msgEsError()" role="status">
+      <span>{{ t }}</span>
+      <button type="button" class="ghost sm" (click)="cerrarMsg()">Cerrar</button>
+    </div>
+  }
+
+  <div class="card toolbar" [class.toolbar-jornadas]="esJornadas()">
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar por documento, nombre, celular, correo, dirección o municipio..."
+        [ngModel]="query()"
+        (ngModelChange)="onBuscar($event)"
+        autocomplete="off"
+      />
+    </div>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button
+        type="button"
+        class="view-btn"
+        [class.active]="vista() === 'lista'"
+        (click)="setVista('lista')"
+        title="Vista tabla">
+        ☰ Lista
+      </button>
+      <button
+        type="button"
+        class="view-btn"
+        [class.active]="vista() === 'cards'"
+        (click)="setVista('cards')"
+        title="Vista tarjetas">
+        ▦ Cards
+      </button>
+    </div>
+    <span class="count">{{ pageLabel() }}</span>
+
+    <div class="jornada-filters" *ngIf="esJornadas()">
+      <div class="field-fecha">
+        <argo-date-input label="Fecha jornada" inputId="filtro-fecha-jornada" [ngModel]="fechaJornadaCap()"
+          (ngModelChange)="onFechaJornadaCap($event)"
+        ></argo-date-input>
+      </div>
+      <div class="field-jornada">
+        <argo-catalogo-enum-buscar
+          label="Jornada de capacitación"
+          placeholder="Seleccione jornada…"
+          [textoInicial]="textoJornadaCapSel()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [disabled]="cargandoJornadasCap()"
+          [opcionesLocales]="opcionesJornadasCap()"
+          (seleccionado)="onJornadaCapPick($event)"
+          (limpiado)="onJornadaCapLimpiar()"
+        />
+      </div>
+      <div class="field-cert">
+        <argo-catalogo-enum-buscar
+          label="Certificado jornada"
+          placeholder="Todos"
+          [textoInicial]="textoCertJornadaSel()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [disabled]="!filtroJornadaActivo()"
+          [opcionesLocales]="opcionesCertJornada"
+          (seleccionado)="onCertJornadaPick($event)"
+          (limpiado)="onCertJornadaLimpiar()"
+        />
+      </div>
+      <button
+        type="button"
+        class="ghost mini btn-limpiar-jornada"
+        *ngIf="filtroJornadaActivo() || certJornadaFiltro()"
+        (click)="limpiarFiltrosJornada()">
+        Limpiar filtros
+      </button>
+    </div>
+    <p class="jornada-filter-hint" *ngIf="esJornadas() && jornadaFiltroMsg()">{{ jornadaFiltroMsg() }}</p>
+    <p class="jornada-filter-hint dim" *ngIf="esJornadas() && !filtroJornadaActivo()">
+      Use fecha o jornada para listar participantes y ver si ya tienen certificado generado.
+    </p>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando alumnos…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table alumnos-grid">
+        <thead>
+          <tr>
+            <th class="col-foto"></th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'fechaReg'"
+                [attr.aria-sort]="sortAria('fechaReg')"
+                (click)="toggleSort('fechaReg')">
+                Registro <span class="sort-icon">{{ sortIcon('fechaReg') }}</span>
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'numDoc'"
+                [attr.aria-sort]="sortAria('numDoc')"
+                (click)="toggleSort('numDoc')">
+                Documento <span class="sort-icon">{{ sortIcon('numDoc') }}</span>
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'nombre'"
+                [attr.aria-sort]="sortAria('nombre')"
+                (click)="toggleSort('nombre')">
+                Nombre <span class="sort-icon">{{ sortIcon('nombre') }}</span>
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'fechaNac'"
+                [attr.aria-sort]="sortAria('fechaNac')"
+                (click)="toggleSort('fechaNac')">
+                Fecha nac. <span class="sort-icon">{{ sortIcon('fechaNac') }}</span>
+              </button>
+            </th>
+            <th class="col-empresa">Empresa</th>
+            <th class="col-alertas">Alertas</th>
+            <th *ngIf="esJornadas()" class="col-cert-jornada">Cert. jornada</th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'jornada'"
+                [attr.aria-sort]="sortAria('jornada')"
+                (click)="toggleSort('jornada')">
+                Jornada <span class="sort-icon">{{ sortIcon('jornada') }}</span>
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'correo'"
+                [attr.aria-sort]="sortAria('correo')"
+                (click)="toggleSort('correo')">
+                Correo <span class="sort-icon">{{ sortIcon('correo') }}</span>
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === 'celular'"
+                [attr.aria-sort]="sortAria('celular')"
+                (click)="toggleSort('celular')">
+                Celular <span class="sort-icon">{{ sortIcon('celular') }}</span>
+              </button>
+            </th>
+            <th class="col-actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of items()" class="row-click" (click)="abrir(r)">
+            <td class="col-foto">
+              <div class="avatar">
+                <img *ngIf="fotoUrl(r.urlFoto) as f" [src]="f" alt="" />
+                <span *ngIf="!r.urlFoto">{{ iniciales(r) }}</span>
+              </div>
+            </td>
+            <td>
+              <span *ngIf="r.fechaReg; else vacio" [ngClass]="capFecha(formatFecha(r.fechaReg))">{{ formatFecha(r.fechaReg) }}</span>
+            </td>
+            <td>
+              <span [ngClass]="capDoc(r.numDoc)">{{ formatNumDoc(r.numDoc) }}</span>
+            </td>
+            <td class="col-nombre">{{ nombreCompleto(r) }}</td>
+            <td>
+              <span *ngIf="r.fechaNac; else vacio" [ngClass]="capFecha(formatFecha(r.fechaNac))">{{ formatFecha(r.fechaNac) }}</span>
+            </td>
+            <td class="col-empresa">
+              @if (r.empresaNombre) {
+                <span class="empresa-chip">{{ r.empresaNombre }}</span>
+              } @else {
+                <span class="sin-empresa">—</span>
+              }
+            </td>
+            <td class="col-alertas" (click)="$event.stopPropagation()">
+              <ng-container *ngTemplateOutlet="alarmasTpl; context: { $implicit: r }"></ng-container>
+            </td>
+            <td *ngIf="esJornadas()" class="col-cert-jornada">
+              <span [ngClass]="claseCertJornada(r)" [title]="tituloCertJornada(r)">
+                {{ etiquetaCertJornada(r) }}
+              </span>
+            </td>
+            <td>
+              <span *ngIf="r.jornada; else vacio" [ngClass]="capJornada(r.jornada)" [title]="labelJornada(r)">
+                {{ labelJornada(r) }}
+              </span>
+            </td>
+            <td class="col-text">
+              <span *ngIf="r.correo; else vacio" class="text-cell" [title]="r.correo">{{ r.correo }}</span>
+            </td>
+            <td>
+              <span *ngIf="r.celular; else vacio" [ngClass]="capCelular(r.celular)">{{ r.celular }}</span>
+            </td>
+            <td class="col-actions actions-cell" (click)="$event.stopPropagation()">
+              <div class="actions-inner">
+                <button type="button" class="ghost mini" (click)="abrir(r); $event.stopPropagation()">Abrir</button>
+                @if (puedeEliminar()) {
+                  <button
+                    type="button"
+                    class="danger mini"
+                    [disabled]="eliminandoId() === r._id"
+                    (click)="eliminar(r, $event)">
+                    {{ eliminandoId() === r._id ? '…' : 'Eliminar' }}
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0">
+            <td [attr.colspan]="esJornadas() ? 11 : 10" class="empty">
+              <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article
+        class="alumno-card"
+        *ngFor="let r of items()"
+        (click)="abrir(r)"
+        tabindex="0"
+        (keydown.enter)="abrir(r)">
+        <header class="card-title">
+          <h3>{{ nombreCompleto(r) }}</h3>
+        </header>
+
+        <div class="card-body">
+          <div class="id-photo-wrap">
+            <div class="id-photo" aria-hidden="true">
+              <span class="id-photo-label">FOTO</span>
+              <img *ngIf="fotoUrl(r.urlFoto) as f" [src]="f" alt="" />
+              <span class="id-photo-iniciales" *ngIf="!r.urlFoto">{{ iniciales(r) }}</span>
+            </div>
+          </div>
+
+          <div class="card-main">
+            <div class="card-doc">
+              <span [ngClass]="capDoc(r.numDoc)">{{ formatNumDoc(r.numDoc) }}</span>
+            </div>
+
+            <div class="card-alarms" (click)="$event.stopPropagation()">
+              <ng-container *ngTemplateOutlet="alarmasTpl; context: { $implicit: r }"></ng-container>
+            </div>
+
+            <div class="card-cert-jornada" *ngIf="esJornadas()">
+              <span class="cert-label">Cert. jornada</span>
+              <span [ngClass]="claseCertJornada(r)" [title]="tituloCertJornada(r)">
+                {{ etiquetaCertJornada(r) }}
+              </span>
+            </div>
+
+            <div class="card-tags">
+              <span *ngIf="r.jornada; else tagVacio" [ngClass]="capJornada(r.jornada)" [title]="labelJornada(r)">
+                {{ labelJornada(r) }}
+              </span>
+              <span *ngIf="textoMunicipio(r) !== '—'; else tagVacio" [ngClass]="capMunicipio(textoMunicipio(r))">
+                {{ textoMunicipio(r) }}
+              </span>
+              <span *ngIf="r.estadoCivil; else tagVacio" [ngClass]="capEstadoCivil(r.estadoCivil)">
+                {{ labelEstadoCivil(r) }}
+              </span>
+              <ng-template #tagVacio></ng-template>
+            </div>
+
+            <dl class="card-fields">
+              <div *ngIf="r.fechaNac">
+                <dt>Nacimiento</dt>
+                <dd [ngClass]="capFecha(formatFecha(r.fechaNac))">{{ formatFecha(r.fechaNac) }}</dd>
+              </div>
+              <div *ngIf="r.correo">
+                <dt>Correo</dt>
+                <dd class="truncate" [title]="r.correo">{{ r.correo }}</dd>
+              </div>
+              <div *ngIf="r.celular">
+                <dt>Celular</dt>
+                <dd [ngClass]="capCelular(r.celular)">{{ r.celular }}</dd>
+              </div>
+              <div *ngIf="r.direccion" class="span-2">
+                <dt>Dirección</dt>
+                <dd class="direccion">{{ r.direccion }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <footer class="card-foot" (click)="$event.stopPropagation()">
+          <span class="card-hint">Clic en la tarjeta para abrir ficha</span>
+          <div class="card-actions">
+            <button type="button" class="act open" (click)="abrir(r)" title="Abrir ficha">Abrir</button>
+            @if (puedeEliminar()) {
+              <button
+                type="button"
+                class="act danger"
+                [disabled]="eliminandoId() === r._id"
+                (click)="eliminar(r, $event)"
+                title="Eliminar alumno">
+                {{ eliminandoId() === r._id ? '…' : 'Eliminar' }}
+              </button>
+            }
+            <button
+              type="button"
+              class="act cea"
+              *ngIf="tieneClasesCeaCreado(r)"
+              (click)="abrirTab(r, 'programacion', $event)"
+              [attr.title]="tituloClasesCea(r)">⏱</button>
+            <button
+              type="button"
+              class="act pay"
+              *ngIf="r.indicadores?.saldosPendientes"
+              (click)="abrirTab(r, 'pagos', $event)"
+              title="Ir a pagos">$</button>
+            <button
+              type="button"
+              class="act doc"
+              *ngIf="r.indicadores?.docsPendientes"
+              (click)="abrirTab(r, 'documentos', $event)"
+              title="Ir a documentos">!</button>
+          </div>
+        </footer>
+      </article>
+
+      <div class="empty cards-empty" *ngIf="items().length === 0">
+        <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+      </div>
+    </div>
+
+    <ng-template #vacio><span class="dim">—</span></ng-template>
+
+    <ng-template #alarmasTpl let-r>
+      <div class="row-alarms" *ngIf="tieneAlarmas(r); else sinAlarmas">
+        <button
+          type="button"
+          class="row-alarm cea-alarm"
+          *ngIf="tieneClasesCeaCreado(r)"
+          (click)="abrirTab(r, 'programacion', $event)"
+          [attr.title]="tituloClasesCea(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">⏱</span>
+          <span class="row-alarm-label">{{ etiquetaClasesCea(r) }}</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm saldo-alarm"
+          *ngIf="r.indicadores?.saldosPendientes"
+          (click)="abrirTab(r, 'pagos', $event)"
+          [attr.title]="tituloSaldo(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">$</span>
+          <span class="row-alarm-label">{{ fmtSaldo(r.indicadores?.saldoTotal || 0) }}</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm doc-alarm"
+          *ngIf="r.indicadores?.docsPendientes"
+          (click)="abrirTab(r, 'documentos', $event)"
+          [attr.title]="tituloDocs(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">!</span>
+          <span class="row-alarm-label">Doc.</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm ingreso-alarm"
+          *ngIf="tieneComprobanteIngresoHoy(r)"
+          (click)="abrirComprobanteIngreso(r, $event)"
+          [attr.title]="tituloComprobanteIngreso(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">↓</span>
+          <span class="row-alarm-label">{{ etiquetaComprobanteIngreso(r) }}</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm egreso-alarm"
+          *ngIf="tieneComprobanteEgresoHoy(r)"
+          (click)="abrirComprobanteEgreso(r, $event)"
+          [attr.title]="tituloComprobanteEgreso(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">↑</span>
+          <span class="row-alarm-label">{{ etiquetaComprobanteEgreso(r) }}</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm factura-alarm"
+          *ngIf="tieneFacturaHoy(r)"
+          (click)="abrirFacturaHoy(r, $event)"
+          [attr.title]="tituloFacturaHoy(r)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">FE</span>
+          <span class="row-alarm-label">{{ etiquetaFacturaHoy(r) }}</span>
+        </button>
+      </div>
+      <ng-template #sinAlarmas><span class="dim">—</span></ng-template>
+    </ng-template>
+
+    <ng-template #emptyTpl>
+      <ng-container *ngIf="jornadaFiltroMsg(); else emptyBusqueda">
+        {{ jornadaFiltroMsg() }}
+      </ng-container>
+      <ng-template #emptyBusqueda>
+        <ng-container *ngIf="query(); else sinDatos">
+          No hay resultados para «{{ query() }}».
+        </ng-container>
+        <ng-template #sinDatos>
+          <ng-container *ngIf="esJornadas() && filtroJornadaActivo(); else sinDatosGeneral">
+            No hay alumnos para la jornada o fecha seleccionada.
+          </ng-container>
+          <ng-template #sinDatosGeneral>
+            No hay alumnos registrados. Usa <strong>Crear alumno</strong> para agregar el primero.
+          </ng-template>
+        </ng-template>
+      </ng-template>
+    </ng-template>
+
+    <footer class="pager" *ngIf="total() > 0 && !loading()">
+      <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="page() === 0">← Anterior</button>
+      <span>Página {{ page() + 1 }} de {{ totalPages() }}</span>
+      <button type="button" class="ghost" (click)="paginaSiguiente()" [disabled]="page() >= totalPages() - 1">Siguiente →</button>
+    </footer>
+  </div>
+</section>

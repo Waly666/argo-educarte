@@ -1,0 +1,108 @@
+<section class="consulta">
+  <header class="consulta-hero">
+    <div class="container consulta-hero__inner">
+      <span class="consulta-hero__icon" aria-hidden="true">🎓</span>
+      <div>
+        <p class="consulta-kicker">Verificación pública</p>
+        <h1>Consulta de certificados</h1>
+        <p class="consulta-lead">
+          Ingrese su número de documento para verificar los certificados expedidos por la institución.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <div class="container consulta-body">
+    <div class="consulta-card">
+      <form class="consulta-form" (ngSubmit)="consultar()">
+        <label for="numDoc">Número de cédula</label>
+        <div class="consulta-form-row">
+          <input
+            id="numDoc"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            [(ngModel)]="numDoc"
+            name="numDoc"
+            placeholder="Ingrese su número de documento"
+          />
+          <button type="submit" class="consulta-btn" [disabled]="loading()">
+            {{ loading() ? 'Consultando…' : 'Consultar' }}
+          </button>
+        </div>
+
+        @if (turnstileSiteKey()) {
+          <av-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+        }
+      </form>
+
+      @if (error()) {
+        <p class="consulta-err" role="alert">{{ error() }}</p>
+      }
+
+      @if (consultado() && !error() && resultado(); as res) {
+        @if (res.total === 0) {
+          <div class="consulta-empty">
+            <span class="consulta-empty__icon" aria-hidden="true">🔍</span>
+            <p>
+              No se encontraron certificados vigentes para la cédula
+              <strong>{{ res.cedula }}</strong>.
+            </p>
+          </div>
+        } @else {
+          @if (res.nombreApellidos) {
+            <div class="consulta-alumno">
+              <span class="consulta-alumno__badge">Titular</span>
+              <strong>{{ res.nombreApellidos }}</strong>
+              <span class="consulta-alumno__doc">Cédula {{ res.cedula }}</span>
+            </div>
+          }
+          <div class="consulta-table-wrap">
+            <table class="consulta-table">
+              <thead>
+                <tr>
+                  <th>Cód. verificación</th>
+                  <th>Nombre y apellidos</th>
+                  <th>Cédula</th>
+                  <th>Curso</th>
+                  <th>Horas</th>
+                  <th>Fecha cert.</th>
+                  <th>Fecha vence</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of filas(); track row.idCertificado) {
+                  <tr>
+                    <td data-label="Cód. verificación">
+                      <span class="consulta-id">{{ row.codVerificacion || row.idCertificado || '—' }}</span>
+                    </td>
+                    <td data-label="Nombre y apellidos">{{ row.nombreApellidos || '—' }}</td>
+                    <td data-label="Cédula">{{ row.cedula }}</td>
+                    <td data-label="Curso">{{ row.encabezado || '—' }}</td>
+                    <td data-label="Horas">
+                      @if (row.horas) {
+                        <span class="consulta-horas">{{ row.horas }}</span>
+                      } @else {
+                        —
+                      }
+                    </td>
+                    <td data-label="Fecha cert.">
+                      {{ row.fechaCert ? (row.fechaCert | date: 'dd/MM/yyyy') : '—' }}
+                    </td>
+                    <td data-label="Fecha vence">
+                      {{ row.fechaVence ? (row.fechaVence | date: 'dd/MM/yyyy') : '—' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="consulta-total">
+            <span class="consulta-total__pill">{{ res.total }}</span>
+            certificado(s) encontrado(s)
+          </p>
+        }
+      }
+    </div>
+  </div>
+</section>

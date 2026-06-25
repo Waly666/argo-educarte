@@ -1,0 +1,34 @@
+<div class="cumplimiento-card">
+  @if (titulo) {
+    <p class="cumplimiento-titulo">{{ titulo }}</p>
+  }
+  <div
+    class="alerta-cumplimiento"
+    [class.cumplido]="jornada.cumplidoContrato"
+    [class.pendiente]="!jornada.cumplidoContrato"
+    role="status">
+    <span class="alerta-icon" aria-hidden="true">{{ jornada.cumplidoContrato ? '✓' : '◎' }}</span>
+    <span class="alerta-texto">
+      <strong>Cumplimiento contrato</strong> — {{ textoContrato() }}
+      @if (jornada.cumplidoContrato) {
+        <span class="alerta-extra">Ya se cumplió la meta del contrato.</span>
+      }
+    </span>
+  </div>
+  <div
+    class="alerta-cumplimiento"
+    [class.cumplido]="jornada.cumplidoJornada"
+    [class.pendiente]="!jornada.cumplidoJornada"
+    role="status">
+    <span class="alerta-icon" aria-hidden="true">{{ jornada.cumplidoJornada ? '✓' : '◎' }}</span>
+    <span class="alerta-texto">
+      <strong>Cumplimiento jornada</strong> — {{ textoJornada() }}
+      @if (jornada.direccion) {
+        <span class="alerta-extra">{{ jornada.direccion }}</span>
+      }
+      @if (jornada.cumplidoJornada) {
+        <span class="alerta-extra">Ya se cumplió la meta de esta jornada.</span>
+      }
+    </span>
+  </div>
+</div>

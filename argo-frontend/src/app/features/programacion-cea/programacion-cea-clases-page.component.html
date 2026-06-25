@@ -1,0 +1,35 @@
+<section class="cea-clases-page cea-page card admin-list-page">
+  <header class="cea-head page-head">
+    <div class="cea-head-main">
+      <p class="breadcrumb">
+        <a routerLink="/app/programacion-cea">Programación CEA</a> / {{ pageTitle() }}
+      </p>
+      <h1>{{ pageTitle() }}</h1>
+      @if (pageHint()) {
+        <p class="hint">{{ pageHint() }}</p>
+      }
+    </div>
+    <div class="cea-badges head-actions">
+      <a routerLink="/app/programacion-cea/clases-hoy" class="ghost sm link-btn">Clases de hoy</a>
+      @if (modoClases() === 'grupal') {
+        <a routerLink="/app/programacion-cea/clases-practica" class="ghost sm link-btn">Práctica</a>
+      } @else {
+        <a routerLink="/app/programacion-cea/clases-grupales" class="ghost sm link-btn">Teoría y taller</a>
+      }
+      <a routerLink="/app/programacion-cea" class="ghost sm link-btn">Configuración</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="hint">Cargando programas…</p>
+  } @else {
+    <argo-programacion-cea-clases
+      variant="page"
+      [modoClases]="modoClases()"
+      [programas]="programas()"
+      [claseSelId]="claseQueryId"
+      [fechaInicial]="fechaQuery"
+      [programarCtx]="programarCtx()"
+      [inscribirCtx]="inscribirCtx()" />
+  }
+</section>

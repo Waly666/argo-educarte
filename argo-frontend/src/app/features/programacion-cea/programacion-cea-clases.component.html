@@ -1,0 +1,1242 @@
+@if (editorHost) {
+  @if (msg(); as texto) {
+    <p
+      class="cea-msg editor-host-banner"
+      [class.cea-msg--ok]="msgTipo() === 'ok'"
+      [class.cea-msg--err]="msgTipo() === 'error'"
+      [class.cea-msg--warn]="msgTipo() === 'warn'"
+      role="alert">
+      {{ texto }}
+    </p>
+  }
+  @if (formModalOpen() && (puedeGestionar() || (puedeOperar() && esModoEdicion()))) {
+    <argo-form-modal
+      [open]="true"
+      [title]="tituloFormModal()"
+      [wide]="true"
+      [tall]="true"
+      (closed)="cerrarFormModal()">
+      <div class="clase-form-modal">
+        <ng-container *ngTemplateOutlet="formClaseBody" />
+      </div>
+      <div modal-actions>
+        <button type="button" class="ghost" (click)="cerrarFormModal()">Cancelar</button>
+        <button type="button" class="primary" [disabled]="saving()" (click)="verificarYProgramar()">
+          {{ saving() ? 'Guardando…' : (esModoEdicion() ? 'Guardar cambios' : 'Programar clase') }}
+        </button>
+      </div>
+    </argo-form-modal>
+  }
+  @if (detalleOperarOpen() && claseSel(); as c) {
+    <argo-form-modal
+      [open]="true"
+      [title]="labelTipoClase(c.tipoClase) + ' — ' + (c.programaLabel || c.idProg)"
+      [wide]="true"
+      [tall]="true"
+      (closed)="cerrarDetalleOperar()">
+      <div class="clase-form-modal">
+        <ng-container *ngTemplateOutlet="detalleClase; context: { c: c }" />
+      </div>
+      <div modal-actions>
+        <button type="button" class="ghost" (click)="cerrarDetalleOperar()">Cerrar</button>
+        @if (puedeEditarHorarioClase(c)) {
+          <button type="button" class="primary" (click)="editarDesdeDetalleHost(c)">Editar horario y cupo</button>
+        }
+      </div>
+    </argo-form-modal>
+  }
+} @else {
+<div class="cea-clases argo-cal" [class.cea-page-layout]="isPage()">
+  @if (msg(); as texto) {
+    <p
+      class="cea-msg"
+      [class.cea-msg--ok]="msgTipo() === 'ok'"
+      [class.cea-msg--err]="msgTipo() === 'error'"
+      [class.cea-msg--warn]="msgTipo() === 'warn'"
+      role="alert">
+      {{ texto }}
+    </p>
+  }
+
+  @if (modoInscribir() && inscribirCtx; as ctx) {
+    <div class="inscribir-banner" role="status">
+      <div>
+        <strong>Inscribir alumno en clase grupal</strong>
+        <p class="hint">
+          {{ ctx.alumnoNombre || ctx.numDoc }} — {{ labelTipoClase(ctx.tipoClase || 'teoria') }}.
+          Programe primero cupos al mes; aquí elige una clase con cupo disponible.
+        </p>
+      </div>
+      <button type="button" class="ghost sm" (click)="limpiarModoInscribir()">Cerrar</button>
+    </div>
+  }
+
+  @if (conflictos().length && !formModalOpen()) {
+    <div class="conflictos-box" role="alert">
+      <strong>Conflictos detectados</strong>
+      <ul>
+        @for (c of conflictos(); track c.mensaje) {
+          <li>{{ c.mensaje }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  @if (isPage()) {
+    <div class="page-toolbar">
+      <label>Mes</label>
+      <input type="month" [ngModel]="mesFiltro()" (ngModelChange)="onMesFiltroChange($event)" />
+      <label>Programa</label>
+      <select [ngModel]="filtroProg()" (ngModelChange)="filtroProg.set($event); cargarClases()">
+        <option value="">Todos</option>
+        @for (p of programas; track p.idProg) {
+          <option [value]="p.idProg">{{ p.codigoProg || p.idProg }} — {{ p.nombre }}</option>
+        }
+      </select>
+      @if (esModoGrupal()) {
+        <label>Tipo</label>
+        <select [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event); cargarClases()">
+          <option value="">Teoría y taller</option>
+          <option value="teoria">Solo teoría</option>
+          <option value="taller">Solo taller</option>
+        </select>
+      }
+      <input type="search" placeholder="Buscar…" [ngModel]="buscarLista()" (ngModelChange)="buscarLista.set($event)" />
+      <button type="button" class="ghost sm" (click)="cargarClases()">Actualizar</button>
+      @if (puedeGestionar()) {
+        <button type="button" class="primary sm" (click)="abrirFormModal()">+ Nueva clase</button>
+      }
+      <div class="vista-page-toggle" role="group" aria-label="Vista">
+        <button type="button" class="ghost sm" [class.active]="vistaPage() === 'calendario'" (click)="vistaPage.set('calendario')">Calendario</button>
+        <button type="button" class="ghost sm" [class.active]="vistaPage() === 'lista'" (click)="vistaPage.set('lista')">Lista</button>
+      </div>
+    </div>
+
+    @if (vistaPage() === 'calendario') {
+      <div class="cal-page-row">
+        <section class="cal-mes-col card-inner">
+          <div class="cal-panel cal-mes-panel">
+            <div class="cal-toolbar">
+              <button type="button" class="ghost mini" (click)="mesAnterior()" aria-label="Mes anterior">‹</button>
+              <h3 class="cal-title">{{ tituloMesCal() }}</h3>
+              <button type="button" class="ghost mini" (click)="mesSiguiente()" aria-label="Mes siguiente">›</button>
+              <button type="button" class="ghost mini" (click)="irMesHoy()">Hoy</button>
+            </div>
+
+            @if (!loadingLista()) {
+              <div class="cal-resumen">
+                <span><strong>{{ clasesMesResumen().total }}</strong> clase(s) en el mes</span>
+                @if (clasesMesResumen().programada > 0) {
+                  <span class="cal-resumen-chip cal-clase-programada">{{ clasesMesResumen().programada }} PROGRAMADA</span>
+                }
+                @if (clasesMesResumen().proceso > 0) {
+                  <span class="cal-resumen-chip cal-clase-proceso">{{ clasesMesResumen().proceso }} EN PROCESO</span>
+                }
+                @if (clasesMesResumen().finalizado > 0) {
+                  <span class="cal-resumen-chip cal-clase-finalizada">{{ clasesMesResumen().finalizado }} FINALIZADO</span>
+                }
+              </div>
+            }
+
+            <div class="cal-legend cal-legend-clases">
+              @if (esModoPractica()) {
+                <span class="cal-legend-item"><i class="cal-legend-dot cal-tipo-practica"></i> Práctica en vehículo</span>
+              } @else {
+                <span class="cal-legend-item"><i class="cal-legend-dot cal-tipo-teoria"></i> Teoría</span>
+                <span class="cal-legend-item"><i class="cal-legend-dot cal-tipo-taller"></i> Taller</span>
+                <span class="cal-legend-item cal-legend-muted"><i class="cal-legend-dot cal-est-pendiente-legend"></i> Requiere atención (creada / programada)</span>
+              }
+              <span class="cal-legend-item hint">Borde pulsante = EN PROCESO · atenuado = FINALIZADO</span>
+              <span class="cal-legend-item hint">Clic en clase para ver detalle · «+» para programar</span>
+            </div>
+
+            @if (loadingLista()) {
+              <p class="hint cal-loading">Cargando calendario…</p>
+            } @else {
+              <div class="cal-mes-head">
+                @for (d of diasSemanaLabels; track d) {
+                  <div class="cal-mes-head-cell" [class.fin-semana]="$index >= 5">{{ d }}</div>
+                }
+              </div>
+              <div class="cal-mes-grid">
+                @for (cel of calCeldas(); track cel.key || $index) {
+                  <div
+                    class="cal-mes-dia cea-cal-dia"
+                    [class.otro-mes]="cel.otroMes"
+                    [class.hoy]="cel.key === hoyKey()"
+                    [class.fin-semana]="cel.fecha && esFinDeSemana(cel.fecha)"
+                    [class.expandido]="calDiaExpandido() === cel.key"
+                    [class.tiene-eventos]="clasesEnDiaMes(cel.key).length > 0">
+                    @if (cel.fecha) {
+                      <div class="cal-mes-dia-top">
+                        <span class="cal-mes-num">{{ cel.fecha.getDate() }}</span>
+                        <div class="cal-mes-dia-actions">
+                          @if (clasesEnDiaMes(cel.key).length > 0) {
+                            <span class="cal-mes-badge">{{ clasesEnDiaMes(cel.key).length }}</span>
+                          }
+                          @if (puedeGestionar() && !cel.otroMes) {
+                            <button
+                              type="button"
+                              class="cal-dia-add"
+                              title="Programar clase en este día"
+                              (click)="abrirFormEnDia(cel.key, $event)">+</button>
+                          }
+                        </div>
+                      </div>
+                      <div class="cal-mes-eventos">
+                        @for (c of clasesEnDiaMesVisibles(cel.key); track c._id) {
+                          <button
+                            type="button"
+                            class="cal-evento cal-evento-clase cal-evento-cea"
+                            [class.sel]="claseSel()?._id === c._id"
+                            [ngClass]="[tipoClaseCalBlockClass(c.tipoClase), estadoClaseCalAccentClass(c.estado), ubicacionCalHueClass(c)]"
+                            [title]="chipClaseCal(c)"
+                            (click)="seleccionarClaseCalendario(c)">
+                            <span class="cal-evento-tit">{{ c.horaDesde }}@if (c.horaHasta) { – {{ c.horaHasta }} } · {{ etiquetaUbicacionCal(c) }}</span>
+                            <span class="cal-evento-sub">{{ chipClaseCalCorto(c) }}</span>
+                            <span class="cal-evento-est">
+                              @if (horasClaseCalLabel(c)) { {{ horasClaseCalLabel(c) }} · }
+                              {{ c.inscritos ?? 0 }}/{{ c.cupoMaximo ?? '∞' }}
+                            </span>
+                          </button>
+                        }
+                        @if (clasesEnDiaMesOcultas(cel.key) > 0) {
+                          <button type="button" class="cal-evento cal-evento-mas" (click)="toggleDiaMesExpandido(cel.key, $event)">
+                            +{{ clasesEnDiaMesOcultas(cel.key) }} más
+                          </button>
+                        }
+                        @if (calDiaExpandido() === cel.key && clasesEnDiaMes(cel.key).length > calMaxEventosDia) {
+                          <button type="button" class="cal-evento cal-evento-mas" (click)="toggleDiaMesExpandido(cel.key, $event)">
+                            Ver menos
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-col card-inner cal-detail-col">
+          @if (claseSel(); as c) {
+            <ng-container *ngTemplateOutlet="detalleClase; context: { c: c }" />
+          } @else {
+            <div class="detail-empty">
+              @if (esModoPractica()) {
+                <p class="hint">Seleccione una clase del calendario o pulse «+» en un día para programar práctica en vehículo.</p>
+              } @else {
+                <p class="hint">Seleccione una clase del calendario o pulse «+» en un día para programar cupos de teoría o taller.</p>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    } @else {
+    <div class="master-detail">
+      <section class="list-col card-inner">
+        <header class="list-panel-head">
+          <h3>Clases — {{ tituloPeriodoLista() }}</h3>
+          <span class="hint">{{ clasesFiltradas().length }} clase(s)</span>
+        </header>
+        @if (loadingLista()) {
+          <p class="hint">Cargando…</p>
+        } @else if (!clasesFiltradas().length) {
+          <p class="hint list-empty">No hay clases en este periodo. Use «+ Nueva clase» para programar cupos.</p>
+        } @else {
+          <div class="table-wrap">
+            <table class="argo data-table clases-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Tipo</th>
+                  <th>Programa</th>
+                  <th>Ubicación</th>
+                  <th>Cupo</th>
+                  <th>Estado</th>
+                  @if (puedeGestionar()) {
+                    <th></th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of clasesFiltradas(); track c._id) {
+                  <tr class="clase-row" [class.active]="claseSel()?._id === c._id" (click)="seleccionarClase(c)">
+                    <td>{{ c.fechaClase | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ c.horaDesde }}–{{ c.horaHasta }}</td>
+                    <td><span class="cap cap-sm" [class]="'tipo-' + c.tipoClase">{{ labelTipoClase(c.tipoClase) }}</span></td>
+                    <td>{{ c.programaLabel }}</td>
+                    <td>{{ c.temaNombre || ubicacionClase(c) }}</td>
+                    <td>{{ c.inscritos ?? 0 }}/{{ c.cupoMaximo ?? '∞' }}</td>
+                    <td><span [class]="estadoClass(c.estado)">{{ c.estado }}</span></td>
+                    @if (puedeGestionar()) {
+                      <td class="acciones-tabla" (click)="$event.stopPropagation()">
+                        @if (c.estado === 'PROGRAMADA' || c.estado === 'CREADO') {
+                          <button type="button" class="ghost sm" (click)="editarClase(c)">Editar</button>
+                        }
+                        @if (puedeBorrarClase(c)) {
+                          <button type="button" class="ghost sm danger" (click)="borrarClase(c, $event)">Borrar</button>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <section class="detail-col card-inner">
+        @if (claseSel(); as c) {
+          <ng-container *ngTemplateOutlet="detalleClase; context: { c: c }" />
+        } @else {
+          <div class="detail-empty">
+            <p class="hint">Seleccione una clase de la lista o pulse «+ Nueva clase» para programar cupos.</p>
+            @if (puedeGestionar()) {
+              <button type="button" class="primary sm" (click)="abrirFormModal()">+ Nueva clase</button>
+            }
+          </div>
+        }
+      </section>
+    </div>
+    }
+
+    @if (puedeGestionar()) {
+      <argo-form-modal
+        [open]="formModalOpen()"
+        [title]="tituloFormModal()"
+        [wide]="true"
+        (closed)="cerrarFormModal()">
+        <div class="clase-form-modal">
+          <ng-container *ngTemplateOutlet="formClaseBody" />
+        </div>
+        <div modal-actions>
+          <button type="button" class="ghost" (click)="cerrarFormModal()">Cancelar</button>
+          <button type="button" class="primary" [disabled]="saving()" (click)="verificarYProgramar()">
+            {{ saving() ? 'Guardando…' : (esModoEdicion() ? 'Guardar cambios' : 'Programar clase') }}
+          </button>
+        </div>
+      </argo-form-modal>
+    }
+  } @else {
+
+  <div class="agenda-bar">
+    <argo-date-input label="Fecha" [ngModel]="fecha()" (ngModelChange)="onFechaAgenda($event)" ></argo-date-input>
+    <button type="button" class="ghost sm" (click)="irHoy()">Hoy</button>
+    <label class="filtro-tipo">Tipo</label>
+    <select [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+      <option value="">Todos</option>
+      <option value="teoria">Teoría</option>
+      <option value="taller">Taller</option>
+      <option value="practica">Práctica</option>
+    </select>
+    <div class="vista-toggle" role="group" aria-label="Vista de agenda">
+      <button type="button" class="ghost sm" [class.active]="vistaAgenda() === 'lista'" (click)="setVistaAgenda('lista')">Lista</button>
+      <button type="button" class="ghost sm" [class.active]="vistaAgenda() === 'calendario'" (click)="setVistaAgenda('calendario')">Semana</button>
+    </div>
+    <button type="button" class="ghost sm" (click)="vistaAgenda() === 'calendario' ? cargarSemana() : cargarClases()">Actualizar</button>
+    @if (puedeGestionar()) {
+      <button type="button" class="primary sm agenda-nueva" (click)="abrirFormModal()">+ Nueva clase</button>
+    }
+  </div>
+
+  <div
+    class="cea-clases-grid"
+    [class.solo-lista]="vistaAgenda() === 'lista'"
+    [class.con-calendario]="vistaAgenda() === 'calendario'">
+    <section class="panel list-panel list-panel-primary card-inner">
+      <header class="list-panel-head">
+        <h3>Clases del {{ fecha() }}</h3>
+        <span class="hint">{{ clasesFiltradas().length }} clase(s)</span>
+      </header>
+      @if (!clasesFiltradas().length) {
+        <p class="hint list-empty">
+          @if (modoInscribir()) {
+            No hay clases de {{ labelTipoClase(inscribirCtx?.tipoClase || 'teoria') }} con cupo en esta fecha.
+            Cambie la fecha o programe nuevos cupos con «+ Nueva clase».
+          } @else {
+            No hay clases programadas para esta fecha.
+            @if (puedeGestionar()) {
+              <button type="button" class="linkish" (click)="abrirFormModal()">Programar una clase</button>
+            }
+          }
+        </p>
+      } @else {
+        <div class="clase-cards">
+          @for (c of clasesFiltradas(); track c._id) {
+            <button
+              type="button"
+              class="clase-card"
+              [class.active]="claseSel()?._id === c._id"
+              (click)="seleccionarClase(c)">
+              <span class="clase-card-top">
+                <span class="cap cap-sm" [class]="'tipo-' + c.tipoClase">{{ labelTipoClase(c.tipoClase) }}</span>
+                <span [class]="estadoClass(c.estado)">{{ c.estado }}</span>
+              </span>
+              <strong>{{ c.horaDesde }} – {{ c.horaHasta }}</strong>
+              <span>{{ c.programaLabel }}</span>
+              <span class="hint">{{ c.temaNombre || ubicacionClase(c) }}</span>
+              <span class="hint">{{ c.instructorNombre }} · {{ c.inscritos ?? 0 }}/{{ c.cupoMaximo ?? '∞' }}</span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    @if (vistaAgenda() === 'calendario') {
+      <section class="panel cal-panel-wrap">
+        <div class="cal-panel cal-horas-panel cea-cal-panel">
+          <div class="cal-toolbar">
+            <button type="button" class="ghost mini" (click)="semanaAnterior()" aria-label="Semana anterior">‹</button>
+            <h3 class="cal-title">{{ tituloSemanaCal() }}</h3>
+            <button type="button" class="ghost mini" (click)="semanaSiguiente()" aria-label="Semana siguiente">›</button>
+            <button type="button" class="ghost mini" (click)="irSemanaHoy()">Esta semana</button>
+          </div>
+
+          <div class="cal-resumen">
+            <span><strong>{{ clasesSemanaResumen().total }}</strong> clase{{ clasesSemanaResumen().total === 1 ? '' : 's' }} esta semana</span>
+            @if (clasesSemanaResumen().programada > 0) {
+              <span class="cal-resumen-chip cal-clase-programada"> {{ clasesSemanaResumen().programada }} PROGRAMADA</span>
+            }
+            @if (clasesSemanaResumen().proceso > 0) {
+              <span class="cal-resumen-chip cal-clase-proceso"> {{ clasesSemanaResumen().proceso }} EN PROCESO</span>
+            }
+            @if (clasesSemanaResumen().finalizado > 0) {
+              <span class="cal-resumen-chip cal-clase-finalizada"> {{ clasesSemanaResumen().finalizado }} FINALIZADO</span>
+            }
+          </div>
+
+          <div class="cal-legend cal-legend-clases">
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-programada"></i> PROGRAMADA</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-proceso"></i> EN PROCESO</span>
+            <span class="cal-legend-item"><i class="cal-legend-dot cal-clase-finalizada"></i> FINALIZADO</span>
+            <span class="cal-legend-item cal-legend-muted"><i class="cal-legend-dot cal-est-pendiente-legend"></i> Parpadea si requiere atención</span>
+          </div>
+
+          @if (loadingSemana()) {
+            <p class="hint cal-loading">Cargando calendario…</p>
+          }
+
+          @if (clasesSinHorarioSemana().length > 0) {
+            <div class="cal-sin-horario">
+              <span class="cal-sin-horario-label">Sin horario definido</span>
+              @for (c of clasesSinHorarioSemana(); track c._id) {
+                <button
+                  type="button"
+                  class="cal-evento cal-evento-clase sin-hora"
+                  [class.sel]="claseSel()?._id === c._id"
+                  [ngClass]="[tipoClaseCalBlockClass(c.tipoClase), estadoClaseCalAccentClass(c.estado)]"
+                  [title]="chipClaseCal(c) + ' — ' + (c.estado || '')"
+                  (click)="seleccionarClaseCalendario(c)">
+                  {{ ymdCalendario(c.fechaClase) }} · {{ chipClaseCalCorto(c) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="cal-horas-scroll">
+            <div class="cal-horas-grid">
+              <div class="cal-horas-corner"></div>
+              @for (d of diasSemanaCal(); track d.key) {
+                <div
+                  class="cal-horas-dayhead"
+                  [class.hoy]="d.key === hoyKey()"
+                  [class.fin-semana]="esFinDeSemana(d.fecha)">
+                  <span class="cal-day-name">{{ fmtDiaCal(d.fecha) }}</span>
+                  @if (conteoClasesDia(d.key) > 0) {
+                    <span class="cal-day-count">{{ conteoClasesDia(d.key) }}</span>
+                  }
+                </div>
+              }
+              @for (h of horasCal; track h) {
+                <div class="cal-horas-time">{{ h }}:00</div>
+                @for (d of diasSemanaCal(); track d.key) {
+                  <div
+                    class="cal-horas-slot"
+                    [class.hoy]="d.key === hoyKey()"
+                    [class.fin-semana]="esFinDeSemana(d.fecha)"></div>
+                }
+              }
+              <div class="cal-horas-events-layer">
+                @for (d of diasSemanaCal(); track 'col-' + d.key) {
+                  <div class="cal-horas-events-col" [class.hoy]="d.key === hoyKey()">
+                    @if (d.key === hoyKey() && semanaIncluyeHoy() && ahoraCalTopPct() != null) {
+                      <div class="cal-now-line" [style.top.%]="ahoraCalTopPct()!" aria-hidden="true"></div>
+                    }
+                    @let diaClases = clasesEnDia(d.key);
+                    @let layoutsDia = layoutsCalendarioDia(diaClases);
+                    @for (c of diaClases; track c._id) {
+                      @if (layoutsDia.get(c._id!); as lay) {
+                        <button
+                          type="button"
+                          class="cal-clase-block"
+                          [class.sel]="claseSel()?._id === c._id"
+                          [ngClass]="[tipoClaseCalBlockClass(c.tipoClase), estadoClaseCalAccentClass(c.estado)]"
+                          [style.top.%]="lay.topPct"
+                          [style.height.%]="lay.heightPct"
+                          [style.left.%]="lay.leftPct"
+                          [style.width.%]="lay.widthPct"
+                          [title]="chipClaseCal(c) + ' — ' + c.horaDesde + (c.horaHasta ? ' – ' + c.horaHasta : '')"
+                          (click)="seleccionarClaseCalendario(c)">
+                          <span class="cal-clase-hora">
+                            {{ c.horaDesde }}@if (c.horaHasta) { – {{ c.horaHasta }} }
+                            @if (horasClaseCalLabel(c)) { · {{ horasClaseCalLabel(c) }} }
+                          </span>
+                          <span class="cal-clase-tit">{{ chipClaseCalCorto(c) }}</span>
+                          <span class="cal-clase-inst">{{ c.instructorNombre || '—' }}</span>
+                          <span class="cal-clase-est">{{ c.estado }}</span>
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (!loadingSemana() && clasesSemanaResumen().total === 0) {
+            <p class="hint cal-empty">No hay clases programadas en esta semana.</p>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  @if (puedeGestionar()) {
+    <argo-form-modal
+      [open]="formModalOpen()"
+      [title]="tituloFormModal()"
+      [wide]="true"
+      (closed)="cerrarFormModal()">
+      <div class="clase-form-modal">
+        <ng-container *ngTemplateOutlet="formClaseBody" />
+      </div>
+      <div modal-actions>
+        <button type="button" class="ghost" (click)="cerrarFormModal()">Cancelar</button>
+        <button type="button" class="primary" [disabled]="saving()" (click)="verificarYProgramar()">
+          {{ saving() ? 'Guardando…' : (esModoEdicion() ? 'Guardar cambios' : 'Programar clase') }}
+        </button>
+      </div>
+    </argo-form-modal>
+  }
+
+  @if (claseSel(); as c) {
+    <ng-container *ngTemplateOutlet="detalleClase; context: { c: c }" />
+  }
+
+  }
+
+</div>
+}
+
+<ng-template #formClaseBody>
+        @if (formError(); as err) {
+          <div class="form-error-box" role="alert">{{ err }}</div>
+        }
+        @if (edicionSoloOperar()) {
+          <p class="hint edicion-operar-hint">
+            Ajuste de última hora: fecha, horario, ubicación o cupo. El inicio y fin de la clase siguen siendo manuales.
+          </p>
+        }
+        @if (conflictos().length) {
+          <div class="conflictos-box conflictos-modal" role="alert">
+            <strong>Conflictos detectados</strong>
+            <ul>
+              @for (c of conflictos(); track c.mensaje) {
+                <li>{{ c.mensaje }}</li>
+              }
+            </ul>
+          </div>
+        }
+        <div class="argo-form-shell">
+          @if (!edicionSoloOperar()) {
+          <section
+            class="argo-form-section"
+            [class.tipo-teoria]="form().tipoClase === 'teoria'"
+            [class.tipo-taller]="form().tipoClase === 'taller'"
+            [class.tipo-practica]="form().tipoClase === 'practica'">
+            <header class="section-head">
+              <span class="section-badge">1</span>
+              <div>
+                <h3 class="section-title">Programa y tipo</h3>
+              </div>
+            </header>
+            <div class="section-body">
+              <div class="field">
+                <label>Programa</label>
+                <select
+                  class="form-select-accent"
+                  [ngModel]="form().idProg"
+                  (ngModelChange)="onProgFormChange($event)">
+                  @for (p of programas; track p.idProg) {
+                    <option [value]="p.idProg">{{ p.codigoProg || p.idProg }} — {{ p.nombre }}</option>
+                  }
+                </select>
+              </div>
+              @if (progFormInfo(); as prog) {
+                <div class="prog-info-chips" aria-label="Horas configuradas en el programa">
+                  <span class="prog-info-chip teoria">
+                    <span class="prog-info-label">Clase teórica</span>
+                    <strong>{{ prog.horasTeoria || 0 }} h</strong>
+                  </span>
+                  <span class="prog-info-chip taller">
+                    <span class="prog-info-label">Clase taller</span>
+                    <strong>{{ prog.horasTaller || 0 }} h</strong>
+                  </span>
+                </div>
+              }
+              <div class="field">
+                <label>Tipo de clase</label>
+                @if (esModoPractica()) {
+                  <div class="tipo-clase-badge practica">Práctica en vehículo · 1 alumno</div>
+                } @else if (esModoGrupal()) {
+                  <select class="form-select-accent" [ngModel]="form().tipoClase" (ngModelChange)="onTipoClaseChange($event)">
+                    <option value="teoria">Teoría (aula, grupal)</option>
+                    <option value="taller">Taller / patio (grupal)</option>
+                  </select>
+                } @else {
+                  <select class="form-select-accent" [ngModel]="form().tipoClase" (ngModelChange)="onTipoClaseChange($event)">
+                    <option value="teoria">Teoría (aula, grupal — cupos al mes)</option>
+                    <option value="taller">Taller / patio (grupal — cupos al mes)</option>
+                    <option value="practica">Práctica en vehículo (1 alumno, al llegar)</option>
+                  </select>
+                }
+              </div>
+            </div>
+          </section>
+          }
+
+          <section class="argo-form-section section-horario">
+            <header class="section-head">
+              <span class="section-badge">2</span>
+              <div>
+                <h3 class="section-title">Fecha y horario</h3>
+              </div>
+            </header>
+            <div class="section-body">
+              <div class="field horario-fecha-field">
+                <argo-date-input label="Fecha de la clase" class="fecha-input-accent"
+                  [ngModel]="form().fechaClase"
+                  (ngModelChange)="patchForm({ fechaClase: $event })" ></argo-date-input>
+              </div>
+              @if (horarioPermitidoHint(); as hint) {
+                <p class="horario-rango-hint">{{ hint }}</p>
+              }
+              @if (slotsHorarioRapido().length) {
+                <div class="horario-slots-wrap">
+                  <span class="slots-label">Inicio rápido</span>
+                  <div class="horario-slots" role="listbox" aria-label="Horas de inicio sugeridas">
+                    @for (slot of slotsHorarioRapido(); track slot) {
+                      <button
+                        type="button"
+                        class="horario-slot"
+                        role="option"
+                        [class.active]="form().horaDesde === slot"
+                        [attr.aria-selected]="form().horaDesde === slot"
+                        (click)="seleccionarHoraInicio(slot)">
+                        {{ formatoHoraLegible(slot) }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+              <div class="horario-manual">
+                <div class="horario-manual-col">
+                  <label>Hora inicio</label>
+                  <argo-hora-12-input
+                    [minuteStep]="15"
+                    [value]="form().horaDesde || '08:00'"
+                    (valueChange)="patchForm({ horaDesde: $event })" />
+                </div>
+                @if (form().tipoClase === 'practica') {
+                  <div class="horario-manual-col">
+                    <label>Duración</label>
+                    <div class="duracion-pills" role="group" aria-label="Duración en horas">
+                      @for (h of [1, 2, 3, 4]; track h) {
+                        <button
+                          type="button"
+                          class="duracion-pill"
+                          [class.active]="form().duracionHoras === h"
+                          [disabled]="duracionSesionBloqueada()"
+                          (click)="patchForm({ duracionHoras: h })">
+                          {{ h }} h
+                        </button>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  @if (usaHoraFinCalculada()) {
+                    <div class="horario-manual-col horario-readonly-col">
+                      <label>Hora fin</label>
+                      <div class="horario-readonly-val">
+                        {{ horaFinFormulario() ? formatoHoraLegible(horaFinFormulario()) : '—' }}
+                      </div>
+                      <span class="hint">{{ horasSesionEnEdicion() }} h por sesión</span>
+                    </div>
+                  } @else {
+                    <div class="horario-manual-col">
+                      <label>Hora fin</label>
+                      <argo-hora-12-input
+                        [minuteStep]="15"
+                        [value]="form().horaHasta || '10:00'"
+                        (valueChange)="patchForm({ horaHasta: $event })" />
+                    </div>
+                  }
+                  <div class="horario-manual-col horario-cupo-col">
+                    <label>Cupo</label>
+                    <input
+                      type="number"
+                      min="1"
+                      class="cupo-input"
+                      [ngModel]="form().cupoMaximo"
+                      (ngModelChange)="patchForm({ cupoMaximo: +$event })" />
+                  </div>
+                }
+              </div>
+              <div class="horario-resumen" aria-live="polite">
+                <div class="horario-resumen-item">
+                  <span class="resumen-label">Inicio</span>
+                  <strong>{{ formatoHoraLegible(form().horaDesde || '08:00') }}</strong>
+                </div>
+                <span class="horario-resumen-arrow" aria-hidden="true">→</span>
+                <div class="horario-resumen-item">
+                  <span class="resumen-label">Fin</span>
+                  <strong>{{ horaFinFormulario() ? formatoHoraLegible(horaFinFormulario()) : '—' }}</strong>
+                </div>
+                <div class="horario-resumen-badge">
+                  {{ horasDescuentoAuto() > 0 ? (horasDescuentoAuto() + ' h a descontar') : '—' }}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="argo-form-section section-recursos">
+            <header class="section-head">
+              <span class="section-badge">3</span>
+              <div>
+                <h3 class="section-title">Recursos e instructor</h3>
+              </div>
+            </header>
+            <div class="section-body section-body-grid">
+              @if (!edicionSoloOperar() && (form().tipoClase === 'teoria' || form().tipoClase === 'taller')) {
+                <div class="field">
+                  <label>Tema</label>
+                  <select class="form-select-accent" [ngModel]="form().idTema" (ngModelChange)="patchForm({ idTema: $event })">
+                    <option value="">— Seleccione —</option>
+                    @for (t of temasFiltrados(); track t._id) {
+                      <option [value]="t._id">{{ t.orden }}. {{ t.nombre }}</option>
+                    }
+                  </select>
+                </div>
+              }
+
+              @if (form().tipoClase === 'teoria') {
+                <div class="field">
+                  <label>Aula</label>
+                  <select class="form-select-accent" [ngModel]="form().idAula" (ngModelChange)="patchForm({ idAula: $event })">
+                    <option value="">— Seleccione —</option>
+                    @for (a of recursos()?.aulas || []; track a.id) {
+                      <option [value]="a.id">{{ a.nombre }}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (form().tipoClase === 'taller') {
+                <div class="field">
+                  <label>Taller / patio</label>
+                  <select class="form-select-accent" [ngModel]="form().idTaller" (ngModelChange)="patchForm({ idTaller: $event })">
+                    <option value="">— Seleccione —</option>
+                    @for (t of recursos()?.talleres || []; track t.id) {
+                      <option [value]="t.id">{{ t.nombre }}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (form().tipoClase === 'practica') {
+                <div class="field">
+                  <label>Vehículo</label>
+                  @if (recursosCategoriaLicencia(); as catLic) {
+                    <p class="hint vehiculo-filtro-hint">Solo vehículos aptos para licencia <strong>{{ catLic }}</strong></p>
+                  }
+                  <select class="form-select-accent" [ngModel]="form().idVehiculo" (ngModelChange)="patchForm({ idVehiculo: $event })">
+                    <option value="">— Seleccione —</option>
+                    @for (v of recursos()?.vehiculos || []; track v.id) {
+                      <option [value]="v.id">{{ v.label }}</option>
+                    }
+                  </select>
+                </div>
+              }
+
+              @if (!edicionSoloOperar()) {
+              <div class="field field-instructor">
+                <label>Instructor (obligatorio)</label>
+                <select
+                  class="form-select-accent"
+                  [ngModel]="form().idEmpleadoInstructor"
+                  (ngModelChange)="patchForm({ idEmpleadoInstructor: +$event || undefined })">
+                  <option [ngValue]="undefined">— Seleccione instructor —</option>
+                  @for (i of recursos()?.instructores || []; track i.idEmpleado) {
+                    <option [ngValue]="i.idEmpleado">{{ i.nombreCompleto }}</option>
+                  }
+                </select>
+              </div>
+              }
+            </div>
+          </section>
+
+          @if (form().tipoClase === 'practica' && !esModoEdicion()) {
+            <section class="argo-form-section section-alumnos">
+              <header class="section-head">
+                <span class="section-badge">4</span>
+                <div>
+                  <h3 class="section-title">Alumno</h3>
+                </div>
+              </header>
+              <div class="section-body">
+                <div class="field inscripcion-modal-block">
+                  @if (alumnoPracticaSel(); as ap) {
+                    <div class="alumno-sel-chip">
+                      <span>{{ ap.alumnoNombre }} ({{ ap.numDoc }}) — {{ ap.pendientes }} h pend. · {{ labelOrigen(ap.origenHoras) }}@if (ap.servicioLabel) { · {{ ap.servicioLabel }} }</span>
+                      <button type="button" class="ghost sm" (click)="quitarAlumnoPractica()">Cambiar</button>
+                    </div>
+                  } @else if (!form().idProg) {
+                    <p class="hint">Seleccione el programa para ver alumnos con horas sin programar.</p>
+                  } @else {
+                    <div class="elegibles">
+                      <label>Alumnos con liquidación activa y horas sin programar</label>
+                      <input
+                        type="search"
+                        placeholder="Filtrar por nombre o documento…"
+                        [ngModel]="buscarAlumnoModal()"
+                        (ngModelChange)="onBuscarAlumnoModal($event)" />
+                      <ng-container *ngTemplateOutlet="listaElegibles; context: { lista: elegiblesPrograma(), modo: 'seleccionar' }" />
+                    </div>
+                    <details class="buscar-alt">
+                      <summary>O buscar por cédula o nombre (listado general)</summary>
+                      <ng-container *ngTemplateOutlet="buscarAlumnoPractica" />
+                    </details>
+                  }
+                </div>
+              </div>
+            </section>
+          }
+
+          @if (esModoEdicion()) {
+            <section class="argo-form-section section-alumnos">
+              <header class="section-head">
+                <span class="section-badge">4</span>
+                <div>
+                  <h3 class="section-title">Inscripciones</h3>
+                </div>
+              </header>
+              <div class="section-body">
+                <ng-container *ngTemplateOutlet="inscripcionesEdicionModal" />
+              </div>
+            </section>
+          }
+        </div>
+</ng-template>
+
+<ng-template #inscripcionesEdicionModal>
+  @if (claseSel(); as c) {
+    @if ((c.estado === 'PROGRAMADA' || c.estado === 'CREADO') && puedeOperar()) {
+      <section class="inscripcion-modal-block inscripcion-modal-edition">
+        <h4 class="inscripcion-modal-title">Inscribir alumnos</h4>
+        <p class="hint">
+          Cupo: {{ c.inscritos ?? inscripciones().length }} / {{ c.cupoMaximo ?? form().cupoMaximo ?? '—' }}
+          @if (c.tipoClase === 'practica') { · Máximo 1 alumno por clase }
+        </p>
+        @if (c.tipoClase === 'practica' && !tieneCupoInscripcion(c)) {
+          <p class="hint">Para cambiar el alumno, quítelo de la lista de inscritos y agregue otro.</p>
+        } @else if (tieneCupoInscripcion(c)) {
+          <div class="elegibles">
+            <label>Alumnos con liquidación activa y horas sin programar</label>
+            <input
+              type="search"
+              placeholder="Filtrar por nombre o documento…"
+              [ngModel]="buscarAlumno()"
+              (ngModelChange)="onBuscarAlumnoDetalle($event)" />
+            <ng-container *ngTemplateOutlet="listaElegibles; context: { lista: elegibles(), modo: 'inscribir' }" />
+          </div>
+          @if (c.tipoClase === 'practica') {
+            <details class="buscar-alt">
+              <summary>O buscar por cédula o nombre (listado general)</summary>
+              <ng-container *ngTemplateOutlet="buscarAlumnoPractica" />
+            </details>
+          } @else {
+            <div class="row-fields inscripcion-doc-rapido">
+              <input
+                type="text"
+                placeholder="Nº documento (inscripción rápida)"
+                [ngModel]="numDocInscribir()"
+                (ngModelChange)="numDocInscribir.set($event)"
+                (keyup.enter)="inscribirPorDoc()" />
+              <button type="button" class="primary sm" (click)="inscribirPorDoc()">Inscribir</button>
+            </div>
+          }
+        }
+
+        <h4 class="inscripcion-modal-title inscritos-modal-title">Inscritos ({{ inscripciones().length }})</h4>
+        @if (!inscripciones().length) {
+          <p class="hint">Sin inscripciones aún.</p>
+        } @else {
+          <div class="table-wrap inscritos-modal-table">
+            <table class="argo data-table rastreo-inscritos compact">
+              <thead>
+                <tr>
+                  <th>Alumno</th>
+                  <th>H. clase</th>
+                  @if (c.tipoClase !== 'practica') {
+                    <th>Pend.</th>
+                  }
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ins of inscripciones(); track ins._id) {
+                  <tr>
+                    <td>{{ ins.alumnoNombre || ins.numDoc }}</td>
+                    <td>{{ ins.horasAsignadas }} h</td>
+                    @if (c.tipoClase !== 'practica') {
+                      <td>
+                        @if (rastreoDeInscripcion(ins); as r) {
+                          <strong [class.warn-text]="r.pendientes > 0">{{ r.pendientes }}</strong>
+                        } @else {
+                          <span class="hint">…</span>
+                        }
+                      </td>
+                    }
+                    <td>
+                      <button type="button" class="ghost sm danger" (click)="quitarInscripcion(ins)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  }
+</ng-template>
+
+<ng-template #buscarAlumnoPractica>
+  <div class="clase-alumno-buscar">
+    <div class="buscar-wrap">
+      <span class="buscar-ic" aria-hidden="true">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar alumno por nombre o cédula…"
+        [ngModel]="alumnoBusqueda()"
+        (ngModelChange)="onAlumnoBusquedaInput($event)"
+        (focus)="focusAlumnoBusqueda()"
+        autocomplete="off" />
+    </div>
+    @if (alumnoBusquedaOpen()) {
+      <div class="buscar-dropdown">
+        @if (alumnoBusquedaLoading()) {
+          <p class="buscar-msg">Buscando…</p>
+        } @else if (alumnoBusqueda().trim().length < 2) {
+          <p class="buscar-msg">Escriba al menos 2 caracteres.</p>
+        } @else if (alumnoBusquedaResults().length === 0) {
+          <p class="buscar-msg">Sin resultados.</p>
+        } @else {
+          <ul class="buscar-list">
+            @for (r of alumnoBusquedaResults(); track r._id) {
+              <li>
+                <div class="buscar-info">
+                  <span class="buscar-name">{{ nombreAlumnoItem(r) }}</span>
+                  <span class="buscar-meta">{{ r.tipoDoc || 'CC' }} {{ r.numDoc }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="mini primary"
+                  (click)="agregarAlumnoPracticaDesdeBusqueda(r)"
+                  [disabled]="alumnoYaEnClasePractica(r.numDoc) || guardandoInscripcion()">
+                  {{ alumnoYaEnClasePractica(r.numDoc) ? 'Agregado' : guardandoInscripcion() ? '…' : 'Agregar' }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #listaElegibles let-lista="lista" let-modo="modo">
+  <ul class="elegibles-list elegibles-modal">
+    @for (a of lista; track trackElegible(a)) {
+      <li>
+        <span class="elegible-info">
+          <strong>{{ a.alumnoNombre }}</strong> ({{ a.numDoc }}) — {{ a.pendientes }} h pend.
+          @if (a.servicioLabel) {
+            · {{ a.servicioLabel }}
+          }
+          · {{ labelOrigen(a.origenHoras) }}
+        </span>
+        @if (modo === 'seleccionar') {
+          <button type="button" class="primary sm" (click)="seleccionarAlumnoPractica(a)">Seleccionar</button>
+        } @else {
+          <button type="button" class="ghost sm" (click)="inscribirElegible(a)">Inscribir</button>
+        }
+      </li>
+    }
+    @if (!lista.length) {
+      <li class="hint">Sin alumnos con horas pendientes para este programa y tipo de clase.</li>
+    }
+  </ul>
+</ng-template>
+
+<ng-template #detalleClase let-c="c">
+    <section class="panel detalle-panel card-inner" [class.detalle-inline]="isPage()">
+      <header class="detalle-head">
+        <div>
+          <h3>{{ labelTipoClase(c.tipoClase) }} — {{ c.programaLabel }}</h3>
+          <p class="hint">
+            {{ c.fechaClase | date:'dd/MM/yyyy' }} · Horario programado: {{ c.horaDesde }}–{{ c.horaHasta }}
+            @if (c.horasDescuento) { ({{ c.horasDescuento }} h) }
+            · {{ ubicacionClase(c) }}
+            · Instructor: {{ c.instructorNombre || '—' }}
+          </p>
+        </div>
+        <div class="detalle-head-actions">
+          @if (puedeEditarHorarioClase(c) && !editorHost) {
+            <button type="button" class="ghost sm" (click)="editarClase(c)">Editar horario</button>
+          }
+          @if (puedeGestionar() && puedeBorrarClase(c)) {
+            <button type="button" class="ghost sm danger" (click)="borrarClase(c)">Borrar clase</button>
+          }
+          <span [class]="estadoClass(c.estado)">{{ c.estado }}</span>
+        </div>
+      </header>
+
+      @if (c.estado === 'EN PROCESO' || c.estado === 'FINALIZADO') {
+        <div class="horarios-reales card-inner">
+          <div class="horario-row">
+            <span class="horario-label">Hora real inicio</span>
+            <strong>{{ c.horaInicio ? (c.horaInicio | date:'dd/MM/yyyy HH:mm:ss') : '—' }}</strong>
+          </div>
+          <div class="horario-row">
+            <span class="horario-label">Hora real fin</span>
+            <strong>{{ c.horaFin ? (c.horaFin | date:'dd/MM/yyyy HH:mm:ss') : (c.estado === 'EN PROCESO' ? 'En curso…' : '—') }}</strong>
+          </div>
+          @if (c.estado === 'FINALIZADO' && c.duracionSegundos) {
+            <p class="hint">Duración real: {{ duracionMostrar() }} · Descuento aplicado: {{ c.horasDescuento || '—' }} h programadas</p>
+          }
+        </div>
+        @if (c.estado === 'EN PROCESO') {
+          <div class="cronometro" role="timer" aria-live="polite">
+            <span class="cron-label">Tiempo en curso</span>
+            <span class="cron-valor">{{ duracionMostrar() }}</span>
+          </div>
+        }
+      }
+
+      @if (puedeOperar() && c.estado !== 'FINALIZADO' && c.estado !== 'CANCELADA') {
+        <p class="hint manual-hint">
+          El inicio y fin de la clase son <strong>manuales</strong>: use los botones cuando esté listo.
+          Puede ajustar horario e inscripciones antes de iniciar.
+        </p>
+        @if (c.estado === 'PROGRAMADA' && !claseEsHoy(c)) {
+          <p class="hint hint-warn">
+            Solo puede <strong>iniciar</strong> la clase el día programado (hoy). Puede editar horario e inscribir alumnos antes.
+          </p>
+        }
+        @if (c.tipoClase === 'practica' && c.estado === 'PROGRAMADA' && claseEsHoy(c) && c.idVehiculo) {
+          <p class="hint hint-warn">
+            Antes de iniciar debe completar la <strong>inspección preoperacional de hoy</strong> del vehículo {{ c.idVehiculo }}.
+          </p>
+        }
+        <div class="actions">
+          @if (c.estado === 'PROGRAMADA') {
+            <button
+              type="button"
+              class="primary"
+              (click)="iniciarClase()"
+              [disabled]="!puedeIniciarClase(c)"
+              [title]="tituloIniciarClase(c)">
+              Iniciar clase
+            </button>
+          }
+          @if (c.estado === 'EN PROCESO') {
+            <button type="button" class="primary" (click)="finalizarClase()">Finalizar clase</button>
+          }
+        </div>
+      }
+
+      @if (puedeCerrarRetroactivo() && clasePuedeCerrarRetroactivo(c)) {
+        <p class="hint hint-warn">
+          Esta clase no se inició ni finalizó. Puede <strong>cerrarla con el horario programado</strong>
+          ({{ c.horaDesde }}{{ c.horaHasta ? ' – ' + c.horaHasta : '' }}) y registrar asistencia de los inscritos.
+        </p>
+        <div class="actions">
+          <button
+            type="button"
+            class="primary"
+            (click)="cerrarClaseRetroactiva()"
+            [title]="tituloCerrarRetroactivo(c)">
+            Cerrar con horario programado
+          </button>
+        </div>
+      }
+
+      @if ((c.estado === 'PROGRAMADA' || c.estado === 'CREADO') && puedeOperar()) {
+        <div class="inscripcion-block">
+          <h4>Inscribir alumnos (sin iniciar la clase)</h4>
+          @if (modoInscribir() && inscribirCtx; as ctx) {
+            <div class="inscribir-rapido">
+              <p class="hint">Inscribir a <strong>{{ ctx.alumnoNombre || ctx.numDoc }}</strong> en esta clase.</p>
+              <button type="button" class="primary sm" (click)="inscribirAlumnoCtx()">Inscribir aquí</button>
+            </div>
+          }
+          <p class="hint">
+            Cupo: {{ c.inscritos ?? 0 }} / {{ c.cupoMaximo ?? '—' }}
+            @if (c.tipoClase === 'practica') { · Máximo 1 alumno por clase }
+          </p>
+          @if (c.tipoClase === 'practica' && (c.inscritos ?? 0) >= 1) {
+            <p class="hint">La clase práctica ya tiene alumno inscrito.</p>
+          } @else {
+            <div class="elegibles">
+              <label>Alumnos con liquidación activa y horas sin programar</label>
+              <input
+                type="search"
+                placeholder="Filtrar por nombre o documento…"
+                [ngModel]="buscarAlumno()"
+                (ngModelChange)="onBuscarAlumnoDetalle($event)" />
+              <ng-container *ngTemplateOutlet="listaElegibles; context: { lista: elegibles(), modo: 'inscribir' }" />
+            </div>
+            @if (c.tipoClase === 'practica') {
+              <details class="buscar-alt">
+                <summary>O buscar por cédula o nombre (listado general)</summary>
+                <ng-container *ngTemplateOutlet="buscarAlumnoPractica" />
+              </details>
+            } @else {
+              <div class="row-fields inscripcion-doc-rapido">
+                <input
+                  type="text"
+                  placeholder="Nº documento (inscripción rápida)"
+                  [ngModel]="numDocInscribir()"
+                  (ngModelChange)="numDocInscribir.set($event)"
+                  (keyup.enter)="inscribirPorDoc()" />
+                <button type="button" class="primary sm" (click)="inscribirPorDoc()">Inscribir</button>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <h4>Inscritos y saldo de horas ({{ inscripciones().length }})</h4>
+      <p class="hint saldo-hint">* Insc. = en clases con horario. Res. = reservadas al iniciar. Ejec. = confirmadas al finalizar.</p>
+      @if (!inscripciones().length) {
+        <p class="hint">Sin inscripciones aún.</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="argo data-table rastreo-inscritos">
+            <thead>
+              <tr>
+                <th>Alumno</th>
+                <th>H. clase</th>
+                <th>Req.</th>
+                <th>Insc.</th>
+                <th>Res.*</th>
+                <th>Ejec.</th>
+                <th>Pend.</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ins of inscripciones(); track ins._id) {
+                @if (rastreoDeInscripcion(ins); as r) {
+                  <tr>
+                    <td>{{ ins.alumnoNombre || ins.numDoc }}</td>
+                    <td>{{ ins.horasAsignadas }} h</td>
+                    <td>{{ r.requeridas }}</td>
+                    <td>{{ r.inscritas ?? 0 }}</td>
+                    <td>{{ r.programadas }}</td>
+                    <td>{{ r.ejecutadas }}</td>
+                    <td [class.warn-text]="r.pendientes > 0"><strong>{{ r.pendientes }}</strong></td>
+                    <td>
+                      @if ((c.estado === 'PROGRAMADA' || c.estado === 'CREADO') && puedeOperar()) {
+                        <button type="button" class="ghost sm danger" (click)="quitarInscripcion(ins)">Quitar</button>
+                      }
+                    </td>
+                  </tr>
+                } @else {
+                  <tr>
+                    <td>{{ ins.alumnoNombre || ins.numDoc }}</td>
+                    <td>{{ ins.horasAsignadas }} h</td>
+                    <td colspan="4" class="hint">Cargando rastreo…</td>
+                    <td>
+                      @if ((c.estado === 'PROGRAMADA' || c.estado === 'CREADO') && puedeOperar()) {
+                        <button type="button" class="ghost sm danger" (click)="quitarInscripcion(ins)">Quitar</button>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+</ng-template>
+
+@if (inspeccionBloqueoOpen() && vehiculoInspeccionId(); as vid) {
+  @if (editorHost) {
+    <argo-form-modal
+      [open]="true"
+      title="Inspección preoperacional requerida"
+      (closed)="cerrarInspeccionBloqueo()">
+      <p class="hint inspeccion-aviso-portal">
+        Falta la <strong>inspección preoperacional de hoy</strong>
+        @if (inspeccionBloqueoPlaca(); as placa) {
+          del vehículo <strong>{{ placa }}</strong>.
+        } @else {
+          del vehículo asignado a la clase.
+        }
+        Complete la revisión en la ficha del vehículo (pantalla completa) y luego vuelva a iniciar la clase.
+      </p>
+      @if (!puedeInspeccion()) {
+        <p class="hint hint-warn">
+          No tiene permiso para registrar inspecciones. Solicite el permiso
+          <strong>instructores.inspeccion</strong> a administración.
+        </p>
+      }
+      <div modal-actions>
+        <button type="button" class="ghost" (click)="cerrarInspeccionBloqueo()">Cerrar</button>
+        @if (puedeInspeccion()) {
+          <button type="button" class="primary" (click)="irFichaVehiculoInspeccion(vid)">
+            Ir a ficha del vehículo
+          </button>
+        }
+      </div>
+    </argo-form-modal>
+  } @else {
+    <argo-form-modal
+      [open]="true"
+      [title]="'Inspección preoperacional — ' + (inspeccionBloqueoPlaca() || '')"
+      [wide]="true"
+      [tall]="true"
+      (closed)="cerrarInspeccionBloqueo()">
+      @if (puedeInspeccion()) {
+        <argo-vehiculo-inspeccion-panel
+          [vehiculoId]="vid"
+          [abrirFormularioHoy]="true"
+          [modoInline]="true"
+          (inspeccionGuardada)="onInspeccionGuardadaBloqueo($event)" />
+      } @else {
+        <p class="hint">
+          No tiene permiso para registrar inspecciones. Solicite el permiso
+          <strong>instructores.inspeccion</strong> a administración.
+        </p>
+      }
+      <div modal-actions>
+        <button type="button" class="ghost" (click)="cerrarInspeccionBloqueo()">Cerrar</button>
+      </div>
+    </argo-form-modal>
+  }
+}

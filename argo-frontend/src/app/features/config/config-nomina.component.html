@@ -1,0 +1,378 @@
+<section class="nom-page card">
+  <header class="nom-head">
+    <div class="nom-head-main">
+      <h1>Parámetros legales de nómina</h1>
+      <p>
+        SMLMV, UVT, deducciones, aportes patronales, ARL, FSP, retención en la fuente y provisiones.
+        Actualice cada año sin cambiar código; los cambios aplican al <strong>generar novedades</strong> y
+        <strong>liquidar</strong> períodos abiertos.
+      </p>
+      <p class="nom-meta">
+        El <strong>NIT y razón social</strong> del aportante están en
+        <a routerLink="/app/configuracion/recibos">Empresa y comprobantes</a>.
+        @if (meta().fuente) {
+          <span class="nom-meta-sep">·</span>
+          Origen: {{ fuenteLabel() }}
+          @if (meta().actualizado) {
+            <span class="nom-meta-sep">—</span>
+            actualizado {{ meta().actualizado | date: 'short' }}
+          }
+        }
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="nom-head-badges">
+        <span class="nom-chip nom-chip--year">Vigencia {{ form().vigenciaAno || '—' }}</span>
+        <span class="nom-chip nom-chip--money">SMLMV {{ formatCop(form().smlmv) }}</span>
+        <span class="nom-chip nom-chip--uvt">UVT {{ formatCop(form().uvt) }}</span>
+        @if (meta().fuente) {
+          <span class="nom-chip" [class.nom-chip--db]="meta().fuente === 'base_datos'" [class.nom-chip--def]="meta().fuente !== 'base_datos'">
+            {{ meta().fuente === 'base_datos' ? 'En BD' : 'Por defecto' }}
+          </span>
+        }
+      </div>
+    }
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="nom-msg" [class.nom-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  @if (loading()) {
+    <p class="nom-hint">Cargando parámetros…</p>
+  } @else {
+    <div class="nom-form argo-form-shell">
+      <!-- 1. Vigencia -->
+      <section class="nom-section nom-section--sky">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">1</span>
+          <div>
+            <h2 class="nom-section-title">Vigencia</h2>
+            <p class="nom-section-desc">Año fiscal y referencia del decreto o resolución aplicable.</p>
+          </div>
+        </header>
+        <div class="nom-section-body">
+          <div class="nom-grid nom-grid--vigencia">
+            <label class="nom-field">
+              <span class="nom-label">Año vigencia</span>
+              <input type="number" [ngModel]="form().vigenciaAno" (ngModelChange)="patch('vigenciaAno', +$event)" />
+            </label>
+            <label class="nom-field nom-field--grow">
+              <span class="nom-label">Etiqueta / nota</span>
+              <input
+                type="text"
+                [ngModel]="form().vigenciaLabel"
+                (ngModelChange)="patch('vigenciaLabel', $event)"
+                placeholder="2026 — Decreto …" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Valores base -->
+      <section class="nom-section nom-section--violet">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">2</span>
+          <div>
+            <h2 class="nom-section-title">Valores base</h2>
+            <p class="nom-section-desc">Montos en pesos y umbrales expresados en múltiplos del SMLMV.</p>
+          </div>
+        </header>
+        <div class="nom-section-body nom-stack">
+          <div class="nom-stat-row">
+            <div class="nom-stat nom-stat--sky">
+              <span class="nom-stat-label">SMLMV</span>
+              <span class="nom-stat-value">{{ formatCop(form().smlmv) }}</span>
+            </div>
+            <div class="nom-stat nom-stat--violet">
+              <span class="nom-stat-label">UVT</span>
+              <span class="nom-stat-value">{{ formatCop(form().uvt) }}</span>
+            </div>
+            <div class="nom-stat nom-stat--amber">
+              <span class="nom-stat-label">Aux. transporte</span>
+              <span class="nom-stat-value">{{ formatCop(form().auxilioTransporteMensual) }}</span>
+            </div>
+          </div>
+          <div class="nom-grid nom-grid--base">
+            <label class="nom-field">
+              <span class="nom-label">SMLMV mensual</span>
+              <input type="number" min="0" [ngModel]="form().smlmv" (ngModelChange)="patch('smlmv', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">UVT</span>
+              <input type="number" min="0" [ngModel]="form().uvt" (ngModelChange)="patch('uvt', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Auxilio transporte mensual</span>
+              <input type="number" min="0" [ngModel]="form().auxilioTransporteMensual" (ngModelChange)="patch('auxilioTransporteMensual', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Tope auxilio (× SMLMV)</span>
+              <input type="number" step="0.1" min="0" [ngModel]="form().multiploSalarioAuxilio" (ngModelChange)="patch('multiploSalarioAuxilio', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Umbral exento retención (× SMLMV)</span>
+              <input type="number" step="0.1" min="0" [ngModel]="form().retencionUmbralExentoSmmlv" (ngModelChange)="patch('retencionUmbralExentoSmmlv', +$event)" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Deducciones -->
+      <section class="nom-section nom-section--amber">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">3</span>
+          <div>
+            <h2 class="nom-section-title">Deducciones del empleado</h2>
+            <p class="nom-section-desc">Porcentajes descontados del devengado (salud y pensión).</p>
+          </div>
+        </header>
+        <div class="nom-section-body">
+          <div class="nom-grid nom-grid--pct">
+            <label class="nom-field">
+              <span class="nom-label">Salud empleado (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().saludEmpleadoPctUi" (ngModelChange)="patch('saludEmpleadoPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Pensión empleado (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().pensionEmpleadoPctUi" (ngModelChange)="patch('pensionEmpleadoPctUi', +$event)" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Aportes empleador -->
+      <section class="nom-section nom-section--teal">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">4</span>
+          <div>
+            <h2 class="nom-section-title">Aportes empleador / PILA</h2>
+            <p class="nom-section-desc">Parafiscales y seguridad social a cargo del empleador.</p>
+          </div>
+        </header>
+        <div class="nom-section-body">
+          <div class="nom-grid nom-grid--aportes">
+            <label class="nom-field">
+              <span class="nom-label">Salud empleador (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().saludEmpleadorPctUi" (ngModelChange)="patch('saludEmpleadorPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Pensión empleador (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().pensionEmpleadorPctUi" (ngModelChange)="patch('pensionEmpleadorPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">SENA (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().senaPctUi" (ngModelChange)="patch('senaPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">ICBF (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().icbfPctUi" (ngModelChange)="patch('icbfPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Caja compensación (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().ccfPctUi" (ngModelChange)="patch('ccfPctUi', +$event)" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. ARL -->
+      <section class="nom-section nom-section--rose">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">5</span>
+          <div>
+            <h2 class="nom-section-title">ARL — tarifa por clase de riesgo</h2>
+            <p class="nom-section-desc">Porcentaje mensual según el nivel de riesgo laboral (1 a 5).</p>
+          </div>
+        </header>
+        <div class="nom-section-body nom-stack">
+          <div class="nom-arl-grid">
+            <label class="nom-arl-card nom-arl-card--r1">
+              <span class="nom-arl-kicker">Riesgo 1</span>
+              <span class="nom-arl-name">Mínimo</span>
+              <input type="number" step="0.001" [ngModel]="form().arl1Ui" (ngModelChange)="patch('arl1Ui', +$event)" />
+              <span class="nom-arl-unit">%</span>
+            </label>
+            <label class="nom-arl-card nom-arl-card--r2">
+              <span class="nom-arl-kicker">Riesgo 2</span>
+              <span class="nom-arl-name">Bajo</span>
+              <input type="number" step="0.001" [ngModel]="form().arl2Ui" (ngModelChange)="patch('arl2Ui', +$event)" />
+              <span class="nom-arl-unit">%</span>
+            </label>
+            <label class="nom-arl-card nom-arl-card--r3">
+              <span class="nom-arl-kicker">Riesgo 3</span>
+              <span class="nom-arl-name">Medio</span>
+              <input type="number" step="0.001" [ngModel]="form().arl3Ui" (ngModelChange)="patch('arl3Ui', +$event)" />
+              <span class="nom-arl-unit">%</span>
+            </label>
+            <label class="nom-arl-card nom-arl-card--r4">
+              <span class="nom-arl-kicker">Riesgo 4</span>
+              <span class="nom-arl-name">Alto</span>
+              <input type="number" step="0.001" [ngModel]="form().arl4Ui" (ngModelChange)="patch('arl4Ui', +$event)" />
+              <span class="nom-arl-unit">%</span>
+            </label>
+            <label class="nom-arl-card nom-arl-card--r5">
+              <span class="nom-arl-kicker">Riesgo 5</span>
+              <span class="nom-arl-name">Máximo</span>
+              <input type="number" step="0.001" [ngModel]="form().arl5Ui" (ngModelChange)="patch('arl5Ui', +$event)" />
+              <span class="nom-arl-unit">%</span>
+            </label>
+          </div>
+          <label class="nom-field nom-field--arl-def">
+            <span class="nom-label">Clase por defecto</span>
+            <select [ngModel]="form().arlRiesgoDefault" (ngModelChange)="patch('arlRiesgoDefault', +$event)">
+              <option [ngValue]="1">1 — Mínimo</option>
+              <option [ngValue]="2">2 — Bajo</option>
+              <option [ngValue]="3">3 — Medio</option>
+              <option [ngValue]="4">4 — Alto</option>
+              <option [ngValue]="5">5 — Máximo</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- 6. Provisiones -->
+      <section class="nom-section nom-section--emerald">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">6</span>
+          <div>
+            <h2 class="nom-section-title">Provisiones de prestaciones</h2>
+            <p class="nom-section-desc">Porcentaje mensual del salario (ej. cesantías 8,33% ≈ 1/12).</p>
+          </div>
+        </header>
+        <div class="nom-section-body">
+          <div class="nom-grid nom-grid--provisiones">
+            <label class="nom-field">
+              <span class="nom-label">Cesantías (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().provisionCesantiasPctUi" (ngModelChange)="patch('provisionCesantiasPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Prima (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().provisionPrimaPctUi" (ngModelChange)="patch('provisionPrimaPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Vacaciones (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().provisionVacacionesPctUi" (ngModelChange)="patch('provisionVacacionesPctUi', +$event)" />
+            </label>
+            <label class="nom-field">
+              <span class="nom-label">Intereses cesantías (%)</span>
+              <input type="number" step="0.01" [ngModel]="form().provisionIntCesantiasPctUi" (ngModelChange)="patch('provisionIntCesantiasPctUi', +$event)" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. FSP -->
+      <section class="nom-section nom-section--indigo">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">7</span>
+          <div>
+            <h2 class="nom-section-title">Fondo de solidaridad pensional (FSP)</h2>
+            <p class="nom-section-desc">
+              Tramos en múltiplos de SMLMV. Deje «hasta» vacío en el último tramo para indicar sin tope.
+            </p>
+          </div>
+        </header>
+        <div class="nom-section-body nom-stack">
+          <div class="nom-table-wrap">
+            <table class="nom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Desde (× SMMLV)</th>
+                  <th>Hasta (× SMMLV)</th>
+                  <th>Porcentaje (%)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of form().fspTramos; track $index; let i = $index) {
+                  <tr>
+                    <td class="nom-row-num">{{ i + 1 }}</td>
+                    <td>
+                      <input type="number" step="0.1" [ngModel]="t.desdeSmmlv" (ngModelChange)="patchFsp(i, 'desdeSmmlv', +$event)" />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="∞"
+                        [ngModel]="t.hastaSmmlv"
+                        (ngModelChange)="patchFsp(i, 'hastaSmmlv', $event === '' || $event == null ? null : +$event)" />
+                    </td>
+                    <td>
+                      <input type="number" step="0.01" [ngModel]="fspPctUi(t)" (ngModelChange)="patchFspPct(i, +$event)" />
+                    </td>
+                    <td class="nom-row-action">
+                      <button type="button" class="danger mini" (click)="quitarFsp(i)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="ghost nom-add-btn" (click)="agregarFsp()">+ Agregar tramo FSP</button>
+        </div>
+      </section>
+
+      <!-- 8. Retención -->
+      <section class="nom-section nom-section--pink">
+        <header class="nom-section-head">
+          <span class="nom-section-badge">8</span>
+          <div>
+            <h2 class="nom-section-title">Retención en la fuente</h2>
+            <p class="nom-section-desc">
+              Tabla mensual en UVT (después de salud y pensión del empleado). «Hasta UVT» vacío = tramo final.
+            </p>
+          </div>
+        </header>
+        <div class="nom-section-body nom-stack">
+          <div class="nom-table-wrap">
+            <table class="nom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Hasta (UVT)</th>
+                  <th>Base fija (UVT)</th>
+                  <th>% marginal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of form().retencionTramos; track $index; let i = $index) {
+                  <tr>
+                    <td class="nom-row-num">{{ i + 1 }}</td>
+                    <td>
+                      <input
+                        type="number"
+                        placeholder="∞"
+                        [ngModel]="t.hastaUvt"
+                        (ngModelChange)="patchRet(i, 'hastaUvt', $event === '' || $event == null ? null : +$event)" />
+                    </td>
+                    <td>
+                      <input type="number" step="0.01" [ngModel]="t.baseUvt" (ngModelChange)="patchRet(i, 'baseUvt', +$event)" />
+                    </td>
+                    <td>
+                      <input type="number" step="0.01" [ngModel]="retPctUi(t)" (ngModelChange)="patchRetPct(i, +$event)" />
+                    </td>
+                    <td class="nom-row-action">
+                      <button type="button" class="danger mini" (click)="quitarRet(i)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="ghost nom-add-btn" (click)="agregarRet()">+ Agregar tramo retención</button>
+        </div>
+      </section>
+
+      <footer class="nom-actions">
+        <button type="button" class="ghost" (click)="restaurar()" [disabled]="saving()">Restaurar valores por defecto</button>
+        <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar parámetros' }}
+        </button>
+      </footer>
+    </div>
+  }
+</section>

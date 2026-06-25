@@ -1,0 +1,87 @@
+<section class="card iv-page">
+  <h1>Matrículas e ingresos virtuales</h1>
+  <p class="intro">Matrículas tarifa virtual y cobros por pasarela Wompi (caja virtual diaria).</p>
+
+  @if (msg()) {
+    <div class="msg err">{{ msg() }}</div>
+  }
+
+  <div class="filtros">
+    <argo-date-input label="Desde" [ngModel]="desde" (ngModelChange)="desde = $event" />
+    <argo-date-input label="Hasta" [ngModel]="hasta" (ngModelChange)="hasta = $event" />
+    <button type="button" class="primary" (click)="cargar()" [disabled]="loading()">Consultar</button>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Cargando…</p>
+  } @else {
+    @if (matriculas(); as m) {
+      <div class="stats">
+        <div class="stat"><span>Matrículas</span><strong>{{ m.resumen.totalMatriculas }}</strong></div>
+        <div class="stat"><span>Pagadas</span><strong>{{ m.resumen.pagadas }}</strong></div>
+        <div class="stat"><span>Pendientes</span><strong>{{ m.resumen.pendientes }}</strong></div>
+        <div class="stat"><span>Saldo pendiente</span><strong>{{ fmt(m.resumen.saldoPendiente) }}</strong></div>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="ghost" (click)="exportMatriculas()">Exportar matrículas (Excel/CSV)</button>
+      </div>
+      <table class="argo">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Programa</th>
+            <th>Fecha</th>
+            <th class="r">Valor</th>
+            <th class="r">Saldo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of m.filas; track f.idMatricula) {
+            <tr>
+              <td>{{ f.numDoc }}</td>
+              <td>{{ f.idPrograma }}</td>
+              <td>{{ f.fechaMatricula | date:'yyyy-MM-dd' }}</td>
+              <td class="r">{{ fmt(f.valorMatricula) }}</td>
+              <td class="r">{{ fmt(f.saldo) }}</td>
+              <td>{{ f.pagada }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if (ingresos(); as i) {
+      <h2>Ingresos en línea (Wompi)</h2>
+      <div class="stats">
+        <div class="stat"><span>Recibos</span><strong>{{ i.resumen.cantidad }}</strong></div>
+        <div class="stat"><span>Total</span><strong>{{ fmt(i.resumen.total) }}</strong></div>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="ghost" (click)="exportIngresos()">Exportar ingresos (CSV)</button>
+      </div>
+      <table class="argo">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Recibo</th>
+            <th>Documento</th>
+            <th>Concepto</th>
+            <th class="r">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of i.filas; track f.idIngreso) {
+            <tr>
+              <td>{{ f.fecha | date:'yyyy-MM-dd' }}</td>
+              <td>{{ f.numRecibo }}</td>
+              <td>{{ f.numDoc }}</td>
+              <td>{{ f.concepto }}</td>
+              <td class="r">{{ fmt(f.valor) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</section>

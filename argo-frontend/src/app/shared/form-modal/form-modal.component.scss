@@ -1,0 +1,126 @@
+:host {
+  display: contents;
+}
+
+.fm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 12px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.fm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 26, 0.78);
+  backdrop-filter: blur(5px);
+  pointer-events: auto;
+}
+
+.fm-panel {
+  position: relative;
+  z-index: 1;
+  width: min(640px, 100%);
+  max-height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  overflow: hidden;
+
+  &.wide {
+    width: min(960px, 100%);
+  }
+
+  &.xwide {
+    width: min(1280px, calc(100vw - 24px));
+  }
+
+  &.tall {
+    max-height: calc(100vh - 48px);
+  }
+}
+
+.fm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  flex-shrink: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.12rem;
+  }
+}
+
+.fm-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+
+.fm-close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 1.4rem;
+  line-height: 1;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--line);
+  }
+}
+
+.fm-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px;
+
+  &:has(argo-catalogo-enum-buscar.dropdown-open),
+  &:has(argo-municipio-buscar.dropdown-open),
+  &:has(argo-date-input.dropdown-open) {
+    overflow: visible;
+  }
+}
+
+.fm-panel:has(argo-catalogo-enum-buscar.dropdown-open),
+.fm-panel:has(argo-municipio-buscar.dropdown-open),
+.fm-panel:has(argo-date-input.dropdown-open) {
+  overflow: visible;
+}
+
+.fm-footer {
+  flex-shrink: 0;
+  padding: 10px 20px 16px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .fm-layer {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}

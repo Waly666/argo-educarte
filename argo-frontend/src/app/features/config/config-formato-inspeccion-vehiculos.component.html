@@ -1,0 +1,106 @@
+<section class="insp-page card">
+  <header class="insp-head">
+    <div class="insp-head-main">
+      <h1>Inspección preoperacional — Vehículos</h1>
+      <p>
+        Numeración automática al guardar cada inspección. Los ítems del checklist se administran en
+        <strong>Catálogos</strong> (ítems y características por tipo de vehículo).
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="insp-badges">
+        <span class="insp-chip insp-chip--sky">Prefijo {{ prefijoConsecutivo() || 'INSP' }}</span>
+        <span class="insp-chip insp-chip--amber">Último {{ consecutivoInspeccion() }}</span>
+        <span class="insp-chip insp-chip--teal">{{ proximoConsecutivoPreview() }}</span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="insp-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="insp-msg" [class.insp-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="insp-form argo-form-shell">
+      <!-- 1. Consecutivo -->
+      <section class="insp-section insp-section--amber">
+        <header class="insp-section-head">
+          <span class="insp-section-badge">1</span>
+          <div class="insp-section-titles">
+            <h2 class="insp-section-title">Consecutivo de inspección</h2>
+            <p class="insp-section-desc">
+              Prefijo y numeración automática al guardar cada inspección (formato <strong>PREFIJO-000001</strong>).
+            </p>
+          </div>
+        </header>
+        <div class="insp-section-body">
+          <div class="insp-grid insp-grid--consec">
+            <label class="insp-field">
+              <span class="insp-label">Prefijo</span>
+              <input
+                type="text"
+                maxlength="12"
+                [ngModel]="prefijoConsecutivo()"
+                (ngModelChange)="prefijoConsecutivo.set($event)" />
+            </label>
+            <label class="insp-field">
+              <span class="insp-label">Último consecutivo usado</span>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="consecutivoInspeccion()"
+                (ngModelChange)="consecutivoInspeccion.set(+$event || 0)" />
+            </label>
+            <div class="insp-preview">
+              <span class="insp-label">Próximo al guardar</span>
+              <span class="insp-preview-num">{{ proximoConsecutivoPreview() }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Checklist -->
+      <section class="insp-section insp-section--violet">
+        <header class="insp-section-head">
+          <span class="insp-section-badge">2</span>
+          <div class="insp-section-titles">
+            <h2 class="insp-section-title">Checklist por tipo de vehículo</h2>
+            <p class="insp-section-desc">
+              El contenido del formulario de inspección proviene de los catálogos del sistema, no de esta pantalla.
+            </p>
+          </div>
+        </header>
+        <div class="insp-section-body">
+          <div class="insp-steps">
+            <article class="insp-step-card">
+              <span class="insp-step-num">A</span>
+              <div>
+                <h3>Ítems inspección preoperacional</h3>
+                <p>Defina el grupo (ej. Luces, Estado general) y los tipos de vehículo donde aplica cada ítem.</p>
+              </div>
+            </article>
+            <article class="insp-step-card">
+              <span class="insp-step-num">B</span>
+              <div>
+                <h3>Características inspección</h3>
+                <p>Agregue cada línea del checklist vinculada al ítem correspondiente y filtrada por tipo de vehículo.</p>
+              </div>
+            </article>
+          </div>
+          <div class="insp-catalog-actions">
+            <a routerLink="/app/configuracion/catalogos" class="ghost mini">Abrir catálogos</a>
+            <span class="insp-field-hint">En el sidebar elija «Ítems inspección preoperacional» y «Características inspección».</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="insp-foot">
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar consecutivo' }}
+      </button>
+    </footer>
+  }
+</section>

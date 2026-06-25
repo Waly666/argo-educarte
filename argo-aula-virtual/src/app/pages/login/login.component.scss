@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  font-family: var(--av-font-sans);
+}
+
+.auth {
+  max-width: 420px;
+  margin: 2.5rem auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+
+  input {
+    border-radius: 10px;
+    border: 1px solid var(--av-border);
+    background: var(--av-surface-2);
+    color: var(--av-text);
+    padding: 0.65rem 0.8rem;
+  }
+}
+
+.err {
+  color: #fca5a5;
+}

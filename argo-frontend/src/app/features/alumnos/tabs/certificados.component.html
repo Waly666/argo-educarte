@@ -1,0 +1,216 @@
+<section class="certificados" *ngIf="store.hasAlumno(); else noAlumno">
+  <div class="msg ok" *ngIf="msg() && !msgEsError()">{{ msg() }}</div>
+  <div class="msg err" *ngIf="msg() && msgEsError()">{{ msg() }}</div>
+
+  <div class="warn-docs card" *ngIf="docsPendientes().length">
+    <strong>Aviso: documentos pendientes (puede emitir certificado igual)</strong>
+    <ul>
+      <li *ngFor="let p of docsPendientes()">{{ p.nombre }}</li>
+    </ul>
+    <button type="button" class="ghost mini" (click)="irDocumentos()">Ir a Documentos</button>
+  </div>
+
+  <div class="card">
+    <h2>Elegibles para certificar</h2>
+    <p class="hint">Solo programas educativos pagados y sin certificado. Las jornadas de capacitación se certifican automáticamente al cerrar la jornada.</p>
+
+    <table class="argo">
+      <thead>
+        <tr>
+          <th>Programa</th>
+          <th class="r">Valor</th>
+          <th class="r">Pagado</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of elegibles()"
+            [class.sel]="idLiquidacion() === e._id"
+            (click)="onSeleccionarElegible(e._id)">
+          <td>
+            {{ e.descripcion || e.programaDescr || '—' }}
+            <span class="badge info" *ngIf="e.tipoFormatoCertLabel">{{ e.tipoFormatoCertLabel }}</span>
+          </td>
+          <td class="r">{{ fmt(e.valor) }}</td>
+          <td class="r">{{ fmt(e.abonado) }}</td>
+          <td><span class="badge ok">A paz y salvo</span></td>
+          <td class="r"><button class="primary mini" (click)="onSeleccionarElegible(e._id); $event.stopPropagation()">Seleccionar</button></td>
+        </tr>
+        <tr *ngIf="elegibles().length === 0">
+          <td colspan="5" class="empty">No hay programas elegibles para certificar.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" *ngIf="idLiquidacion()">
+    <h2>Datos del Certificado</h2>
+    <div class="elegible-info" *ngIf="elegibleSel() as es">
+      <span class="badge info">{{ es.tipoFormatoCertLabel || labelTipo(es.tipoFormatoCert) }}</span>
+      <strong>{{ es.descripcion || es.programaDescr }}</strong>
+      <span class="hint-inline" *ngIf="es.nomCert"> · Certificado: {{ es.nomCert }}</span>
+      <span class="hint-inline" *ngIf="es.horas"> · {{ es.horas }} horas</span>
+    </div>
+
+    <div class="row" *ngIf="elegibleSel()">
+      <div class="col-12">
+        <p class="hint ok-hint" *ngIf="plantillaActiva() as pl">
+          Formato configurado: <strong>{{ labelOrientacion(pl.orientacion) }}</strong>
+          <span *ngIf="pl.nombre"> — {{ pl.nombre }}</span>
+        </p>
+        <p class="hint" *ngIf="!plantillaActiva() && !elegibleSel()?.tieneFormato">
+          No hay formato para «{{ elegibleSel()?.tipoFormatoCertLabel }}». Configúrelo en <strong>Config. Certificados</strong>
+          (vertical u horizontal).
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-3">
+        <label>tipoCertificado</label>
+        <select [ngModel]="tipoCertNuevo()" disabled>
+          <option *ngFor="let t of tiposCertificadoCat" [value]="t">{{ t }}</option>
+        </select>
+        <p class="hint">Regular o Jornada según el tipo de capacitación del programa.</p>
+      </div>
+      <div class="col-6">
+        <argo-date-input label="Fecha de emisión" [ngModel]="fechaEmision()" (ngModelChange)="fechaEmision.set($event)" ></argo-date-input>
+        <p class="hint">Opcional. Si no indica fecha, se usa la de hoy.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4">
+        <label>Nº Acta</label>
+        <input type="text" [ngModel]="numActa()" (ngModelChange)="numActa.set($event)" />
+      </div>
+      <div class="col-4">
+        <label>Nº Folio</label>
+        <input type="text" [ngModel]="numFolio()" (ngModelChange)="numFolio.set($event)" />
+      </div>
+      <div class="col-4">
+        <label>Nº RUNT</label>
+        <input type="text" [ngModel]="numRunt()" (ngModelChange)="numRunt.set($event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <label>Observaciones</label>
+        <input type="text" [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)" />
+      </div>
+    </div>
+    <div class="actions">
+      <button class="ghost" (click)="idLiquidacion.set('')">Cancelar</button>
+      <button class="primary" (click)="emitir()" [disabled]="saving()">
+        {{ saving() ? 'Emitiendo…' : 'Emitir Certificado' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Certificados Emitidos</h2>
+    <div class="loading" *ngIf="loading()">Cargando…</div>
+
+    <table class="argo" *ngIf="!loading()">
+      <thead>
+        <tr>
+          <th>Encabezado</th>
+          <th>Formato</th>
+          <th>tipoCertificado</th>
+          <th>ID</th>
+          <th>Acta</th>
+          <th>Folio</th>
+          <th>RUNT</th>
+          <th>Emisión</th>
+          <th>Vencimiento</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of certificados()" [class.sel]="editId() === c._id" [class.row-anulado]="esAnulado(c)">
+          <td>
+            {{ c.encabezado || c.nomCert || c.programaDescr || '—' }}
+            <span class="badge err mini-badge" *ngIf="esAnulado(c)">ANULADO</span>
+          </td>
+          <td>{{ labelTipo(c.tipoFormatoCert) }}</td>
+          <td>{{ c.tipoCertificado || 'Regular' }}</td>
+          <td class="mono">{{ c.codigoCert || '—' }}</td>
+          <td>{{ c.numActa || '—' }}</td>
+          <td>{{ c.numFolio || '—' }}</td>
+          <td>{{ c.numRunt || '—' }}</td>
+          <td>{{ fecha(c.fechaEmision) }}</td>
+          <td>{{ fecha(c.fechaVencimiento) || '—' }}</td>
+          <td class="r actions-cell">
+            <button class="ghost mini" (click)="imprimir(c)">Imprimir</button>
+            <button class="ghost mini" (click)="abrirEditar(c)" *ngIf="!esAnulado(c)">Editar</button>
+            <button class="danger mini" (click)="anular(c)" *ngIf="!esAnulado(c)">Anular</button>
+          </td>
+        </tr>
+        <tr *ngIf="certificados().length === 0">
+          <td colspan="10" class="empty">No hay certificados emitidos.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card edit-card argo-form-shell" *ngIf="editId()">
+      <h3>Editar certificado</h3>
+      <p class="hint">Modifique fechas, encabezado u otros datos. Al imprimir se usarán los valores guardados.</p>
+      <div class="row">
+        <div class="col-3">
+          <label>tipoCertificado</label>
+          <select [ngModel]="editTipoCertificado()" (ngModelChange)="editTipoCertificado.set($event)">
+            <option *ngFor="let t of tiposCertificadoCat" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <label>Encabezado / nombre del curso</label>
+          <input type="text" [ngModel]="editEncabezado()" (ngModelChange)="editEncabezado.set($event)" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <argo-date-input label="Fecha de emisión *" [ngModel]="editFechaEmision()" (ngModelChange)="editFechaEmision.set($event)" ></argo-date-input>
+        </div>
+        <div class="col-6">
+          <argo-date-input label="Fecha de vencimiento" [ngModel]="editFechaVencimiento()" (ngModelChange)="editFechaVencimiento.set($event)" ></argo-date-input>
+          <p class="hint">Deje vacío si no aplica vencimiento.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <label>Nº Acta</label>
+          <input type="text" [ngModel]="editNumActa()" (ngModelChange)="editNumActa.set($event)" />
+        </div>
+        <div class="col-4">
+          <label>Nº Folio</label>
+          <input type="text" [ngModel]="editNumFolio()" (ngModelChange)="editNumFolio.set($event)" />
+        </div>
+        <div class="col-4">
+          <label>Nº RUNT</label>
+          <input type="text" [ngModel]="editNumRunt()" (ngModelChange)="editNumRunt.set($event)" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <label>Observaciones</label>
+          <input type="text" [ngModel]="editObservaciones()" (ngModelChange)="editObservaciones.set($event)" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="ghost" (click)="cancelarEditar()">Cancelar</button>
+        <button class="primary" (click)="guardarEdicion()" [disabled]="savingEdit()">
+          {{ savingEdit() ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ng-template #noAlumno>
+  <div class="card empty-card">
+    <h2>Sin alumno seleccionado</h2>
+    <p>Busca un alumno o crea uno nuevo para gestionar certificados.</p>
+  </div>
+</ng-template>

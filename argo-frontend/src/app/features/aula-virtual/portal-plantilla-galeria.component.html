@@ -1,0 +1,97 @@
+<argo-form-modal
+  [open]="open"
+  title="Galería de plantillas"
+  subtitle="Elija un diseño, previsualícelo y aplíquelo al editor. Luego podrá ajustar colores y textos a su gusto."
+  [xwide]="true"
+  [tall]="true"
+  [anchorTopPx]="24"
+  (closed)="cerrar()">
+  <div class="ppg">
+    <nav class="ppg-filters" aria-label="Filtrar por paleta">
+      @for (f of familias; track f.id) {
+        <button
+          type="button"
+          class="ppg-filter"
+          [class.ppg-filter--active]="familiaActiva(f.id)"
+          (click)="setFamilia(f.id)">
+          {{ f.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="ppg-layout">
+      <div class="ppg-grid-wrap">
+        <p class="ppg-grid-label">{{ plantillasFiltradas().length }} diseños · clic para previsualizar</p>
+        <div class="ppg-grid">
+          @for (p of plantillasFiltradas(); track p.id) {
+            <button
+              type="button"
+              class="ppg-card"
+              [class.ppg-card--active]="seleccionada().id === p.id"
+              (click)="seleccionar(p)">
+              <argo-portal-plantilla-mockup
+                [tema]="tema(p)"
+                [heroTitulo]="p.diseno.heroTitulo || p.nombre"
+                [heroSubtitulo]="p.diseno.heroSubtitulo || ''"
+                [compact]="true"
+                [selected]="seleccionada().id === p.id" />
+              <span class="ppg-card__meta">
+                <strong>{{ p.nombre }}</strong>
+                <span>{{ p.descripcion }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <aside class="ppg-detail">
+        @if (seleccionada(); as sel) {
+          <p class="ppg-detail__kicker">Vista previa</p>
+          <h3 class="ppg-detail__title">{{ sel.nombre }}</h3>
+          <p class="ppg-detail__desc">{{ sel.descripcion }}</p>
+
+          <argo-portal-plantilla-mockup
+            class="ppg-detail__mockup"
+            [tema]="tema(sel)"
+            [heroTitulo]="sel.diseno.heroTitulo || sel.nombre"
+            [heroSubtitulo]="sel.diseno.heroSubtitulo || ''"
+            [selected]="true" />
+
+          <dl class="ppg-specs">
+            <div>
+              <dt>Fuente</dt>
+              <dd>{{ tema(sel).fuente }}</dd>
+            </div>
+            <div>
+              <dt>Secciones activas</dt>
+              <dd>{{ contarSecciones(sel) }}</dd>
+            </div>
+            <div>
+              <dt>Estilo</dt>
+              <dd>{{ familiaLabel(sel) }}</dd>
+            </div>
+          </dl>
+
+          <ul class="ppg-swatches" aria-label="Paleta de colores">
+            <li><span [style.background]="tema(sel).colorPrimario"></span> Primario</li>
+            <li><span [style.background]="tema(sel).colorAcento"></span> Acento</li>
+            <li><span [style.background]="tema(sel).colorFondo"></span> Fondo</li>
+            <li><span [style.background]="tema(sel).colorSuperficie"></span> Superficie</li>
+          </ul>
+
+          <p class="ppg-detail__note">
+            Al aplicar se cargan colores, textos del banner y secciones del inicio.
+            Logo y datos fiscales no cambian.
+          </p>
+        }
+      </aside>
+    </div>
+  </div>
+
+  <div modal-actions class="ppg-actions">
+    <button type="button" class="ppg-btn ppg-btn--ghost" (click)="cerrar()">Cancelar</button>
+    <button type="button" class="ppg-btn ppg-btn--primary" (click)="aplicar()">
+      Usar plantilla «{{ seleccionada().nombre }}»
+    </button>
+  </div>
+</argo-form-modal>

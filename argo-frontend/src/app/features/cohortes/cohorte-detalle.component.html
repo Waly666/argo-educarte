@@ -1,0 +1,694 @@
+<section class="coh-page" *ngIf="cohorte() as c">
+  <!-- Encabezado del grupo -->
+  <header class="cd-hero">
+    <p class="coh-crumb">
+      <a routerLink="/app">Inicio</a> · <a routerLink="/app/cohortes">Cohortes</a> · {{ c.codigo }}
+    </p>
+    <div class="cd-hero-row">
+      <div>
+        <h1>{{ c.nombre || c.codigo }}</h1>
+        <p class="cd-hero-meta">
+          {{ c.nombreProg }} · Semestre {{ c.numSemestre }} · {{ c.anio }}-{{ c.periodo }}
+        </p>
+        <p class="cd-hero-instr">
+          👨‍🏫 Instructor del grupo:
+          <strong>{{ c.instructorNombre || 'sin asignar' }}</strong>
+          <span class="cd-hero-instr-note" *ngIf="!c.instructorNombre">— asígnalo al crear las clases</span>
+        </p>
+      </div>
+      <span class="coh-pill" [attr.data-estado]="c.estado">{{ c.estado }}</span>
+    </div>
+  </header>
+
+  <p class="coh-toast ok" *ngIf="msg()">✓ {{ msg() }}</p>
+  <p class="coh-toast err" *ngIf="msgError()">⚠ {{ msgError() }}</p>
+
+  <!-- Sub-navegación del grupo -->
+  <nav class="cd-subnav">
+    <button type="button" [class.active]="seccion() === 'operacion'" (click)="irSeccion('operacion')">👥 Operación</button>
+    <button type="button" [class.active]="seccion() === 'evaluaciones'" (click)="irSeccion('evaluaciones')">📝 Evaluaciones</button>
+    <button type="button" [class.active]="seccion() === 'notas'" (click)="irSeccion('notas')">📊 Notas manuales</button>
+    <button type="button" [class.active]="seccion() === 'materiales'" (click)="irSeccion('materiales')">📎 Materiales</button>
+    <button type="button" [class.active]="seccion() === 'certificado'" (click)="irSeccion('certificado')">🏅 Certificado y actas</button>
+  </nav>
+
+  <ng-container *ngIf="seccion() === 'operacion'">
+  <!-- Guía de pasos -->
+  <div class="cd-progress">
+    <div class="cd-progress-item" [class.done]="hayInscritos()">
+      <span class="cd-progress-dot">{{ hayInscritos() ? '✓' : '1' }}</span>
+      <span>Inscribe alumnos</span>
+    </div>
+    <div class="cd-progress-item" [class.done]="hayClases()">
+      <span class="cd-progress-dot">{{ hayClases() ? '✓' : '2' }}</span>
+      <span>Programa clases</span>
+    </div>
+    <div class="cd-progress-item">
+      <span class="cd-progress-dot">3</span>
+      <span>Toma asistencia</span>
+    </div>
+  </div>
+
+  <!-- Aviso si no hay materias -->
+  <div class="coh-empty small" *ngIf="!hayMaterias()">
+    <div class="coh-empty-icon">📋</div>
+    <p>Este semestre todavía no tiene materias. Configúralas en el
+      <a routerLink="/app/cohortes">plan del programa</a> antes de programar clases.</p>
+  </div>
+
+  <div class="cd-cols">
+    <!-- ===== PASO 1: Inscritos ===== -->
+    <div class="cd-card">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="indigo">👤</span>
+        <div>
+          <h3>Alumnos inscritos</h3>
+          <p>{{ c.inscripciones.length }} en este grupo</p>
+        </div>
+      </div>
+
+      <div class="cd-inscribir" *ngIf="puedeGestionar()">
+        <input
+          type="text"
+          placeholder="Número de documento del alumno"
+          [ngModel]="docInscribir()"
+          (ngModelChange)="docInscribir.set($event)"
+          (keyup.enter)="inscribir()"
+        />
+        <button type="button" class="coh-btn primary" (click)="inscribir()">Inscribir</button>
+      </div>
+      <p class="cd-help" *ngIf="puedeGestionar()">El alumno debe existir en ARGO y haber aprobado el semestre anterior.</p>
+
+      <ul class="cd-alumnos">
+        <li *ngFor="let i of c.inscripciones">
+          <span class="cd-avatar">{{ i.nombreCompleto.charAt(0) }}</span>
+          <div class="cd-alumno-info">
+            <strong>{{ i.nombreCompleto }}</strong>
+            <small>Doc. {{ i.numDoc }}</small>
+          </div>
+          <span class="coh-pill" [attr.data-estado]="i.estado">{{ i.estado }}</span>
+        </li>
+        <li class="cd-vacio" *ngIf="!c.inscripciones.length">Todavía no hay alumnos inscritos.</li>
+      </ul>
+    </div>
+
+    <!-- ===== Materias del semestre ===== -->
+    <div class="cd-card">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="teal">📚</span>
+        <div>
+          <h3>Materias del semestre</h3>
+          <p>{{ c.materias.length }} materias</p>
+        </div>
+      </div>
+      <ul class="cd-materias">
+        <li *ngFor="let m of c.materias">
+          <span>{{ m.nombre }}</span>
+          <span class="cd-materia-h">{{ m.horas }} h</span>
+        </li>
+        <li class="cd-vacio" *ngIf="!c.materias.length">Configura las materias en el plan del programa.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== PASO 2: Programar clases ===== -->
+  <div class="cd-card" *ngIf="puedeGestionar() && hayMaterias()">
+    <div class="cd-card-head">
+      <span class="cd-card-icon" data-tone="amber">🗓️</span>
+      <div>
+        <h3>Programar clases</h3>
+        <p>Elige la forma más cómoda para crear las clases del grupo.</p>
+      </div>
+    </div>
+
+    <div class="cd-prog-options">
+      <!-- Asistente -->
+      <div class="cd-prog-option">
+        <div class="cd-prog-option-head">
+          <span class="cd-prog-emoji">⚡</span>
+          <div>
+            <h4>Generar automáticamente</h4>
+            <p>Crea todas las clases de todas las materias según las horas.</p>
+          </div>
+        </div>
+        <div class="cd-inline">
+          <argo-date-input label="Empezar el" [ngModel]="planif().fechaInicio" (ngModelChange)="patchPlanif('fechaInicio', $event)" ></argo-date-input>
+          <label>De
+            <input type="time" [ngModel]="planif().horaDesde" (ngModelChange)="patchPlanif('horaDesde', $event)" />
+          </label>
+          <label>a
+            <input type="time" [ngModel]="planif().horaHasta" (ngModelChange)="patchPlanif('horaHasta', $event)" />
+          </label>
+          <label>Horas por clase
+            <input type="number" min="1" class="mini" [ngModel]="planif().horasPorSesion" (ngModelChange)="patchPlanif('horasPorSesion', +$event)" />
+          </label>
+        </div>
+        <p class="cd-help">Las clases generadas se asignan al instructor del grupo
+          (<strong>{{ c.instructorNombre || 'sin asignar' }}</strong>).</p>
+        <button type="button" class="coh-btn primary block" (click)="planificar()">⚡ Generar todas las clases</button>
+      </div>
+
+      <!-- Manual -->
+      <div class="cd-prog-option">
+        <div class="cd-prog-option-head">
+          <span class="cd-prog-emoji">✏️</span>
+          <div>
+            <h4>Agregar una clase</h4>
+            <p>Crea una clase puntual con su enlace de videollamada.</p>
+          </div>
+        </div>
+        <div class="cd-inline">
+          <label>Materia
+            <select [ngModel]="nuevaClase().idMateria" (ngModelChange)="patchClase('idMateria', $event)">
+              <option value="" disabled>Elige…</option>
+              <option *ngFor="let m of c.materias" [value]="m._id">{{ m.nombre }}</option>
+            </select>
+          </label>
+          <argo-date-input label="Día" [ngModel]="nuevaClase().fechaClase" (ngModelChange)="patchClase('fechaClase', $event)" ></argo-date-input>
+          <label>De
+            <input type="time" [ngModel]="nuevaClase().horaDesde" (ngModelChange)="patchClase('horaDesde', $event)" />
+          </label>
+          <label>a
+            <input type="time" [ngModel]="nuevaClase().horaHasta" (ngModelChange)="patchClase('horaHasta', $event)" />
+          </label>
+        </div>
+        <div class="cd-inline">
+          <label>Instructor
+            <select [ngModel]="nuevaClase().idEmpleadoInstructor" (ngModelChange)="patchClase('idEmpleadoInstructor', $event ? +$event : null)">
+              <option [ngValue]="null">Instructor del grupo</option>
+              <option *ngFor="let i of instructores()" [ngValue]="i.idEmpleado">{{ i.nombreCompleto }}</option>
+            </select>
+          </label>
+        </div>
+        <label class="cd-meet-field">Enlace de videollamada (opcional)
+          <input type="text" [ngModel]="nuevaClase().urlMeet" (ngModelChange)="patchClase('urlMeet', $event)" placeholder="https://meet.google.com/…" />
+        </label>
+        <button type="button" class="coh-btn ghost block" (click)="crearClase()">✏️ Agregar esta clase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PASO 3: Clases + asistencia ===== -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <span class="cd-card-icon" data-tone="indigo">📅</span>
+      <div>
+        <h3>Clases programadas</h3>
+        <p>{{ c.clases.length }} clase(s). Pulsa «Tomar asistencia» en cada una.</p>
+      </div>
+    </div>
+
+    <div class="coh-empty small" *ngIf="!c.clases.length">
+      <div class="coh-empty-icon">🗓️</div>
+      <p>Aún no hay clases. Usa el programador de arriba para crearlas.</p>
+    </div>
+
+    <ul class="cd-clases" *ngIf="c.clases.length">
+      <li *ngFor="let cl of c.clases">
+        <div class="cd-clase-fecha">
+          <span class="cd-clase-dia">{{ cl.fechaClase | date: 'dd' }}</span>
+          <span class="cd-clase-mes">{{ cl.fechaClase | date: 'MMM' }}</span>
+        </div>
+        <div class="cd-clase-info">
+          <strong>{{ cl.materiaNombre }}</strong>
+          <small>
+            🕒 {{ cl.horaDesde }}<ng-container *ngIf="cl.horaHasta">–{{ cl.horaHasta }}</ng-container>
+            · Sesión {{ cl.sesion }}
+            <ng-container *ngIf="cl.instructorNombre && !puedeGestionar()"> · 👨‍🏫 {{ cl.instructorNombre }}</ng-container>
+            <a *ngIf="cl.urlMeet" [href]="cl.urlMeet" target="_blank" rel="noopener" class="cd-meet-link">🔗 Videollamada</a>
+          </small>
+          <label class="cd-clase-instr" *ngIf="puedeGestionar()">
+            <span>👨‍🏫</span>
+            <select
+              [ngModel]="cl.idEmpleadoInstructor"
+              (ngModelChange)="cambiarInstructorClase(cl._id, $event)"
+            >
+              <option [ngValue]="null">Sin asignar</option>
+              <option *ngFor="let i of instructores()" [ngValue]="i.idEmpleado">{{ i.nombreCompleto }}</option>
+            </select>
+          </label>
+        </div>
+        <span class="coh-pill" [attr.data-estado]="cl.estado">{{ cl.estado }}</span>
+        <button type="button" class="coh-btn primary mini-btn" *ngIf="puedeOperar()" (click)="abrirAsistencia(cl._id)">
+          ✓ Tomar asistencia
+        </button>
+      </li>
+    </ul>
+  </div>
+  </ng-container>
+
+  <!-- ===================== EVALUACIONES ===================== -->
+  <ng-container *ngIf="seccion() === 'evaluaciones'">
+    <div class="cd-card">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="amber">📝</span>
+        <div>
+          <h3>Evaluaciones del grupo</h3>
+          <p>Crea cuestionarios desde el banco de preguntas y revisa los resultados.</p>
+        </div>
+        <button type="button" class="coh-btn primary mini-btn cd-head-action" *ngIf="puedeGestionar()" (click)="abrirFormEval()">
+          ＋ Nueva evaluación
+        </button>
+      </div>
+
+      <div class="coh-empty small" *ngIf="!evaluaciones().length">
+        <div class="coh-empty-icon">📝</div>
+        <p>Aún no hay evaluaciones. Crea la primera con el botón de arriba.</p>
+      </div>
+
+      <ul class="cd-eval-list" *ngIf="evaluaciones().length">
+        <li *ngFor="let ev of evaluaciones()">
+          <div class="cd-eval-info">
+            <strong>{{ ev.titulo }}</strong>
+            <small>
+              {{ ev.materiaNombre }} · {{ ev.tipoEvaluacion || 'PARCIAL' }} · {{ ev.numPreguntas }} preg. · aprueba con {{ ev.notaAprobacion }} · peso {{ ev.pesoNota }}%
+            </small>
+          </div>
+          <span class="coh-pill" [attr.data-estado]="ev.estado">{{ ev.estado }}</span>
+          <div class="cd-eval-actions">
+            <button type="button" class="coh-btn ghost mini-btn" (click)="verResultados(ev)">📊 Resultados</button>
+            <button type="button" class="coh-btn ghost mini-btn" *ngIf="puedeGestionar() && ev.estado !== 'CERRADA'" (click)="abrirEditarEval(ev)">✏️ Editar</button>
+            <button type="button" class="coh-btn primary mini-btn" *ngIf="puedeGestionar() && ev.estado === 'BORRADOR'" (click)="publicarEval(ev)">Publicar</button>
+            <button type="button" class="coh-btn ghost mini-btn" *ngIf="puedeGestionar() && ev.estado === 'PUBLICADA'" (click)="cerrarEval(ev)">Cerrar</button>
+            <button type="button" class="coh-icon-btn danger" *ngIf="puedeGestionar() && ev.estado === 'BORRADOR'" (click)="eliminarEval(ev)" title="Eliminar">✕</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </ng-container>
+
+  <!-- ===================== NOTAS MANUALES ===================== -->
+  <ng-container *ngIf="seccion() === 'notas'">
+    <div class="cd-card">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="violet">📊</span>
+        <div>
+          <h3>Notas por criterio manual</h3>
+          <p>Digite participación, talleres, actitud u otros criterios definidos en el esquema del programa.</p>
+        </div>
+      </div>
+
+      <div class="cd-inline">
+        <label>Materia
+          <select [ngModel]="notasMateriaSel()" (ngModelChange)="onNotasMateriaChange($event)">
+            <option value="" disabled>Elige…</option>
+            <option *ngFor="let m of (cohorte()?.materias || [])" [value]="m._id">{{ m.nombre }}</option>
+          </select>
+        </label>
+      </div>
+
+      <p class="coh-toast err" *ngIf="esquemaNotasSinGuardar()">
+        ⚠ El esquema de notas aún no está guardado en el programa. Vaya a Cohortes → Esquema de notas y guárdelo antes de registrar notas.
+      </p>
+
+      <p class="cd-vacio" *ngIf="cargandoMatriz()">Cargando matriz…</p>
+
+      <div class="coh-empty small" *ngIf="!cargandoMatriz() && matrizNotas() && !matrizNotas()!.criterios.length">
+        <p>Este programa no tiene criterios manuales. Agréguelos en el esquema de notas del programa.</p>
+      </div>
+
+      <div class="cd-notas-wrap" *ngIf="!cargandoMatriz() && matrizNotas() as mx">
+        <table class="coh-table compact" *ngIf="mx.criterios.length">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th *ngFor="let c of mx.criterios">{{ c.nombre }} ({{ c.pesoPct }}%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fila of mx.filas">
+              <td><strong>{{ fila.nombreCompleto }}</strong></td>
+              <td *ngFor="let cel of fila.celdas">
+                <input type="number" min="0" max="100" class="mini" [(ngModel)]="cel.nota" [disabled]="!puedeOperar()" placeholder="—" />
+              </td>
+            </tr>
+            <tr *ngIf="!mx.filas.length">
+              <td [attr.colspan]="mx.criterios.length + 1">No hay alumnos inscritos en este grupo.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <footer class="cd-panel-foot" *ngIf="puedeOperar() && mx.criterios.length && mx.filas.length">
+          <button type="button" class="coh-btn primary lg" [disabled]="guardandoNotas() || esquemaNotasSinGuardar()" (click)="guardarNotasManuales()">
+            {{ guardandoNotas() ? 'Guardando…' : '💾 Guardar notas manuales' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===================== MATERIALES ===================== -->
+  <ng-container *ngIf="seccion() === 'materiales'">
+    <div class="cd-card" *ngIf="puedeGestionar()">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="teal">📎</span>
+        <div>
+          <h3>Agregar material de apoyo</h3>
+          <p>Enlaces, videos o documentos por materia que verán los alumnos.</p>
+        </div>
+      </div>
+      <div class="cd-inline">
+        <label>Materia
+          <select [ngModel]="nuevoMaterial().idMateria" (ngModelChange)="patchMaterial('idMateria', $event)">
+            <option value="" disabled>Elige…</option>
+            <option *ngFor="let m of c.materias" [value]="m._id">{{ m.nombre }}</option>
+          </select>
+        </label>
+        <label>Tipo
+          <select [ngModel]="nuevoMaterial().tipo" (ngModelChange)="patchMaterial('tipo', $event)">
+            <option value="ENLACE">Enlace</option>
+            <option value="VIDEO">Video</option>
+            <option value="DOCUMENTO">Documento</option>
+          </select>
+        </label>
+        <label class="grow">Título
+          <input type="text" [ngModel]="nuevoMaterial().titulo" (ngModelChange)="patchMaterial('titulo', $event)" placeholder="Ej. Guía de la unidad 1" />
+        </label>
+      </div>
+      <label class="cd-meet-field">Enlace (URL)
+        <input type="text" [ngModel]="nuevoMaterial().url" (ngModelChange)="patchMaterial('url', $event)" placeholder="https://…" />
+      </label>
+      <button type="button" class="coh-btn primary block" (click)="crearMaterial()">📎 Agregar material</button>
+    </div>
+
+    <div class="cd-card">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="indigo">📚</span>
+        <div>
+          <h3>Materiales publicados</h3>
+          <p>{{ materiales().length }} material(es)</p>
+        </div>
+      </div>
+      <div class="coh-empty small" *ngIf="!materiales().length">
+        <div class="coh-empty-icon">📎</div>
+        <p>Todavía no hay materiales.</p>
+      </div>
+      <ul class="cd-mat-list" *ngIf="materiales().length">
+        <li *ngFor="let m of materiales()">
+          <span class="cd-mat-tipo">{{ m.tipo }}</span>
+          <div class="cd-mat-info">
+            <strong>{{ m.titulo }}</strong>
+            <small>{{ m.materiaNombre }}<ng-container *ngIf="m.url"> · <a [href]="m.url" target="_blank" rel="noopener" class="cd-meet-link">abrir</a></ng-container></small>
+          </div>
+          <button type="button" class="coh-icon-btn danger" *ngIf="puedeGestionar()" (click)="eliminarMaterial(m)" title="Eliminar">✕</button>
+        </li>
+      </ul>
+    </div>
+  </ng-container>
+
+  <!-- ===================== CERTIFICADO Y ACTAS ===================== -->
+  <ng-container *ngIf="seccion() === 'certificado'">
+    <nav class="cd-cert-tabs">
+      <button type="button" [class.active]="vistaCert() === 'criterios'" (click)="verCert('criterios')">Criterios</button>
+      <button type="button" [class.active]="vistaCert() === 'elegibilidad'" (click)="verCert('elegibilidad')">Elegibilidad</button>
+      <button type="button" [class.active]="vistaCert() === 'acta'" (click)="verCert('acta')">Acta de notas</button>
+      <button type="button" [class.active]="vistaCert() === 'asistencia'" (click)="verCert('asistencia')">Reporte asistencia</button>
+    </nav>
+
+    <!-- Criterios -->
+    <div class="cd-card" *ngIf="vistaCert() === 'criterios'">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="amber">🏅</span>
+        <div>
+          <h3>Criterios para certificar</h3>
+          <p>Define qué debe cumplir un alumno para ser apto al certificado.</p>
+        </div>
+      </div>
+      <div class="cd-inline">
+        <label>Asistencia mínima (%)
+          <input type="number" min="0" max="100" class="mini" [ngModel]="criterios().minAsistenciaPct" (ngModelChange)="patchCriterio('minAsistenciaPct', +$event)" [disabled]="!puedeGestionar()" />
+        </label>
+        <label>Nota mínima
+          <input type="number" min="0" max="100" class="mini" [ngModel]="criterios().minNotaPromedio" (ngModelChange)="patchCriterio('minNotaPromedio', +$event)" [disabled]="!puedeGestionar()" />
+        </label>
+      </div>
+      <label class="cd-check">
+        <input type="checkbox" [ngModel]="criterios().requiereTodasMaterias" (ngModelChange)="patchCriterio('requiereTodasMaterias', $event)" [disabled]="!puedeGestionar()" />
+        Exigir todas las materias aprobadas
+      </label>
+      <label class="cd-check">
+        <input type="checkbox" [ngModel]="criterios().requiereEvaluaciones" (ngModelChange)="patchCriterio('requiereEvaluaciones', $event)" [disabled]="!puedeGestionar()" />
+        Exigir todas las evaluaciones presentadas
+      </label>
+      <button type="button" class="coh-btn primary lg" *ngIf="puedeGestionar()" [disabled]="guardandoCriterios()" (click)="guardarCriterios()">
+        {{ guardandoCriterios() ? 'Guardando…' : '💾 Guardar criterios' }}
+      </button>
+    </div>
+
+    <!-- Elegibilidad -->
+    <div class="cd-card" *ngIf="vistaCert() === 'elegibilidad'">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="ok">✅</span>
+        <div>
+          <h3>Elegibilidad de certificado</h3>
+          <p *ngIf="elegibilidad() as el">{{ el.aptos }} de {{ el.totalInscritos }} alumno(s) cumplen los criterios.</p>
+        </div>
+        <button type="button" class="coh-btn primary mini-btn cd-head-action" *ngIf="puedeGestionar() && elegibilidad()?.aptos" (click)="finalizarAptos()">
+          Finalizar aptos
+        </button>
+      </div>
+      <div class="cd-table-wrap" *ngIf="elegibilidad() as el">
+        <table class="cd-table">
+          <thead>
+            <tr><th>Alumno</th><th>Asist.</th><th>Nota</th><th>Materias</th><th>Eval. pend.</th><th>Apto</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of el.filas">
+              <td>{{ f.nombreCompleto }}</td>
+              <td>{{ f.asistenciaPct }}%</td>
+              <td>{{ f.notaPromedio ?? '—' }}</td>
+              <td>{{ f.materias }}</td>
+              <td>{{ f.evaluacionesPendientes }}</td>
+              <td>
+                <span class="coh-pill" [attr.data-estado]="f.apto ? 'ABIERTA' : 'CANCELADA'" [title]="f.motivos.join(', ')">
+                  {{ f.apto ? 'APTO' : 'NO' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Acta de notas -->
+    <div class="cd-card" *ngIf="vistaCert() === 'acta'">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="indigo">📋</span>
+        <div>
+          <h3>Acta de notas</h3>
+          <p>Nota por materia y promedio de cada alumno.</p>
+        </div>
+      </div>
+      <div class="cd-table-wrap" *ngIf="acta() as ac">
+        <table class="cd-table">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th *ngFor="let m of ac.materias">{{ m.nombre }}</th>
+              <th>Prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of ac.filas">
+              <td>{{ f.nombreCompleto }}</td>
+              <td *ngFor="let m of ac.materias" [class.cd-ok]="notaCelda(f, m.idMateria).aprobada">
+                {{ notaCelda(f, m.idMateria).nota ?? '—' }}
+              </td>
+              <td><strong>{{ f.promedio ?? '—' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reporte asistencia -->
+    <div class="cd-card" *ngIf="vistaCert() === 'asistencia'">
+      <div class="cd-card-head">
+        <span class="cd-card-icon" data-tone="teal">📅</span>
+        <div>
+          <h3>Reporte de asistencia</h3>
+          <p>Asistencia de cada alumno por clase.</p>
+        </div>
+      </div>
+      <div class="cd-table-wrap" *ngIf="reporteAsis() as ra">
+        <table class="cd-table">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th *ngFor="let cl of ra.clases" [title]="cl.materiaNombre">{{ cl.fechaClase | date: 'dd/MM' }}</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of ra.filas">
+              <td>{{ f.nombreCompleto }}</td>
+              <td *ngFor="let cl of ra.clases" class="cd-asis-cell" [attr.data-estado]="asisCelda(f, cl.idClase)">
+                {{ asisCelda(f, cl.idClase).charAt(0) }}
+              </td>
+              <td><strong>{{ f.pct }}%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</section>
+
+<!-- ===== Modal asistencia ===== -->
+<div class="cd-modal-backdrop" *ngIf="asistenciaAbierta() as a" (click)="cerrarAsistencia()">
+  <div class="cd-modal" (click)="$event.stopPropagation()">
+    <header class="cd-modal-head">
+      <div>
+        <h3>Asistencia</h3>
+        <p>{{ a.materiaNombre }} · {{ a.fechaClase | date: 'dd/MM/yyyy' }}</p>
+      </div>
+      <button type="button" class="coh-icon-btn" (click)="cerrarAsistencia()">✕</button>
+    </header>
+
+    <div class="cd-modal-tools">
+      <span class="cd-modal-count">{{ contarPresentes() }} de {{ a.alumnos.length }} presentes</span>
+      <button type="button" class="coh-btn ghost mini-btn" (click)="marcarTodos('PRESENTE')">Marcar todos presentes</button>
+    </div>
+
+    <ul class="cd-asis-list">
+      <li *ngFor="let al of a.alumnos">
+        <div class="cd-asis-alumno">
+          <span class="cd-avatar">{{ al.nombreCompleto.charAt(0) }}</span>
+          <strong>{{ al.nombreCompleto }}</strong>
+        </div>
+        <div class="cd-asis-toggle">
+          <button type="button" data-tone="ok" [class.active]="al.estado === 'PRESENTE'" (click)="setEstadoAlumno(al, 'PRESENTE')">Presente</button>
+          <button type="button" data-tone="bad" [class.active]="al.estado === 'AUSENTE'" (click)="setEstadoAlumno(al, 'AUSENTE')">Ausente</button>
+          <button type="button" data-tone="warn" [class.active]="al.estado === 'JUSTIFICADO'" (click)="setEstadoAlumno(al, 'JUSTIFICADO')">Justif.</button>
+        </div>
+        <div class="cd-asis-nota">
+          <input type="number" min="0" max="100" [(ngModel)]="al.nota" placeholder="Nota" />
+        </div>
+      </li>
+      <li class="cd-vacio" *ngIf="!a.alumnos.length">No hay alumnos inscritos en este grupo.</li>
+    </ul>
+
+    <footer class="cd-modal-foot">
+      <button type="button" class="coh-btn ghost" (click)="cerrarAsistencia()">Cancelar</button>
+      <button type="button" class="coh-btn primary lg" [disabled]="guardandoAsist()" (click)="guardarAsistencia()">
+        {{ guardandoAsist() ? 'Guardando…' : '💾 Guardar asistencia' }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- ===== Modal nueva / editar evaluación ===== -->
+<div class="cd-modal-backdrop" *ngIf="mostrarFormEval()" (click)="cerrarFormEval()">
+  <div class="cd-modal" (click)="$event.stopPropagation()">
+    <header class="cd-modal-head">
+      <div>
+        <h3>{{ evalEsEdicion() ? 'Editar evaluación' : 'Nueva evaluación' }}</h3>
+        <p *ngIf="!evalEsEdicion()">Se crea en borrador; publícala cuando esté lista.</p>
+        <p *ngIf="evalEdicionLimitada()">Publicada: puedes ajustar título, fechas y criterios. Las preguntas ya están fijadas.</p>
+        <p *ngIf="evalEsEdicion() && !evalEdicionLimitada()">Borrador: puedes cambiar materia, preguntas y demás opciones.</p>
+      </div>
+      <button type="button" class="coh-icon-btn" (click)="cerrarFormEval()">✕</button>
+    </header>
+
+    <div class="cd-modal-body">
+      <label class="cd-field-block">Título
+        <input type="text" [ngModel]="nuevaEval().titulo" (ngModelChange)="patchEval('titulo', $event)" placeholder="Ej. Quiz unidad 1" />
+      </label>
+      <div class="cd-inline">
+        <label>Materia
+          <select [ngModel]="nuevaEval().idMateria" (ngModelChange)="onEvalMateriaChange($event)" [disabled]="evalEdicionLimitada()">
+            <option value="">General (todo el semestre)</option>
+            <option *ngFor="let m of (cohorte()?.materias || [])" [value]="m._id">{{ m.nombre }}</option>
+          </select>
+        </label>
+        <label>Nota para aprobar
+          <input type="number" min="0" max="100" class="mini" [ngModel]="nuevaEval().notaAprobacion" (ngModelChange)="patchEval('notaAprobacion', +$event)" />
+        </label>
+        <label>Peso en la materia (%)
+          <input type="number" min="0" max="100" class="mini" [ngModel]="nuevaEval().pesoNota" (ngModelChange)="patchEval('pesoNota', +$event)" />
+        </label>
+        <label>Tipo
+          <select [ngModel]="nuevaEval().tipoEvaluacion" (ngModelChange)="patchEval('tipoEvaluacion', $event)">
+            <option value="PARCIAL">Parcial</option>
+            <option value="FINAL">Final</option>
+            <option value="GENERAL">General</option>
+          </select>
+        </label>
+        <label>Intentos
+          <input type="number" min="1" class="mini" [ngModel]="nuevaEval().intentosPermitidos" (ngModelChange)="patchEval('intentosPermitidos', +$event)" />
+        </label>
+      </div>
+      <div class="cd-inline">
+        <label>Abre
+          <input type="datetime-local" [ngModel]="nuevaEval().fechaApertura" (ngModelChange)="patchEval('fechaApertura', $event)" />
+        </label>
+        <label>Cierra
+          <input type="datetime-local" [ngModel]="nuevaEval().fechaCierre" (ngModelChange)="patchEval('fechaCierre', $event)" />
+        </label>
+      </div>
+
+      <div class="cd-eval-modo" *ngIf="!evalEdicionLimitada()">
+        <label class="cd-radio">
+          <input type="radio" name="modoEval" value="BANCO_ALEATORIO" [ngModel]="nuevaEval().modoPreguntas" (ngModelChange)="patchEval('modoPreguntas', $event)" />
+          Aleatorias del banco
+        </label>
+        <label class="cd-radio">
+          <input type="radio" name="modoEval" value="MANUAL" [ngModel]="nuevaEval().modoPreguntas" (ngModelChange)="patchEval('modoPreguntas', $event)" />
+          Elegir preguntas
+        </label>
+      </div>
+
+      <label class="cd-field-block" *ngIf="!evalEdicionLimitada() && nuevaEval().modoPreguntas === 'BANCO_ALEATORIO'">¿Cuántas preguntas?
+        <input type="number" min="1" class="mini" [ngModel]="nuevaEval().numPreguntasBanco" (ngModelChange)="patchEval('numPreguntasBanco', +$event)" />
+      </label>
+
+      <div class="cd-banco-pick" *ngIf="!evalEdicionLimitada() && nuevaEval().modoPreguntas === 'MANUAL'">
+        <p class="cd-help">Marca las preguntas del banco para incluirlas:</p>
+        <p class="cd-vacio" *ngIf="!nuevaEval().idMateria">Selecciona una materia arriba para ver su banco de preguntas.</p>
+        <p class="cd-vacio" *ngIf="nuevaEval().idMateria && !bancoFiltradoPorMateria().length">No hay preguntas en el banco para esta materia. Créalas en «Catálogo / Banco de preguntas».</p>
+        <label class="cd-banco-item" *ngFor="let p of bancoFiltradoPorMateria()">
+          <input type="checkbox" [checked]="!!p._id && seleccionadasBanco().has(p._id)" (change)="p._id && toggleBancoSel(p._id)" />
+          <span>{{ p.enunciado }}</span>
+        </label>
+      </div>
+    </div>
+
+    <footer class="cd-modal-foot">
+      <button type="button" class="coh-btn ghost" (click)="cerrarFormEval()">Cancelar</button>
+      <button type="button" class="coh-btn primary lg" (click)="guardarEvaluacion()">
+        {{ evalEsEdicion() ? 'Guardar cambios' : 'Crear evaluación' }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- ===== Modal resultados evaluación ===== -->
+<div class="cd-modal-backdrop" *ngIf="resultados() as r" (click)="cerrarResultados()">
+  <div class="cd-modal" (click)="$event.stopPropagation()">
+    <header class="cd-modal-head">
+      <div>
+        <h3>Resultados · {{ r.titulo }}</h3>
+        <p>{{ r.presentados }}/{{ r.totalInscritos }} presentaron · {{ r.aprobados }} aprobados · promedio {{ r.promedio ?? '—' }}</p>
+      </div>
+      <button type="button" class="coh-icon-btn" (click)="cerrarResultados()">✕</button>
+    </header>
+    <div class="cd-table-wrap">
+      <table class="cd-table">
+        <thead>
+          <tr><th>Alumno</th><th>Estado</th><th>Nota</th><th>Intentos</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of r.filas">
+            <td>{{ f.nombreCompleto }}</td>
+            <td>{{ f.estado }}</td>
+            <td [class.cd-ok]="f.aprobado">{{ f.nota ?? '—' }}</td>
+            <td>{{ f.intentos }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <footer class="cd-modal-foot">
+      <button type="button" class="coh-btn primary" (click)="cerrarResultados()">Cerrar</button>
+    </footer>
+  </div>
+</div>

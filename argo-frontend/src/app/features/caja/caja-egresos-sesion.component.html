@@ -1,0 +1,117 @@
+<section class="mov-page">
+  <header class="caja-head mov-head">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Egresos</p>
+      <h1>Egresos de mi caja</h1>
+      <p class="hint" *ngIf="cajaAbierta() && sesionId()">
+        Sesión #{{ sesionId() }} — solo egresos de este turno.
+      </p>
+      <p class="hint warn" *ngIf="!cajaAbierta()">Abra su caja en Resumen del día para registrar egresos.</p>
+    </div>
+    <div class="caja-badges mov-actions">
+      <span class="caja-chip caja-chip--amber" *ngIf="cantSinSoporte() > 0">{{ cantSinSoporte() }} sin soporte</span>
+      <button type="button" class="ghost sm" (click)="cargar()">Actualizar</button>
+      <button type="button" class="primary sm" (click)="nuevoEgreso()">Nuevo egreso</button>
+      <span class="total-badge egreso">{{ total() | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+  </header>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="warn-docs card" *ngIf="cantSinSoporte() > 0">
+    <strong>Aviso: egresos sin soporte adjunto ({{ cantSinSoporte() }})</strong>
+    <p class="hint">Falta imagen de factura, voucher o comprobante en estos movimientos de la sesión.</p>
+    <ul>
+      <li *ngFor="let e of sinSoporte() | slice: 0 : 5">
+        {{ e.numRecibo || '—' }} — {{ e.concepto }}
+      </li>
+    </ul>
+  </div>
+
+  <div class="table-wrap panel" *ngIf="!loading(); else cargando">
+    <table class="tabla-mov">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Recibo</th>
+          <th>Beneficiario</th>
+          <th>Concepto</th>
+          <th>Tipo</th>
+          <th>Forma pago</th>
+          <th>Valor</th>
+          <th class="col-alertas">Alertas</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of items()" [class.fila-sin-soporte]="!tieneSoporte(e)">
+          <td>
+            <span [ngClass]="capFecha(e.fechaEgreso)">{{ e.fechaEgreso | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capRecibo(e.numRecibo)">{{ e.numRecibo || '—' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capBeneficiario(e.pagueA)">{{ e.pagueA || '—' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capConceptoCaja(e.concepto)">{{ e.concepto }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capTipoEgreso(e.tipoEgresoDescr)">{{ e.tipoEgresoDescr || '—' }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capFormaPago(e.formaPago)">{{ e.formaPago || '—' }}</span>
+          </td>
+          <td class="num">
+            <span [ngClass]="capValorEgreso()">{{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+          </td>
+          <td class="col-alertas">
+            <button
+              type="button"
+              class="row-alarm doc-alarm"
+              *ngIf="!tieneSoporte(e)"
+              (click)="onAlarmaSoporte(e, $event)"
+              [attr.title]="tituloSoporte(e)"
+              [attr.aria-label]="tituloSoporte(e)">
+              <span class="row-alarm-pulse" aria-hidden="true"></span>
+              <span class="row-alarm-icon">!</span>
+              <span class="row-alarm-label">Sop.</span>
+            </button>
+            <span *ngIf="tieneSoporte(e)" class="dim">—</span>
+          </td>
+          <td class="actions-cell">
+            <button type="button" class="ghost sm" (click)="verRecibo(e.idEgreso)">Recibo</button>
+            <button type="button" class="ghost sm" *ngIf="puedeGestionar(e)" (click)="editarEgreso(e)">Editar</button>
+            <button type="button" class="danger sm" *ngIf="puedeGestionar(e)" (click)="anularEgreso(e)">Anular</button>
+          </td>
+        </tr>
+        <tr *ngIf="!items().length">
+          <td colspan="9" class="empty">Sin egresos en esta sesión de caja</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #cargando><p class="loading">Cargando…</p></ng-template>
+
+  <div class="modal-backdrop auth-anular-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarAnularSupervisor()">
+    <div class="modal card auth-anular-modal" (click)="$event.stopPropagation()">
+      <h3>Autorización para anular egreso</h3>
+      <p class="hint" *ngIf="egresoPendienteAnular() as pe">
+        Egreso {{ pe.numRecibo || pe.concepto }} — requiere credenciales de administrador.
+      </p>
+      <label>
+        Usuario administrador
+        <input type="text" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost mini" (click)="cancelarAnularSupervisor()">Cancelar</button>
+        <button type="button" class="danger mini" (click)="confirmarAnularConSupervisor()">Autorizar y anular</button>
+      </div>
+    </div>
+  </div>
+</section>

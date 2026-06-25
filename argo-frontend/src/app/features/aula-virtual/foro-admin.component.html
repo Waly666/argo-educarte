@@ -1,0 +1,203 @@
+<div class="foro-admin-page">
+  <div class="foro-admin-header">
+    <div>
+      <h1>💬 Foro de cursos virtuales</h1>
+      <p class="foro-subtitle">Responde preguntas de los alumnos directamente desde aquí</p>
+    </div>
+    <button type="button" class="btn-refresh" (click)="actualizar()">↺ Actualizar</button>
+  </div>
+
+  <div class="foro-layout">
+    <!-- Panel izquierdo: lista de cursos con actividad -->
+    <aside class="foro-sidebar">
+      <div class="foro-search-wrap">
+        <input
+          type="search"
+          class="foro-search"
+          placeholder="Buscar curso…"
+          [value]="filtroBusqueda()"
+          (input)="filtroBusqueda.set($any($event.target).value)" />
+      </div>
+
+      @if (cargandoCursos()) {
+        <div class="foro-loading-side">Cargando cursos…</div>
+      } @else if (cursosFiltrados().length === 0) {
+        <div class="foro-empty-side">
+          @if (filtroBusqueda()) {
+            Sin resultados para "{{ filtroBusqueda() }}"
+          } @else {
+            No hay mensajes en ningún foro aún.
+          }
+        </div>
+      } @else {
+        <ul class="foro-curso-list">
+          @for (c of cursosFiltrados(); track c.idPrograma) {
+            <li
+              class="foro-curso-item"
+              [class.active]="cursoActivo()?.idPrograma === c.idPrograma"
+              (click)="seleccionarCurso(c)">
+              <div class="foro-curso-nombre">{{ c.nombreProg }}</div>
+              <div class="foro-curso-meta">
+                <span class="foro-badge-count">{{ c.total }}</span>
+                <span class="foro-ultimo">{{ formatFecha(c.ultimo) }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </aside>
+
+    <!-- Panel derecho: chat en tiempo real -->
+    <main class="foro-content">
+      @if (!cursoActivo()) {
+        <div class="foro-select-hint">
+          <span class="foro-select-icon">👈</span>
+          <p>Selecciona un curso para ver y participar en su foro</p>
+        </div>
+      } @else {
+        <div class="foro-content-header">
+          <div class="foro-content-header-top">
+            <div>
+              <h2>{{ cursoActivo()!.nombreProg }}</h2>
+              <p class="foro-content-meta">
+                @if (hayFiltroActivo()) {
+                  {{ mensajesFiltrados().length }} de {{ foroSvc.mensajes().length }} mensajes
+                } @else {
+                  {{ cursoActivo()!.total }} mensajes
+                }
+              </p>
+            </div>
+            <div class="foro-status" [class.foro-status--on]="foroSvc.conectado()">
+              <span class="foro-dot"></span>
+              <span>{{ foroSvc.conectado() ? 'En línea' : 'Conectando…' }}</span>
+            </div>
+          </div>
+
+          @if (!foroSvc.cargando() && foroSvc.mensajes().length > 0) {
+            <div class="foro-filtros-autor">
+              <label class="foro-filtro-label" for="foro-filtro-autor">Filtrar por autor</label>
+              <div class="foro-filtros-autor-row">
+                <select
+                  id="foro-filtro-autor"
+                  class="foro-filtro-select"
+                  [value]="filtroAutor()"
+                  (change)="filtroAutor.set($any($event.target).value)">
+                  <option value="">Todos los mensajes</option>
+                  <option value="__alumnos__">Solo mensajes de alumnos</option>
+                  <option value="__staff__">Solo respuestas del equipo</option>
+                  @if (alumnosEnForo().length > 0) {
+                    <option disabled>──────────</option>
+                    @for (a of alumnosEnForo(); track a.numDoc) {
+                      <option [value]="'a:' + a.numDoc">
+                        {{ a.nombre }} · Doc {{ a.numDoc }} ({{ a.total }})
+                      </option>
+                    }
+                  }
+                </select>
+                @if (esFiltroAlumno()) {
+                  <label class="foro-check-contexto">
+                    <input
+                      type="checkbox"
+                      [checked]="incluirRespuestasStaff()"
+                      (change)="incluirRespuestasStaff.set($any($event.target).checked)" />
+                    Incluir respuestas del equipo
+                  </label>
+                }
+                @if (hayFiltroActivo()) {
+                  <button type="button" class="foro-filtro-limpiar" (click)="limpiarFiltroAutor()">
+                    Quitar filtro
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Mensajes -->
+        <div class="foro-msgs-wrap">
+          <div class="foro-msgs-list" #chatBody (scroll)="onChatScroll()">
+            @if (foroSvc.cargando()) {
+              <div class="foro-loading-msgs">Cargando mensajes…</div>
+            } @else if (foroSvc.error()) {
+              <div class="foro-empty-msgs foro-error-msgs">⚠️ {{ foroSvc.error() }}</div>
+            } @else if (foroSvc.mensajes().length === 0) {
+              <div class="foro-empty-msgs">No hay mensajes en este foro. Sé el primero en responder.</div>
+            } @else if (mensajesFiltrados().length === 0) {
+              <div class="foro-empty-msgs">
+                Ningún mensaje coincide con el filtro seleccionado.
+                <button type="button" class="foro-filtro-limpiar foro-filtro-limpiar--inline" (click)="limpiarFiltroAutor()">
+                  Ver todos
+                </button>
+              </div>
+            } @else {
+              @for (msg of mensajesFiltrados(); track msg._id) {
+                <div
+                  class="foro-msg-item"
+                  [class.msg-staff]="msg.autorTipo !== 'alumno'"
+                  [class.foro-msg--destacado]="esDestacado(msg)">
+                  <div class="foro-msg-left">
+                    <div class="foro-msg-avatar" [class]="'avatar-' + msg.autorTipo">
+                      {{ inicialAvatar(msg.autorNombre) }}
+                    </div>
+                  </div>
+                  <div class="foro-msg-body">
+                    <div class="foro-msg-top">
+                      <span class="foro-msg-autor">{{ msg.autorNombre }}</span>
+                      <span class="foro-tipo-badge" [class]="tipoBadgeClass(msg.autorTipo)">{{ tipoLabel(msg.autorTipo) }}</span>
+                      @if (esDestacado(msg)) {
+                        <span class="foro-badge-nuevo">Nuevo</span>
+                      }
+                      <span class="foro-msg-fecha">{{ formatFecha(msg.createdAt) }}</span>
+                    </div>
+                    <p class="foro-msg-texto">{{ msg.texto }}</p>
+                  </div>
+                  <div class="foro-msg-actions">
+                    <button type="button" class="btn-delete-msg" title="Eliminar mensaje" (click)="eliminarMensaje(msg)">🗑</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          @if (mostrarIrAbajo()) {
+            <button type="button" class="foro-ir-abajo" (click)="irAlUltimo()">
+              ↓ Ver último mensaje
+            </button>
+          }
+        </div>
+
+        <!-- Input de respuesta -->
+        <div class="foro-reply-area">
+          <div class="foro-reply-who">
+            Respondiendo como <strong>{{ authSvc.user()?.nombres || authSvc.user()?.username || authSvc.user()?.email }}</strong>
+            <span class="foro-tipo-badge badge-admin">🛡 Admin</span>
+          </div>
+          <div class="foro-reply-wrap">
+            <textarea
+              class="foro-reply-input"
+              rows="2"
+              placeholder="Escribe tu respuesta o comentario… (Enter para enviar)"
+              [value]="texto()"
+              (input)="texto.set($any($event.target).value)"
+              (keydown)="onKeydown($event)"
+              [disabled]="!foroSvc.conectado() || foroSvc.enviando()">
+            </textarea>
+            <button
+              type="button"
+              class="foro-send-btn"
+              [disabled]="!texto().trim() || !foroSvc.conectado() || foroSvc.enviando()"
+              (click)="enviar()">
+              @if (foroSvc.enviando()) {
+                <span class="btn-spin"></span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </main>
+  </div>
+</div>

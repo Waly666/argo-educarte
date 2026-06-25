@@ -1,0 +1,245 @@
+<div class="registro-page">
+  <section class="container registro-card">
+    @if (paso() === 'formulario') {
+      <header class="registro-head">
+        <p class="registro-kicker">Aula virtual</p>
+        <h1>Crear cuenta</h1>
+        <p class="registro-lead">
+          Si ya está en ARGO (presencial), ingrese su documento y el sistema cargará sus datos.
+          Solo definirá <strong>correo y contraseña</strong> para entrar al portal.
+          @if (emailVerificacion()) {
+            Deberá confirmar su correo con un código antes de activar la cuenta.
+          }
+        </p>
+      </header>
+
+      <div class="grid">
+        <div class="field field--accent">
+          <label>Correo *</label>
+          <input type="email" [(ngModel)]="form.email" autocomplete="email" />
+        </div>
+        <div class="field field--accent">
+          <label>Contraseña *</label>
+          <input type="password" [(ngModel)]="form.password" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label>Tipo documento *</label>
+          <select [(ngModel)]="form.tipoDoc">
+            @for (t of tiposDoc(); track catValor(t)) {
+              <option [value]="catValor(t)">{{ catEtiqueta(t) }}</option>
+            }
+          </select>
+        </div>
+        <div class="doc-row">
+          <div class="field">
+            <label>Número documento *</label>
+            <input type="text" [(ngModel)]="form.numDoc" (blur)="buscarDocumento()" inputmode="numeric" />
+          </div>
+          <button type="button" class="btn btn-verify" [disabled]="buscando()" (click)="buscarDocumento()">
+            {{ buscando() ? 'Buscando…' : 'Verificar en ARGO' }}
+          </button>
+        </div>
+
+        <div class="grid-section grid-section--exp">
+          <p class="grid-section__title">📍 Expedida en</p>
+          <div class="grid grid--nested">
+            <div class="field">
+              <label>Departamento</label>
+              <select [(ngModel)]="deptoExp" (ngModelChange)="onDeptoExpChange()">
+                <option value="">Seleccione…</option>
+                @for (d of departamentos(); track d.codDepto) {
+                  <option [value]="d.codDepto">{{ d.nombreDepto }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Ciudad / municipio</label>
+              <select
+                [(ngModel)]="codMunicipioExp"
+                (ngModelChange)="onMunicipioExpChange()"
+                [disabled]="!deptoExp"
+              >
+                <option value="">Seleccione…</option>
+                @for (m of municipiosExp(); track m.codMunicipio) {
+                  <option [value]="m.codMunicipio">{{ m.nombreMunicipio }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Primer apellido *</label>
+          <input type="text" [(ngModel)]="form.apellido1" />
+        </div>
+        <div class="field">
+          <label>Segundo apellido</label>
+          <input type="text" [(ngModel)]="form.apellido2" />
+        </div>
+        <div class="field">
+          <label>Primer nombre *</label>
+          <input type="text" [(ngModel)]="form.nombre1" />
+        </div>
+        <div class="field">
+          <label>Segundo nombre</label>
+          <input type="text" [(ngModel)]="form.nombre2" />
+        </div>
+        <div class="field">
+          <label>Género</label>
+          <select [(ngModel)]="form.genero">
+            <option value="">Seleccione…</option>
+            @for (g of generos(); track catValor(g)) {
+              <option [value]="catValor(g)">{{ etiquetaGenero(g) }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Fecha nacimiento</label>
+          <input type="date" [(ngModel)]="form.fechaNac" />
+        </div>
+        <div class="field">
+          <label>Celular</label>
+          <input type="text" [(ngModel)]="form.celular" inputmode="tel" />
+        </div>
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="form.direccion" />
+        </div>
+
+        <div class="grid-section grid-section--res">
+          <p class="grid-section__title">🏠 Ciudad de residencia</p>
+          <div class="grid grid--nested">
+            <div class="field">
+              <label>Departamento</label>
+              <select [(ngModel)]="deptoOrigen" (ngModelChange)="onDeptoOrigenChange()">
+                <option value="">Seleccione…</option>
+                @for (d of departamentos(); track d.codDepto) {
+                  <option [value]="d.codDepto">{{ d.nombreDepto }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Ciudad / municipio</label>
+              <select
+                [(ngModel)]="codMunicipioOrigen"
+                (ngModelChange)="onMunicipioOrigenChange()"
+                [disabled]="!deptoOrigen"
+              >
+                <option value="">Seleccione…</option>
+                @for (m of municipiosOrigen(); track m.codMunicipio) {
+                  <option [value]="m.codMunicipio">{{ m.nombreMunicipio }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empresa (opcional) -->
+      <div class="grid-section grid-section--empresa">
+        <p class="grid-section__title">🏢 Empresa (opcional)</p>
+        <p class="empresa-reg-hint">
+          Si trabaja para una empresa de transporte, vincúlela aquí. Esta información quedará en sus certificados.
+        </p>
+        <div class="empresa-reg-wrap" style="position:relative">
+          @if (form.empresaNombre) {
+            <div class="empresa-reg-seleccionada">
+              <span class="empresa-reg-chip">🏢 {{ form.empresaNombre }}</span>
+              <button type="button" class="empresa-reg-quitar" (click)="quitarEmpresaReg()">✕ Quitar</button>
+            </div>
+          } @else {
+            <input
+              type="search"
+              class="empresa-reg-input"
+              placeholder="Buscar empresa por nombre o NIT…"
+              [value]="empresaBusqReg()"
+              (input)="buscarEmpresaReg($any($event.target).value)"
+              (blur)="onEmpresaBlurReg()"
+              autocomplete="off" />
+            @if (empresaCargReg()) {
+              <span class="empresa-reg-loading">⏳</span>
+            }
+            @if (empresaDropReg() && empresaSugsReg().length > 0) {
+              <ul class="empresa-reg-dropdown">
+                @for (e of empresaSugsReg(); track e._id) {
+                  <li (mousedown)="seleccionarEmpresaReg(e)">
+                    <span class="emp-nombre">{{ e.nombre }}</span>
+                    <span class="emp-nit">{{ e.identificacion }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </div>
+      </div>
+
+      @if (info()) {
+        <p class="info">{{ info() }}</p>
+      }
+      @if (alumnoEnArgo() && !tieneCuentaPortal()) {
+        <p class="info info--argo">Datos cargados desde ARGO. El acceso al portal será con su correo.</p>
+      }
+
+      @if (error()) {
+        <p class="err">{{ error() }}</p>
+      }
+
+      @if (!registroAbierto()) {
+        <p class="err">El registro en línea está cerrado. Contacte al CEA para crear su cuenta.</p>
+      }
+
+      @if (turnstileSiteKey()) {
+        <av-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+      }
+
+      <button type="button" class="btn btn-primary registro-submit" [disabled]="loading() || !registroAbierto()" (click)="enviar()">
+        {{ loading() ? 'Enviando…' : emailVerificacion() ? 'Enviar código al correo' : 'Crear cuenta' }}
+      </button>
+    } @else {
+      <header class="registro-head registro-head--verify">
+        <p class="registro-kicker">Verificación</p>
+        <h1>Confirmar correo</h1>
+        <p class="registro-lead">
+          Enviamos un código de 6 dígitos a
+          <strong>{{ emailEnmascarado() || 'su correo' }}</strong>.
+          Revise la bandeja de entrada y la carpeta de spam.
+        </p>
+      </header>
+
+      @if (info()) {
+        <p class="info">{{ info() }}</p>
+      }
+      @if (error()) {
+        <p class="err">{{ error() }}</p>
+      }
+
+      <div class="verify-row">
+        <div class="field">
+          <label>Código de verificación *</label>
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            [ngModel]="codigoVerificacion()"
+            (ngModelChange)="codigoVerificacion.set($event)"
+          />
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary registro-submit" [disabled]="loading()" (click)="confirmarCodigo()">
+        {{ loading() ? 'Confirmando…' : 'Confirmar y crear cuenta' }}
+      </button>
+
+      <div class="verify-actions">
+        <button type="button" class="btn btn-outline" [disabled]="reenviando()" (click)="reenviarCodigo()">
+          {{ reenviando() ? 'Reenviando…' : 'Reenviar código' }}
+        </button>
+        <button type="button" class="btn btn-outline" (click)="volverAlFormulario()">Volver al formulario</button>
+      </div>
+    }
+
+    <p class="registro-foot">¿Ya tienes cuenta? <a routerLink="/login">Acceder</a></p>
+  </section>
+</div>

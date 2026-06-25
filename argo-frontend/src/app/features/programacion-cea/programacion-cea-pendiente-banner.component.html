@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-cea-pendiente"
+  icon="📅"
+  [title]="titulo()"
+  hint="Horas CEA pendientes de programar. Pulse para ir a pendientes."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

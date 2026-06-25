@@ -1,0 +1,206 @@
+@if (curso(); as c) {
+  <div class="detail-page">
+    <div class="detail-top">
+      <div class="container">
+        <a routerLink="/cursos" class="detail-back">← Volver al catálogo</a>
+      </div>
+    </div>
+
+    <section class="detail-hero">
+      <div class="container detail-layout">
+        <div class="detail-main">
+          <figure class="detail-banner">
+            @if (portadaUrl(c); as img) {
+              <img [src]="img" [alt]="c.nombreProg" />
+            } @else {
+              <div class="detail-banner-ph"></div>
+            }
+            @if (c.horas) {
+              <span class="detail-duration">Duración: {{ c.horas }} horas</span>
+            }
+          </figure>
+
+          @if (c.categoriaNombres?.length) {
+            <div class="detail-tags">
+              @for (nom of c.categoriaNombres; track nom) {
+                <span class="detail-tag">{{ nom }}</span>
+              }
+            </div>
+          }
+
+          <h1 class="detail-title">{{ c.nombreProg }}</h1>
+
+          @if (c.autor) {
+            <div class="detail-author">
+              @if (logoUrl(); as logo) {
+                <img [src]="logo" alt="" class="detail-author-img" />
+              } @else {
+                <span class="detail-author-initial">{{ inicialAutor(c.autor) }}</span>
+              }
+              <div>
+                <span class="detail-author-label">Ofrecido por</span>
+                <span class="detail-author-name">{{ c.autor }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="detail-chips">
+            @if (c.nivel) {
+              <span class="detail-chip">📚 {{ labelNivel(c.nivel) }}</span>
+            }
+            @if (c.horas) {
+              <span class="detail-chip">⏱ {{ c.horas }} horas</span>
+            }
+            <span class="detail-chip">🖥 Aula virtual</span>
+          </div>
+        </div>
+
+        <aside class="detail-aside">
+          <div class="detail-buy-card">
+            <p class="detail-buy-label">Inversión</p>
+            <p class="detail-buy-price">{{ fmtPrecio(c.tarifaVirtual) }}</p>
+            @if (msg()) {
+              <p class="detail-buy-msg">{{ msg() }}</p>
+            }
+            @if (auth.isLoggedIn()) {
+              @if (inscripcion(); as ins) {
+                @if (ins.matriculado) {
+                  @if (ins.puedeCursar) {
+                    <button type="button" class="detail-buy-btn" (click)="irAlCurso()">Entrar al curso</button>
+                  }
+                  @if (ins.pago?.pagado) {
+                    <p class="detail-buy-hint detail-buy-hint--ok">Pago registrado. Certificado según reglas del curso.</p>
+                  } @else if (ins.accesoBloqueadoPago || ins.curso.requierePagoParaCursar || c.requierePagoParaCursar) {
+                    <p class="detail-buy-hint detail-buy-hint--warn">
+                      Matriculado. Complete el pago para acceder al contenido del curso.
+                    </p>
+                    @if (pasarelaActiva()) {
+                      <button type="button" class="detail-buy-btn" [disabled]="pagando()" (click)="pagarEnLinea()">
+                        {{ pagando() ? 'Redirigiendo…' : 'Pagar matrícula en línea' }}
+                      </button>
+                      <p class="detail-buy-hint">Pago total del valor del curso. También puede pagar en el CEA.</p>
+                    } @else {
+                      <p class="detail-buy-hint">Acérquese al CEA para completar el pago de la matrícula.</p>
+                    }
+                  } @else {
+                    <p class="detail-buy-hint">
+                      Matriculado. Puede cursar sin pagar; el certificado se habilita al completar el pago.
+                    </p>
+                    @if (pasarelaActiva() && ins.pago && !ins.pago.pagado) {
+                      <button type="button" class="detail-buy-btn detail-buy-btn--ghost" [disabled]="pagando()" (click)="pagarEnLinea()">
+                        {{ pagando() ? 'Redirigiendo…' : 'Pagar matrícula en línea' }}
+                      </button>
+                    }
+                  }
+                } @else {
+                  <button
+                    type="button"
+                    class="detail-buy-btn"
+                    [disabled]="matriculando()"
+                    (click)="matricular()"
+                  >
+                    {{ matriculando() ? 'Matriculando…' : 'Matricularme' }}
+                  </button>
+                  @if (c.requierePagoParaCursar) {
+                    <p class="detail-buy-hint">
+                      Tras matricularse deberá pagar en el CEA para acceder al contenido. El certificado según reglas del curso.
+                    </p>
+                  } @else {
+                    <p class="detail-buy-hint">
+                      Inscripción sin pago inicial. Puede estudiar ahora; el certificado requiere liquidar el valor del curso.
+                    </p>
+                  }
+                }
+              } @else {
+                <button type="button" class="detail-buy-btn" [disabled]="matriculando()" (click)="matricular()">
+                  {{ matriculando() ? 'Matriculando…' : 'Matricularme' }}
+                </button>
+              }
+            } @else {
+              <a routerLink="/registro" class="detail-buy-btn">Registrarse e inscribirse</a>
+              <a routerLink="/login" class="detail-buy-btn detail-buy-btn--ghost">Ya tengo cuenta</a>
+              @if (c.requierePagoParaCursar) {
+                <p class="detail-buy-hint">Cree su cuenta y matricúlese. El pago en el CEA habilita el acceso al curso.</p>
+              } @else {
+                <p class="detail-buy-hint">Cree su cuenta, matricúlese y comience el curso. El certificado puede exigir pago.</p>
+              }
+            }
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="detail-content">
+      <div class="container">
+        <nav class="detail-tabs">
+          <button type="button" [class.active]="tab() === 'descripcion'" (click)="tab.set('descripcion')">
+            Descripción general
+          </button>
+          <button type="button" [class.active]="tab() === 'plan'" (click)="tab.set('plan')">
+            Material y sesiones
+          </button>
+        </nav>
+
+        @if (tab() === 'descripcion') {
+          <article class="detail-panel">
+            <h2>Acerca de este curso</h2>
+            @if (c.descripcionVirtual) {
+              <div class="detail-rich">{{ c.descripcionVirtual }}</div>
+            } @else if (c.descripcion) {
+              <div class="detail-rich">{{ c.descripcion }}</div>
+            } @else {
+              <p class="detail-empty">Descripción pendiente de configurar en ARGO → Aula virtual.</p>
+            }
+          </article>
+        } @else {
+          <article class="detail-panel">
+            <h2>Sesiones en vivo</h2>
+            @if (c.sesionesMeet?.length) {
+              <ul class="detail-list">
+                @for (s of c.sesionesMeet; track s._id || s.titulo) {
+                  <li class="detail-list-item">
+                    <div>
+                      <strong>{{ s.titulo }}</strong>
+                      @if (s.fecha) {
+                        <span class="detail-list-meta">{{ s.fecha | date: 'medium' }}</span>
+                      }
+                    </div>
+                    <a [href]="s.url" target="_blank" rel="noopener" class="detail-link">Abrir Meet</a>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="detail-empty">Sin sesiones programadas por el momento.</p>
+            }
+
+            <h2>Material adicional</h2>
+            @if (c.materiales?.length) {
+              <ul class="detail-list">
+                @for (m of c.materiales; track m._id || m.titulo) {
+                  <li class="detail-list-item">
+                    <div>
+                      <strong>{{ m.titulo }}</strong>
+                      <span class="detail-list-meta">{{ m.tipo }}</span>
+                    </div>
+                    <a [href]="m.url" target="_blank" rel="noopener" class="detail-link">Descargar</a>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="detail-empty">Sin material adicional publicado.</p>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+@if (error()) {
+  <section class="detail-page detail-page--error">
+    <div class="container detail-error">
+      <p>{{ error() }}</p>
+      <a routerLink="/cursos" class="detail-back">← Volver al catálogo</a>
+    </div>
+  </section>
+}

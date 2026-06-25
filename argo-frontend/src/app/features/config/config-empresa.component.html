@@ -1,0 +1,293 @@
+<section class="emp-page card">
+  <header class="emp-head">
+    <div class="emp-head-main">
+      <h1>Empresa</h1>
+      <p>
+        Identidad institucional centralizada: nombre, NIT, logo, datos fiscales DIAN y nombre en certificados.
+        Cada sección guarda de forma independiente para no afectar las demás.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="emp-hint">Cargando configuración…</p>
+  } @else if (loadError()) {
+    <div class="emp-msg emp-msg--err" role="alert">No se pudo cargar la configuración. Recargue la página.</div>
+  } @else {
+    <div class="emp-form argo-form-shell">
+
+      <!-- 1. Identidad -->
+      <section class="emp-section emp-section--sky">
+        <header class="emp-section-head">
+          <span class="emp-section-badge">1</span>
+          <div>
+            <h2 class="emp-section-title">Identidad de la institución</h2>
+            <p class="emp-section-desc">
+              Nombre, NIT y datos de contacto. Aparecen en recibos de caja, nómina, comprobantes y documentos electrónicos.
+            </p>
+          </div>
+        </header>
+        <div class="emp-section-body emp-stack">
+          @if (msgIdentidad(); as texto) {
+            <div class="emp-msg" [class.emp-msg--err]="msgIdentidadErr()" role="status">{{ texto }}</div>
+          }
+          <div class="emp-grid emp-grid--empresa">
+            <label class="emp-field emp-field--grow">
+              <span class="emp-label">Nombre empresa / institución</span>
+              <input
+                type="text"
+                [ngModel]="recibo().nombreEmpresa"
+                (ngModelChange)="patchRecibo('nombreEmpresa', $event)"
+                placeholder="Centro de Enseñanza Automovilística…" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">NIT</span>
+              <input
+                type="text"
+                [ngModel]="recibo().nit"
+                (ngModelChange)="patchRecibo('nit', $event)"
+                placeholder="900.000.000-0" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Teléfono</span>
+              <input
+                type="text"
+                [ngModel]="recibo().telefono"
+                (ngModelChange)="patchRecibo('telefono', $event)"
+                placeholder="601 000 0000" />
+            </label>
+          </div>
+          <div class="emp-grid emp-grid--empresa2">
+            <label class="emp-field emp-field--grow">
+              <span class="emp-label">Dirección</span>
+              <input
+                type="text"
+                [ngModel]="recibo().direccion"
+                (ngModelChange)="patchRecibo('direccion', $event)"
+                placeholder="Calle 0 # 0 - 00" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Ciudad</span>
+              <input
+                type="text"
+                [ngModel]="recibo().ciudad"
+                (ngModelChange)="patchRecibo('ciudad', $event)"
+                placeholder="Bogotá D.C." />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Email</span>
+              <input
+                type="email"
+                [ngModel]="recibo().email"
+                (ngModelChange)="patchRecibo('email', $event)"
+                placeholder="info@empresa.com" />
+            </label>
+          </div>
+          <p class="emp-hint emp-hint--inline">
+            Si dirección o ciudad están vacíos, se usarán los datos de la sede correspondiente al generar documentos por sede
+            (Configuración → <a routerLink="/app/configuracion/sedes">Sedes</a>).
+          </p>
+          <div class="emp-actions-inline">
+            <button type="button" class="primary" (click)="guardarIdentidad()" [disabled]="savingIdentidad()">
+              {{ savingIdentidad() ? 'Guardando…' : 'Guardar identidad' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Logo -->
+      <section class="emp-section emp-section--violet">
+        <header class="emp-section-head">
+          <span class="emp-section-badge">2</span>
+          <div>
+            <h2 class="emp-section-title">Logo institucional</h2>
+            <p class="emp-section-desc">
+              Imagen que aparece en el portal del aula virtual y en documentos que incluyen logotipo.
+            </p>
+          </div>
+        </header>
+        <div class="emp-section-body emp-stack">
+          @if (msgLogo(); as texto) {
+            <div class="emp-msg" [class.emp-msg--err]="msgLogoErr()" role="status">{{ texto }}</div>
+          }
+          <div class="emp-logo-row">
+            @if (logoUrl()) {
+              <div class="emp-logo-preview">
+                <img [src]="logoUrl()" alt="Logo actual" />
+                <span class="emp-logo-chip">Logo actual</span>
+              </div>
+            } @else {
+              <div class="emp-logo-empty">
+                <span class="emp-logo-empty-icon">▣</span>
+                <span>Sin logo configurado</span>
+              </div>
+            }
+            <div class="emp-logo-btns">
+              <label class="emp-btn-file" [class.emp-btn-file--loading]="subiendoLogo()">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  (change)="onLogoChange($event)"
+                  [disabled]="subiendoLogo()"
+                  hidden />
+                {{ subiendoLogo() ? 'Subiendo…' : (logoUrl() ? 'Reemplazar logo' : 'Subir logo') }}
+              </label>
+              @if (logoUrl()) {
+                <button
+                  type="button"
+                  class="emp-btn-danger"
+                  (click)="quitarLogo()"
+                  [disabled]="subiendoLogo()">
+                  Quitar logo
+                </button>
+              }
+            </div>
+          </div>
+          <p class="emp-hint emp-hint--inline">
+            Formatos admitidos: PNG, JPEG, WebP o SVG. Tamaño recomendado: mínimo 400 × 200 px.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. Datos fiscales DIAN -->
+      <section class="emp-section emp-section--emerald">
+        <header class="emp-section-head">
+          <span class="emp-section-badge">3</span>
+          <div>
+            <h2 class="emp-section-title">Datos fiscales — emisor DIAN</h2>
+            <p class="emp-section-desc">
+              Razón social y datos del emisor para facturación electrónica.
+              La configuración técnica de Factus (credenciales, rangos, ambiente) está en
+              <a routerLink="/app/configuracion/facturacion">Facturación electrónica</a>.
+            </p>
+          </div>
+        </header>
+        <div class="emp-section-body emp-stack">
+          @if (msgFiscal(); as texto) {
+            <div class="emp-msg" [class.emp-msg--err]="msgFiscalErr()" role="status">{{ texto }}</div>
+          }
+          <div class="emp-grid emp-grid--fiscal">
+            <label class="emp-field emp-field--grow">
+              <span class="emp-label">Razón social</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorRazonSocial"
+                (ngModelChange)="patchFiscal('emisorRazonSocial', $event)"
+                placeholder="Nombre legal de la empresa" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">NIT emisor</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorNit"
+                (ngModelChange)="patchFiscal('emisorNit', $event)"
+                placeholder="900000000" />
+            </label>
+            <label class="emp-field emp-field--dv">
+              <span class="emp-label">DV</span>
+              <input
+                type="text"
+                maxlength="1"
+                [ngModel]="facturacion().emisorDv"
+                (ngModelChange)="patchFiscal('emisorDv', $event)"
+                placeholder="0" />
+            </label>
+          </div>
+          <div class="emp-grid emp-grid--2">
+            <label class="emp-field">
+              <span class="emp-label">Responsabilidad fiscal</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorResponsabilidadFiscal"
+                (ngModelChange)="patchFiscal('emisorResponsabilidadFiscal', $event)"
+                placeholder="R-99-PN" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Régimen</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorRegimen"
+                (ngModelChange)="patchFiscal('emisorRegimen', $event)"
+                placeholder="49" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Código municipio DIAN</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorMunicipioCodigo"
+                (ngModelChange)="patchFiscal('emisorMunicipioCodigo', $event)"
+                placeholder="11001" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Actividad económica (CIIU)</span>
+              <input
+                type="text"
+                [ngModel]="facturacion().emisorActividadEconomica"
+                (ngModelChange)="patchFiscal('emisorActividadEconomica', $event)"
+                placeholder="8559" />
+            </label>
+          </div>
+          <div class="emp-actions-inline">
+            <button type="button" class="primary" (click)="guardarFiscal()" [disabled]="savingFiscal()">
+              {{ savingFiscal() ? 'Guardando…' : 'Guardar datos fiscales' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Nombre en certificados -->
+      <section class="emp-section emp-section--rose">
+        <header class="emp-section-head">
+          <span class="emp-section-badge">4</span>
+          <div>
+            <h2 class="emp-section-title">Nombre en certificados</h2>
+            <p class="emp-section-desc">
+              Nombre institucional y ciudad referenciados en los certificados académicos.
+              Las plantillas PNG, firmas y layouts están en
+              <a routerLink="/app/configuracion/certificados">Config. Certificados</a>.
+            </p>
+          </div>
+        </header>
+        <div class="emp-section-body emp-stack">
+          @if (msgCert(); as texto) {
+            <div class="emp-msg" [class.emp-msg--err]="msgCertErr()" role="status">{{ texto }}</div>
+          }
+          <div class="emp-grid emp-grid--cert">
+            <label class="emp-field emp-field--grow">
+              <span class="emp-label">Nombre institución</span>
+              <input
+                type="text"
+                [ngModel]="certificado().nombreInstitucion"
+                (ngModelChange)="patchCert('nombreInstitucion', $event)"
+                placeholder="CEA…" />
+            </label>
+            <label class="emp-field">
+              <span class="emp-label">Ciudad en certificados</span>
+              <input
+                type="text"
+                [ngModel]="certificado().ciudad"
+                (ngModelChange)="patchCert('ciudad', $event)"
+                placeholder="Bogotá D.C." />
+            </label>
+          </div>
+          <div class="emp-actions-inline">
+            <button type="button" class="primary" (click)="guardarCert()" [disabled]="savingCert()">
+              {{ savingCert() ? 'Guardando…' : 'Guardar nombre certificados' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Enlace a comprobantes -->
+      <div class="emp-ref-card">
+        <span class="emp-ref-icon">▤</span>
+        <div class="emp-ref-body">
+          <strong>Comprobantes de caja</strong>
+          <p>Prefijos, consecutivos, formatos y textos de los comprobantes de ingreso y egreso.</p>
+        </div>
+        <a routerLink="/app/configuracion/recibos" class="emp-ref-link">Configurar comprobantes</a>
+      </div>
+
+    </div>
+  }
+</section>

@@ -1,0 +1,241 @@
+<section class="av-curso-page">
+  @if (loading()) {
+    <p class="av-curso-msg">Cargando curso…</p>
+  } @else if (error()) {
+    <p class="av-curso-msg av-curso-msg--err">{{ error() }}</p>
+    <button type="button" class="av-btn av-btn--ghost" (click)="volver()">← Volver a cursos</button>
+  } @else if (curso()) {
+    @let c = curso()!;
+    @if (config(); as cfg) {
+      @if (msg()) {
+        <p class="av-banner" [class.av-banner--err]="err()">{{ msg() }}</p>
+      }
+
+      <header class="av-curso-head card">
+        <div class="av-curso-head-left">
+          <button type="button" class="av-btn av-btn--ghost av-btn--back" (click)="volver()">← Cursos</button>
+          <div class="av-curso-meta">
+            <p class="av-curso-crumb">
+              <a routerLink="/app">Inicio</a> · <a routerLink="/app/aula-virtual">Aula virtual</a> · {{ c.idPrograma }}
+            </p>
+            <h1>{{ c.nombreProg }}</h1>
+            <div class="av-curso-badges">
+              @if (cfg.publicadoPortal) {
+                <span class="av-badge av-badge--ok">Publicado</span>
+              } @else {
+                <span class="av-badge av-badge--warn">Borrador</span>
+              }
+              @if (c.tienePaquete) {
+                <span class="av-badge av-badge--info">Paquete instalado</span>
+              }
+              <span class="av-badge">Tarifa ${{ c.tarifaVirtual | number: '1.0-0' }}</span>
+              @if (c.categoriaNombres?.length) {
+                <span class="av-badge">{{ c.categoriaNombres?.join(', ') }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="av-curso-head-actions">
+          <label class="av-check av-check--publish">
+            <input type="checkbox" [(ngModel)]="cfg.publicadoPortal" />
+            Publicar en portal
+          </label>
+          <button type="button" class="av-btn av-btn--ghost" (click)="editarPrograma()">Editar en Programas</button>
+          <button type="button" class="av-btn av-btn--primary" [disabled]="saving()" (click)="guardarCurso()">
+            {{ saving() ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </header>
+
+      <nav class="av-curso-tabs card" aria-label="Secciones del curso">
+        @for (t of tabs; track t.key) {
+          <button type="button" [class.active]="tab() === t.key" (click)="setTab(t.key)">{{ t.label }}</button>
+        }
+      </nav>
+
+      @if (tab() === 'portal') {
+        <section class="av-curso-panel card">
+          <header class="av-panel-intro">
+            <h2>Ficha en el portal</h2>
+            <p class="av-muted">Descripción, categorías, nivel y portada visibles en el catálogo.</p>
+          </header>
+
+          <div class="av-curso-grid av-curso-grid--2">
+            <div class="av-field av-field--wide">
+              <label>Descripción del curso</label>
+              <textarea
+                rows="8"
+                [(ngModel)]="ficha.descripcionVirtual"
+                placeholder="Modalidad, duración, objetivos, qué incluye el curso…"
+              ></textarea>
+            </div>
+
+            <div class="av-curso-side-fields">
+              <div class="av-field">
+                <label>Categorías</label>
+                <div class="av-cat-checks">
+                  @for (cat of categorias(); track cat.idCategoria) {
+                    @if (cat.activo !== false) {
+                      <label class="av-check av-check--inline">
+                        <input
+                          type="checkbox"
+                          [checked]="tieneCategoria(cat.idCategoria)"
+                          (change)="toggleCategoria(cat.idCategoria, $event)"
+                        />
+                        {{ cat.nombre }}
+                      </label>
+                    }
+                  } @empty {
+                    <span class="av-muted">Sin categorías.</span>
+                  }
+                </div>
+              </div>
+
+              <div class="av-grid2 av-grid2--tight">
+                <div class="av-field">
+                  <label>Nivel</label>
+                  <select [(ngModel)]="cfg.nivel">
+                    <option [ngValue]="null">— Sin nivel —</option>
+                    @for (n of niveles; track n) {
+                      <option [ngValue]="n">{{ labelNivel(n) }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="av-field">
+                  <label>Horas</label>
+                  <input type="number" min="0" step="1" [(ngModel)]="ficha.horas" placeholder="Ej. 8" />
+                </div>
+              </div>
+
+              <div class="av-field">
+                <label>Autor (empresa)</label>
+                <input type="text" [value]="autorPreview()" readonly class="av-readonly" />
+              </div>
+            </div>
+          </div>
+
+          <div class="av-portada-block">
+            <label>Imagen de portada</label>
+            @if (ficha.urlPortadaAbsoluta; as src) {
+              <figure class="av-portada-preview">
+                <img [src]="src" alt="Portada del curso" />
+              </figure>
+              <button type="button" class="av-btn av-btn--ghost" [disabled]="saving()" (click)="quitarPortada()">
+                Quitar portada
+              </button>
+            }
+            <input type="file" accept="image/*" class="av-file" (change)="onPortada($event)" />
+          </div>
+        </section>
+      }
+
+      @if (tab() === 'reglas') {
+        <section class="av-curso-panel card">
+          <header class="av-panel-intro">
+            <h2>Reglas y acceso</h2>
+            <p class="av-muted">Certificado, pago para cursar y umbrales de evaluación.</p>
+          </header>
+
+          <div class="av-curso-grid av-curso-grid--2">
+            <div class="av-field">
+              <label>Certificado</label>
+              <select [(ngModel)]="cfg.modoCertificado">
+                <option value="al_pagar">Al pagar (cursos cortos)</option>
+                <option value="al_aprobar">Al aprobar evaluación</option>
+              </select>
+            </div>
+            <div class="av-field">
+              <label>Acceso al curso</label>
+              <select [(ngModel)]="cfg.requierePagoParaCursar">
+                <option [ngValue]="false">Cursar sin pagar</option>
+                <option [ngValue]="true">Requiere pago para cursar</option>
+              </select>
+            </div>
+            <div class="av-field av-field--wide">
+              <label>Archivo de entrada (ZIP)</label>
+              <input type="text" [(ngModel)]="cfg.indexHtml" placeholder="index.html" />
+            </div>
+          </div>
+
+          @if (cfg.modoCertificado === 'al_aprobar') {
+            <div class="av-grid3 av-grid3--tight">
+              <div class="av-field">
+                <label>% mín. completitud</label>
+                <input type="number" min="0" max="100" [(ngModel)]="cfg.pctMinCompletitud" />
+              </div>
+              <div class="av-field">
+                <label>% mín. evaluaciones</label>
+                <input type="number" min="0" max="100" [(ngModel)]="cfg.pctMinEvaluaciones" />
+              </div>
+              <div class="av-field">
+                <label>Intentos máx.</label>
+                <input type="number" min="1" [(ngModel)]="cfg.intentosMaxEval" />
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      @if (tab() === 'contenido') {
+        <div class="av-curso-grid av-curso-grid--3">
+          <section class="av-curso-panel card">
+            <header class="av-panel-intro">
+              <h2>Paquete ZIP</h2>
+              @if (c.tienePaquete) {
+                <span class="av-badge av-badge--ok">Instalado</span>
+              }
+            </header>
+            <p class="av-muted">
+              Curso HTML (máx. 200 MB). ARGO inyecta <code>argo-bridge.js</code> y sincroniza progreso.
+            </p>
+            <input type="file" accept=".zip,application/zip" class="av-file" (change)="onZip($event)" />
+            @if (c.tienePaquete) {
+              <button type="button" class="av-btn av-btn--ghost" [disabled]="saving()" (click)="reintegrarBridge()">
+                Reintegrar ARGO
+              </button>
+            }
+          </section>
+
+          <section class="av-curso-panel card">
+            <header class="av-panel-intro"><h2>Sesiones Meet</h2></header>
+            <ul class="av-items">
+              @for (s of cfg.sesionesMeet; track $index) {
+                <li>
+                  {{ s.titulo }} —
+                  <a [href]="s.url" target="_blank" rel="noopener">{{ s.url }}</a>
+                  <button type="button" class="av-link av-link--danger" (click)="quitarSesion($index)">Quitar</button>
+                </li>
+              }
+            </ul>
+            <div class="av-grid2 av-grid2--tight">
+              <input type="text" placeholder="Título" [(ngModel)]="nuevaSesion.titulo" />
+              <input type="url" placeholder="URL Meet" [(ngModel)]="nuevaSesion.url" />
+            </div>
+            <button type="button" class="av-btn av-btn--secondary av-btn--inline" (click)="agregarSesion()">
+              Agregar sesión
+            </button>
+          </section>
+
+          <section class="av-curso-panel card">
+            <header class="av-panel-intro"><h2>Material adicional</h2></header>
+            <ul class="av-items">
+              @for (m of cfg.materiales; track m._id || m.titulo) {
+                <li>
+                  {{ m.titulo }}
+                  <button type="button" class="av-link av-link--danger" (click)="quitarMaterial(m._id!)">Quitar</button>
+                </li>
+              }
+            </ul>
+            <input type="file" class="av-file" (change)="onMaterial($event)" />
+          </section>
+        </div>
+      }
+
+      @if (tab() === 'alumnos') {
+        <section class="av-curso-panel card">
+          <argo-aula-virtual-progreso-alumnos [idPrograma]="c.idPrograma" />
+        </section>
+      }
+    }
+  }
+</section>

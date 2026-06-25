@@ -1,0 +1,39 @@
+<div
+  class="ppm"
+  [class.ppm--compact]="compact"
+  [class.ppm--selected]="selected"
+  [style.--ppm-bg]="tema.colorFondo"
+  [style.--ppm-surface]="tema.colorSuperficie"
+  [style.--ppm-primary]="tema.colorPrimario"
+  [style.--ppm-primary-dark]="tema.colorPrimarioOscuro"
+  [style.--ppm-accent]="tema.colorAcento"
+  [style.--ppm-text]="tema.colorTexto"
+  [style.--ppm-dim]="tema.colorTextoSecundario"
+  [style.fontFamily]="tema.fuente + ', system-ui, sans-serif'">
+  <div class="ppm-chrome">
+    <span class="ppm-dots"><i></i><i></i><i></i></span>
+    <span class="ppm-url">su-instituto.edu.co</span>
+  </div>
+  <header class="ppm-nav">
+    <span class="ppm-logo"></span>
+    <span class="ppm-nav-links">
+      <i></i><i></i><i></i>
+    </span>
+    <span class="ppm-nav-cta">Acceder</span>
+  </header>
+  <section class="ppm-hero">
+    <div class="ppm-hero__copy">
+      <h3>{{ heroTitulo }}</h3>
+      <p>{{ heroSubtitulo }}</p>
+      <div class="ppm-hero__actions">
+        <span class="ppm-btn ppm-btn--primary">Ver cursos</span>
+        <span class="ppm-btn ppm-btn--ghost">Contacto</span>
+      </div>
+    </div>
+    <div class="ppm-hero__art" aria-hidden="true"></div>
+  </section>
+  <div class="ppm-cards">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="ppm-band"></div>
+</div>

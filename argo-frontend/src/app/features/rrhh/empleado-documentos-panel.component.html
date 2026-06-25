@@ -1,0 +1,136 @@
+<section class="emp-docs-panel">
+  @if (err(); as texto) {
+    <div class="rrhh-msg rrhh-msg--err" role="alert">{{ texto }}</div>
+  }
+
+  <section class="req-section">
+    <header class="req-head">
+      <div>
+        <h3>Requisitos según cargo</h3>
+        <p>Documentos obligatorios para el cargo del empleado. Pulse «Registrar» para cargar el escaneo.</p>
+      </div>
+      <button type="button" class="ghost mini" (click)="cargarRequisitos()" [disabled]="loadingReq()">
+        {{ loadingReq() ? 'Actualizando…' : 'Actualizar' }}
+      </button>
+    </header>
+
+    <div class="loading-req" *ngIf="loadingReq()">Cargando requisitos…</div>
+
+    <div class="empty-state card inner" *ngIf="!loadingReq() && sinCargoDoc()">
+      <p>Asigne un <strong>cargo</strong> al empleado para ver los documentos requeridos.</p>
+    </div>
+
+    <div class="empty-state card inner" *ngIf="!loadingReq() && !sinCargoDoc() && docsRequeridos().length === 0">
+      <p>No hay requisitos para «{{ cargoDoc()?.label }}». Revise <strong>Configuración → Requisitos empleados</strong>.</p>
+    </div>
+
+    <div class="cap-resumen card inner" *ngIf="!loadingReq() && cargoDoc() as c">
+      <p><strong>Cargo:</strong> {{ c.label }}</p>
+    </div>
+
+    <div class="doc-grid-req" *ngIf="!loadingReq() && docsRequeridos().length">
+      <article
+        class="doc-card-req"
+        *ngFor="let doc of docsRequeridos()"
+        [ngClass]="[doc.vencido ? 'doc-vencido' : '', doc.vencePronto ? 'doc-pronto' : '']">
+        <header class="doc-card-head">
+          <div>
+            <h4>{{ doc.nombre }}</h4>
+            <p *ngIf="doc.descripcion">{{ doc.descripcion }}</p>
+          </div>
+          <span class="badge slate" *ngIf="!doc.controlaVencimiento">Sin vencimiento</span>
+          <span class="badge ok" *ngIf="doc.subido && !doc.vencido && !doc.vencePronto && !doc.faltaFechaVence">Registrado</span>
+          <span class="badge warn" *ngIf="!doc.subido">Pendiente</span>
+          <span class="badge err" *ngIf="doc.vencido">Vencido</span>
+          <span class="badge warn" *ngIf="doc.subido && doc.faltaFechaVence && !doc.vencido && doc.controlaVencimiento">Falta vencimiento</span>
+          <span class="badge warn" *ngIf="doc.subido && doc.vencePronto && !doc.vencido && !doc.faltaFechaVence">Por vencer</span>
+        </header>
+        <div class="doc-meta" *ngIf="doc.subido">
+          <span *ngIf="doc.numero">Nº {{ doc.numero }}</span>
+          <span *ngIf="doc.fechaExp">Exp. {{ doc.fechaExp | date:'dd/MM/yyyy' }}</span>
+          <span *ngIf="doc.fechaVence">Vence {{ doc.fechaVence | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="doc-meta" *ngIf="!doc.subido && doc.controlaVencimiento">
+          <span>Requiere expedición y vencimiento al registrar</span>
+        </div>
+        <div class="doc-meta" *ngIf="!doc.subido && !doc.controlaVencimiento">
+          <span>No requiere fecha de vencimiento</span>
+        </div>
+        <div class="doc-actions-req">
+          <button type="button" class="primary mini" (click)="registrarRequisito(doc)">
+            {{ doc.subido ? 'Editar registro' : 'Registrar' }}
+          </button>
+          <button type="button" class="ghost mini" (click)="abrirArchivo(doc)" [disabled]="!doc.urlArchivo">Ver archivo</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="docs-layout">
+    <div class="docs-list">
+      <div class="docs-head">
+        <h3>Registros cargados</h3>
+        <button type="button" class="ghost mini" (click)="abrirDocNuevo()">+ Agregar</button>
+      </div>
+      <table *ngIf="documentos().length; else sinDocs">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Número</th>
+            <th>Expedición</th>
+            <th>Vence</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of documentos()" [class.selected]="docEdit()?._id === d._id" [ngClass]="docEstadoClass(d)">
+            <td>{{ d.documento }}</td>
+            <td>{{ d.numero || '—' }}</td>
+            <td>{{ d.fechaExp ? (d.fechaExp | date:'dd/MM/yyyy') : '—' }}</td>
+            <td>{{ d.fechaVence ? (d.fechaVence | date:'dd/MM/yyyy') : '—' }}</td>
+            <td class="actions">
+              <button type="button" class="ghost sm" (click)="editarDoc(d)">Editar</button>
+              <button type="button" class="ghost sm danger" (click)="eliminarDoc(d)">×</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #sinDocs>
+        <p class="empty-docs">Sin documentos registrados.</p>
+      </ng-template>
+    </div>
+
+    <div class="doc-form card inner argo-form-shell">
+      <h4>{{ docEdit() ? 'Editar documento' : 'Nuevo documento' }}</h4>
+      <label>Tipo de documento</label>
+      <select [ngModel]="docForm().idDocumento" (ngModelChange)="onTipoDocChange($event)">
+        <option value="">— Seleccione —</option>
+        <option *ngFor="let t of tiposDocConfig()" [value]="t.id">{{ t.nombre }}</option>
+      </select>
+      <label>Descripción</label>
+      <input type="text" [ngModel]="docForm().documento" (ngModelChange)="patchDoc('documento', $event)" />
+      <label>Número</label>
+      <input type="text" [ngModel]="docForm().numero" (ngModelChange)="patchDoc('numero', $event)" />
+        <div class="row" *ngIf="docControlaVencimiento()">
+          <div class="col-6">
+            <argo-date-input label="Expedición *" [ngModel]="docForm().fechaExp" (ngModelChange)="patchDoc('fechaExp', $event)" ></argo-date-input>
+          </div>
+          <div class="col-6">
+            <argo-date-input label="Vencimiento *" [ngModel]="docForm().fechaVence" (ngModelChange)="patchDoc('fechaVence', $event)" ></argo-date-input>
+          </div>
+        </div>
+        <p class="hint" *ngIf="!docControlaVencimiento()">
+          Este tipo de documento no controla vencimiento. Solo registre número y archivo si aplica.
+        </p>
+        <p class="hint" *ngIf="docControlaVencimiento()">
+          La alerta aparece {{ docReqActivo()?.diasAvisoVencimiento || diasAvisoGlobal() }} días antes del vencimiento.
+        </p>
+      <label>Archivo escaneado</label>
+      <input type="file" accept="image/*,.pdf" (change)="onDocArchivo($event)" />
+      <a *ngIf="docForm().urlArchivo as u" [href]="archivoUrl(u)" target="_blank" rel="noopener">Ver archivo actual</a>
+      <button type="button" class="primary" [disabled]="docSaving()" (click)="guardarDocumento()">
+        {{ docSaving() ? 'Guardando…' : 'Guardar documento' }}
+      </button>
+    </div>
+  </div>
+</section>

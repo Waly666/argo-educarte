@@ -1,0 +1,90 @@
+<section class="jornadas-proceso-page card admin-list-page">
+  <header class="jor-head page-head">
+    <div class="jor-head-main title">
+      <p class="breadcrumb"><a routerLink="/app/jornadas">Jornadas</a> / En proceso</p>
+      <h1>Jornadas en proceso</h1>
+      <p class="hint">
+        Jornadas con estado <strong>EN PROCESO</strong> hoy, de <strong>todos los contratos</strong>.
+        Puede haber varias carpas activas al mismo tiempo.
+      </p>
+    </div>
+    <div class="jor-badges head-actions">
+      <span class="jor-chip jor-chip--emerald" *ngIf="total() > 0">{{ total() }} activa(s)</span>
+      <a routerLink="/app/jornadas" class="ghost sm link-btn">Volver al hub</a>
+    </div>
+  </header>
+
+  @if (msg(); as t) {
+    <p class="jor-banner jor-banner--error" role="alert">
+      <span>{{ t }}</span>
+      <button type="button" class="jor-banner-close" (click)="cerrarMsg()" aria-label="Cerrar">×</button>
+    </p>
+  }
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar contrato, municipio, supervisor…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        autocomplete="off" />
+    </div>
+    <button type="button" class="ghost mini" (click)="cargar()">Actualizar</button>
+    <span class="count">{{ filtradas().length }} de {{ total() }} jornada(s)</span>
+  </div>
+
+  <div class="content-wrap">
+    <p class="loading" *ngIf="loading()">Cargando jornadas en proceso…</p>
+
+    <table class="argo data-table" *ngIf="!loading()">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Contrato</th>
+          <th>Municipio</th>
+          <th>Dirección</th>
+          <th>Supervisor</th>
+          <th>Carpa #</th>
+          <th>Meta alumnos</th>
+          <th>Estado</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let j of filtradas()" class="row-jornada-proceso">
+          <td><span [ngClass]="capFechaJor(j.fechaProgramacion)">{{ fmtFecha(j.fechaProgramacion) }}</span></td>
+          <td><span [ngClass]="capCodContrato(j.codContrato)">{{ j.codContrato || '—' }}</span></td>
+          <td><span [ngClass]="capMunicipioJor(j.municipio)">{{ j.municipio || '—' }}</span></td>
+          <td class="direccion-cell" [title]="j.direccion || ''">{{ j.direccion || '—' }}</td>
+          <td>{{ j.supervisor || '—' }}</td>
+          <td><span [ngClass]="capMetaNum(j.indiceEnDia)">#{{ j.indiceEnDia || 1 }}</span></td>
+          <td><span [ngClass]="capMetaNum(j.numeObjeJornada)">{{ j.numeObjeJornada ?? '—' }}</span></td>
+          <td>
+            <span [ngClass]="estadoJornadaLiveClass(j.estado)">{{ j.estado || 'EN PROCESO' }}</span>
+          </td>
+          <td class="col-actions">
+            <div class="actions-cell">
+              @if (puedeGestionar()) {
+                <button type="button" class="mini btn-gestionar" (click)="gestionarJornada(j)">Gestionar</button>
+              }
+              @if (puedeOperar()) {
+                <button type="button" class="mini btn-clases" (click)="irClases(j)">Clases</button>
+              }
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filtradas().length === 0">
+          <td colspan="9" class="empty">
+            @if (total() === 0) {
+              <p>No hay jornadas <strong>EN PROCESO</strong> en este momento.</p>
+            } @else {
+              <p>No hay resultados para la búsqueda.</p>
+            }
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

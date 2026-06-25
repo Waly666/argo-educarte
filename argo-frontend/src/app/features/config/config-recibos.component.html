@@ -1,0 +1,365 @@
+<section class="rec-page card">
+  <header class="rec-head">
+    <div class="rec-head-main">
+      <h1>Comprobantes de caja</h1>
+      <p>
+        Numeración y formato de comprobantes de ingreso/egreso (global para todas las sedes).
+        Mensajes, eslogan y registro de alumnos.
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="rec-head-badges">
+        <span class="rec-chip rec-chip--ing">
+          Ingreso · {{ formatoLabel(form().formatoComprobanteIngreso) }}
+        </span>
+        <span class="rec-chip rec-chip--egr">
+          Egreso · {{ formatoLabel(form().formatoComprobanteEgreso) }}
+        </span>
+        <span class="rec-chip" [class.rec-chip--on]="form().mostrarQr" [class.rec-chip--off]="!form().mostrarQr">
+          QR {{ form().mostrarQr ? 'ON' : 'OFF' }}
+        </span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="rec-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="rec-msg" [class.rec-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="rec-form argo-form-shell">
+      <!-- Enlace a Empresa -->
+      <div class="rec-empresa-ref">
+        <span class="rec-empresa-ref-icon">▤</span>
+        <div class="rec-empresa-ref-body">
+          <strong>Datos de la empresa</strong>
+          <p>Nombre, NIT, logo, datos fiscales DIAN y nombre en certificados se configuran en <a routerLink="/app/configuracion/empresa">Empresa</a>.</p>
+        </div>
+        <a routerLink="/app/configuracion/empresa" class="rec-empresa-ref-link">Ir a Empresa</a>
+      </div>
+
+      <!-- 1. Numeración de facturas -->
+      <section class="rec-section rec-section--violet">
+        <header class="rec-section-head">
+          <span class="rec-section-badge">1</span>
+          <div>
+            <h2 class="rec-section-title">Numeración de facturas</h2>
+            <p class="rec-section-desc">Prefijo y consecutivo para facturas (no aplica a comprobantes de caja).</p>
+          </div>
+        </header>
+        <div class="rec-section-body">
+          <div class="rec-grid rec-grid--num">
+            <label class="rec-field">
+              <span class="rec-label">Prefijo factura</span>
+              <input type="text" [ngModel]="form().prefijoFactura" (ngModelChange)="patch('prefijoFactura', $event)" placeholder="FV" />
+            </label>
+            <label class="rec-field">
+              <span class="rec-label">Consecutivo factura</span>
+              <input type="number" min="0" [ngModel]="form().consecutivoFactura" (ngModelChange)="patch('consecutivoFactura', +$event)" />
+            </label>
+            <div class="rec-preview">
+              <span class="rec-preview-label">Próximo</span>
+              <span class="rec-preview-value">{{ previewNum(form().prefijoFactura, form().consecutivoFactura) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Comprobantes -->
+      <section class="rec-section rec-section--amber">
+        <header class="rec-section-head">
+          <span class="rec-section-badge">2</span>
+          <div>
+            <h2 class="rec-section-title">Comprobantes de ingreso y egreso</h2>
+            <p class="rec-section-desc">
+              Prefijo, 2.º prefijo opcional (por defecto el año, editable) y consecutivo.
+              Al imprimir solo se muestra el nombre y dirección de la sede del movimiento.
+            </p>
+          </div>
+        </header>
+        <div class="rec-section-body rec-stack">
+          <div class="num-card-pair">
+            <article class="num-card num-card--ing">
+              <h3 class="num-card-title num-card-title--ing">Ingreso</h3>
+              <div class="num-codigo-form">
+                <div class="num-codigo-grid">
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">Prefijo</span>
+                      <argo-switch
+                        [checked]="form().usarPrefijoComprobanteIngreso !== false"
+                        (checkedChange)="patch('usarPrefijoComprobanteIngreso', $event)"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      [ngModel]="form().prefijoComprobanteIngreso"
+                      (ngModelChange)="patch('prefijoComprobanteIngreso', $event)"
+                      [disabled]="form().usarPrefijoComprobanteIngreso === false"
+                      placeholder="CI"
+                    />
+                  </div>
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">2.º prefijo</span>
+                      <argo-switch
+                        [checked]="!!form().usarSegundoPrefijoComprobanteIngreso"
+                        (checkedChange)="patch('usarSegundoPrefijoComprobanteIngreso', $event)"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      [ngModel]="form().segundoPrefijoComprobanteIngreso"
+                      (ngModelChange)="patch('segundoPrefijoComprobanteIngreso', $event)"
+                      [disabled]="!form().usarSegundoPrefijoComprobanteIngreso"
+                      [placeholder]="anioActual"
+                    />
+                  </div>
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">Consecutivo</span>
+                      <span class="num-codigo-head-spacer" aria-hidden="true"></span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      [ngModel]="form().consecutivoComprobanteIngreso"
+                      (ngModelChange)="patch('consecutivoComprobanteIngreso', +$event)"
+                    />
+                  </div>
+                </div>
+                <p class="num-codigo-note">Use el switch para incluir u omitir cada segmento. El 2.º prefijo suele ser el año.</p>
+                <div class="num-codigo-preview">
+                  <span class="num-codigo-preview-k">Vista previa</span>
+                  <code class="num-codigo-preview-v">{{ previewComprobante('ingreso') }}</code>
+                </div>
+              </div>
+            </article>
+
+            <article class="num-card num-card--egr">
+              <h3 class="num-card-title num-card-title--egr">Egreso</h3>
+              <div class="num-codigo-form">
+                <div class="num-codigo-grid">
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">Prefijo</span>
+                      <argo-switch
+                        [checked]="form().usarPrefijoComprobanteEgreso !== false"
+                        (checkedChange)="patch('usarPrefijoComprobanteEgreso', $event)"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      [ngModel]="form().prefijoComprobanteEgreso"
+                      (ngModelChange)="patch('prefijoComprobanteEgreso', $event)"
+                      [disabled]="form().usarPrefijoComprobanteEgreso === false"
+                      placeholder="CE"
+                    />
+                  </div>
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">2.º prefijo</span>
+                      <argo-switch
+                        [checked]="!!form().usarSegundoPrefijoComprobanteEgreso"
+                        (checkedChange)="patch('usarSegundoPrefijoComprobanteEgreso', $event)"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      [ngModel]="form().segundoPrefijoComprobanteEgreso"
+                      (ngModelChange)="patch('segundoPrefijoComprobanteEgreso', $event)"
+                      [disabled]="!form().usarSegundoPrefijoComprobanteEgreso"
+                      [placeholder]="anioActual"
+                    />
+                  </div>
+                  <div class="num-codigo-cell">
+                    <div class="num-codigo-head">
+                      <span class="num-codigo-label">Consecutivo</span>
+                      <span class="num-codigo-head-spacer" aria-hidden="true"></span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      [ngModel]="form().consecutivoComprobanteEgreso"
+                      (ngModelChange)="patch('consecutivoComprobanteEgreso', +$event)"
+                    />
+                  </div>
+                </div>
+                <p class="num-codigo-note">Use el switch para incluir u omitir cada segmento. El 2.º prefijo suele ser el año.</p>
+                <div class="num-codigo-preview">
+                  <span class="num-codigo-preview-k">Vista previa</span>
+                  <code class="num-codigo-preview-v">{{ previewComprobante('egreso') }}</code>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Formato -->
+      <section class="rec-section rec-section--teal">
+        <header class="rec-section-head">
+          <span class="rec-section-badge">3</span>
+          <div>
+            <h2 class="rec-section-title">Formato e impresión</h2>
+            <p class="rec-section-desc">
+              Formato predeterminado al imprimir (sin elegir en el momento). Ingreso y egreso pueden diferir.
+            </p>
+          </div>
+        </header>
+        <div class="rec-section-body rec-stack">
+          <div class="rec-grid rec-grid--format">
+            <label class="rec-field">
+              <span class="rec-label">Formato comprobante de ingreso</span>
+              <select
+                [ngModel]="form().formatoComprobanteIngreso || 'validadora'"
+                (ngModelChange)="patch('formatoComprobanteIngreso', $event)">
+                @for (o of formatosComprobante; track o.id) {
+                  <option [value]="o.id">{{ o.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="rec-field">
+              <span class="rec-label">Formato comprobante de egreso</span>
+              <select
+                [ngModel]="form().formatoComprobanteEgreso || 'validadora'"
+                (ngModelChange)="patch('formatoComprobanteEgreso', $event)">
+                @for (o of formatosComprobante; track o.id) {
+                  <option [value]="o.id">{{ o.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="rec-toggle">
+              <input type="checkbox" [ngModel]="form().mostrarQr" (ngModelChange)="patch('mostrarQr', $event)" />
+              <span class="rec-toggle-box">
+                <span class="rec-toggle-title">Mostrar código QR</span>
+                <span class="rec-toggle-desc">Incluye QR en el comprobante impreso.</span>
+              </span>
+            </label>
+          </div>
+
+          @if (usaValidadora('ingreso') || usaValidadora('egreso')) {
+            <label class="rec-field rec-field--ancho">
+              <span class="rec-label">Ancho validadora (mm)</span>
+              <input type="number" min="58" max="120" [ngModel]="form().anchoReciboMm" (ngModelChange)="patch('anchoReciboMm', +$event)" />
+              <span class="rec-field-hint">Solo aplica cuando el comprobante usa formato validadora térmica.</span>
+            </label>
+          }
+
+          <div class="rec-grid rec-grid--2">
+            <label class="rec-field">
+              <span class="rec-label">Título comprobante de ingreso</span>
+              <input type="text" [ngModel]="form().mensajeEncabezado" (ngModelChange)="patch('mensajeEncabezado', $event)" placeholder="COMPROBANTE DE INGRESO" />
+            </label>
+            <label class="rec-field">
+              <span class="rec-label">Título comprobante de egreso</span>
+              <input type="text" [ngModel]="form().mensajeEncabezadoEgreso" (ngModelChange)="patch('mensajeEncabezadoEgreso', $event)" placeholder="COMPROBANTE DE EGRESO" />
+            </label>
+          </div>
+
+          <label class="rec-field">
+            <span class="rec-label">Eslogan</span>
+            <input type="text" [ngModel]="form().slogan1" (ngModelChange)="patch('slogan1', $event)" placeholder="Texto bajo el título" />
+          </label>
+
+          <div class="rec-grid rec-grid--2">
+            <label class="rec-field">
+              <span class="rec-label">Mensaje al pie (ingreso)</span>
+              <textarea rows="2" [ngModel]="form().mensajePie" (ngModelChange)="patch('mensajePie', $event)"></textarea>
+            </label>
+            <label class="rec-field">
+              <span class="rec-label">Mensaje al pie (egreso)</span>
+              <textarea rows="2" [ngModel]="form().mensajePieEgreso" (ngModelChange)="patch('mensajePieEgreso', $event)"></textarea>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Matrícula -->
+      <section class="rec-section rec-section--sky">
+        <header class="rec-section-head">
+          <span class="rec-section-badge">4</span>
+          <div>
+            <h2 class="rec-section-title">Matrícula en caja</h2>
+            <p class="rec-section-desc">
+              Controla si el cajero puede rebajar el valor de matrícula al crear una matrícula en la ficha del alumno.
+            </p>
+          </div>
+        </header>
+        <div class="rec-section-body">
+          <div class="rec-toggle">
+            <argo-switch
+              [checked]="form().permitirAjusteValorMatricula !== false"
+              (checkedChange)="patch('permitirAjusteValorMatricula', $event)"
+            />
+            <span class="rec-toggle-box">
+              <span class="rec-toggle-title">Permitir rebaja de valor en matrícula</span>
+              <span class="rec-toggle-desc">
+                Muestra el switch «Ajustar valor (solo rebaja)» en Alumnos → Servicios → Crear matrícula.
+                Si está desactivado, el valor siempre será el del catálogo.
+              </span>
+            </span>
+          </div>
+          <div class="rec-toggle rec-toggle--spaced">
+            <argo-switch
+              [checked]="form().permitirAjusteCuotasSemestre === true"
+              (checkedChange)="patch('permitirAjusteCuotasSemestre', $event)"
+            />
+            <span class="rec-toggle-box">
+              <span class="rec-toggle-title">Permitir ajuste de cuotas por semestre</span>
+              <span class="rec-toggle-desc">
+                Presencial y mixta únicamente (no virtual). Permite definir el valor de cada semestre al matricular
+                y editarlo después. El total de matrícula se recalcula automáticamente.
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Alumnos -->
+      <section class="rec-section rec-section--rose">
+        <header class="rec-section-head">
+          <span class="rec-section-badge">5</span>
+          <div>
+            <h2 class="rec-section-title">Registro de alumnos</h2>
+            <p class="rec-section-desc">
+              Cuadro de confirmación al crear un alumno. Variables:
+              <code class="rec-var">&#123;nombre&#125;</code>
+              <code class="rec-var">&#123;numDoc&#125;</code>
+              <code class="rec-var">&#123;empresa&#125;</code>
+              <code class="rec-var">&#123;slogan&#125;</code>
+              <code class="rec-var">&#123;ciudad&#125;</code>
+              <code class="rec-var">&#123;telefono&#125;</code>
+            </p>
+          </div>
+        </header>
+        <div class="rec-section-body rec-stack">
+          <label class="rec-field">
+            <span class="rec-label">Título del mensaje</span>
+            <input
+              type="text"
+              [ngModel]="form().mensajeCreacionAlumnoTitulo"
+              (ngModelChange)="patch('mensajeCreacionAlumnoTitulo', $event)"
+              placeholder="¡Alumno registrado!" />
+          </label>
+          <label class="rec-field">
+            <span class="rec-label">Mensaje de confirmación</span>
+            <textarea
+              rows="4"
+              [ngModel]="form().mensajeCreacionAlumno"
+              (ngModelChange)="patch('mensajeCreacionAlumno', $event)"
+              placeholder="Se registró correctamente al alumno…"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <footer class="rec-actions">
+        <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+        </button>
+      </footer>
+    </div>
+  }
+</section>

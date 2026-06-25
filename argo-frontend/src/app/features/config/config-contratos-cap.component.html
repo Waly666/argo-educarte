@@ -1,0 +1,194 @@
+<section class="capcfg-page card">
+  <header class="capcfg-head">
+    <div class="capcfg-head-main">
+      <h1>Contratos de capacitación — Perfil fiscal</h1>
+      <p>
+        Defina IVA, descuentos y retenciones de respaldo para cada tipo de contratante. El tipo se asigna en
+        <strong>Clientes de facturación</strong> y se hereda al facturar contratos de jornada (una factura por contrato).
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="capcfg-head-badges">
+        <span class="capcfg-chip capcfg-chip--sky">{{ reglas().length }} perfiles</span>
+        <span class="capcfg-chip capcfg-chip--violet">1 factura / contrato</span>
+      </div>
+    }
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="capcfg-msg" [class.capcfg-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  @if (loading()) {
+    <div class="capcfg-loading">
+      <span class="capcfg-loading-dot"></span>
+      <span>Cargando perfiles fiscales…</span>
+    </div>
+  } @else {
+    <aside class="capcfg-callout">
+      <span class="capcfg-callout-icon" aria-hidden="true">ℹ</span>
+      <div>
+        <strong>Retenciones del cliente vs. perfil</strong>
+        <p>
+          ReteIVA y ReteFuente informativas se calculan con las banderas del cliente (gran contribuyente, autorretenedor,
+          agente retenedor IVA). Los % de esta pantalla actúan como respaldo cuando el cliente no tiene valor propio.
+        </p>
+      </div>
+    </aside>
+
+    <div class="capcfg-grid">
+      @for (r of reglas(); track r.tipo) {
+        <article [class]="'capcfg-card capcfg-card--' + tipoAccent(r.tipo)">
+          <header class="capcfg-card-head">
+            <span class="capcfg-card-icon" aria-hidden="true">{{ tipoIcono(r.tipo) }}</span>
+            <div class="capcfg-card-titles">
+              <h2>{{ tipoTitulo(r) }}</h2>
+              @if (tipoSubtitulo(r); as sub) {
+                <p class="capcfg-card-sub">{{ sub }}</p>
+              }
+            </div>
+            <span class="capcfg-card-pill">{{ labelCondicionIva(r.condicionIva) }}</span>
+          </header>
+
+          <div class="capcfg-card-body">
+            <section class="capcfg-group capcfg-group--iva">
+              <h3 class="capcfg-group-title">
+                <span class="capcfg-group-dot"></span>
+                IVA
+              </h3>
+              <div class="capcfg-fields capcfg-fields--2">
+                <label class="capcfg-field">
+                  <span class="capcfg-label">Condición</span>
+                  <select [ngModel]="r.condicionIva" (ngModelChange)="patchRegla(r.tipo, 'condicionIva', $event)">
+                    @for (c of condicionesIva(); track c.id) {
+                      <option [value]="c.id">{{ c.label }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="capcfg-field">
+                  <span class="capcfg-label">% IVA</span>
+                  <div class="capcfg-input-suffix">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      [disabled]="r.condicionIva !== 'gravado'"
+                      [ngModel]="r.porcentajeIva"
+                      (ngModelChange)="patchRegla(r.tipo, 'porcentajeIva', +$event)" />
+                    <span>%</span>
+                  </div>
+                </label>
+              </div>
+            </section>
+
+            <section class="capcfg-group capcfg-group--desc">
+              <h3 class="capcfg-group-title">
+                <span class="capcfg-group-dot"></span>
+                Descuento
+              </h3>
+              <div class="capcfg-fields capcfg-fields--1">
+                <label class="capcfg-field">
+                  <span class="capcfg-label">% Descuento en línea</span>
+                  <div class="capcfg-input-suffix">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      [ngModel]="r.descuentoPorcentaje"
+                      (ngModelChange)="patchRegla(r.tipo, 'descuentoPorcentaje', +$event)" />
+                    <span>%</span>
+                  </div>
+                </label>
+              </div>
+            </section>
+
+            <section class="capcfg-group capcfg-group--rete">
+              <h3 class="capcfg-group-title">
+                <span class="capcfg-group-dot"></span>
+                Retenciones (respaldo)
+              </h3>
+              <p class="capcfg-hint">Porcentajes por defecto si el cliente no los define en Catálogo → Clientes.</p>
+              <div class="capcfg-fields capcfg-fields--3">
+                <label class="capcfg-field">
+                  <span class="capcfg-label">% ReteIVA</span>
+                  <div class="capcfg-input-suffix">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      [ngModel]="r.reteIvaPorcentaje"
+                      (ngModelChange)="patchRegla(r.tipo, 'reteIvaPorcentaje', +$event)" />
+                    <span>%</span>
+                  </div>
+                </label>
+                <label class="capcfg-field">
+                  <span class="capcfg-label">% ReteFuente</span>
+                  <div class="capcfg-input-suffix">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      [ngModel]="r.reteFuentePorcentaje"
+                      (ngModelChange)="patchRegla(r.tipo, 'reteFuentePorcentaje', +$event)" />
+                    <span>%</span>
+                  </div>
+                </label>
+                <label class="capcfg-field">
+                  <span class="capcfg-label">% ReteICA</span>
+                  <div class="capcfg-input-suffix">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      [ngModel]="r.reteIcaPorcentaje"
+                      (ngModelChange)="patchRegla(r.tipo, 'reteIcaPorcentaje', +$event)" />
+                    <span>%</span>
+                  </div>
+                </label>
+              </div>
+            </section>
+
+            <section class="capcfg-group capcfg-group--misc">
+              <h3 class="capcfg-group-title">
+                <span class="capcfg-group-dot"></span>
+                Otros
+              </h3>
+              <div class="capcfg-fields capcfg-fields--2 capcfg-fields--misc">
+                <label class="capcfg-field">
+                  <span class="capcfg-label">Responsabilidad fiscal</span>
+                  <select
+                    [ngModel]="r.responsabilidadFiscal"
+                    (ngModelChange)="patchRegla(r.tipo, 'responsabilidadFiscal', $event)">
+                    @for (rf of responsabilidadesFiscales(); track rf.code) {
+                      <option [value]="rf.code">{{ rf.code }} — {{ rf.label }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="capcfg-field capcfg-field--grow">
+                  <span class="capcfg-label">Notas internas</span>
+                  <input
+                    type="text"
+                    placeholder="Observaciones para el equipo…"
+                    [ngModel]="r.notas"
+                    (ngModelChange)="patchRegla(r.tipo, 'notas', $event)" />
+                </label>
+              </div>
+            </section>
+          </div>
+        </article>
+      }
+    </div>
+
+    <footer class="capcfg-foot">
+      <p class="capcfg-foot-hint">Los cambios aplican a contratos que aún no se han facturado.</p>
+      <button type="button" class="primary capcfg-btn-save" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar perfiles fiscales' }}
+      </button>
+    </footer>
+  }
+</section>

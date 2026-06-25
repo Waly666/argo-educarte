@@ -1,0 +1,53 @@
+<section class="pqr-page">
+  <div class="pqr-page__hero">
+    <div class="container">
+      <p class="pqr-page__kicker">PQRSF</p>
+      <h1 class="pqr-page__title">Peticiones, Quejas, Reclamos,<br />Sugerencias y Felicitaciones</h1>
+      <p class="pqr-page__sub">
+        En {{ nombreCea() }} nos comprometemos a atender y dar respuesta oportuna a todas sus solicitudes.
+      </p>
+    </div>
+  </div>
+
+  <div class="container pqr-page__body">
+
+    <!-- Qué puedes radicar -->
+    <div class="pqr-tipos-grid">
+      <div class="pqr-tipo pqr-tipo--peticion">
+        <span class="pqr-tipo__icon">📄</span>
+        <h3>Petición</h3>
+        <p>Solicitud de información, documentos o actuaciones de la institución.</p>
+      </div>
+      <div class="pqr-tipo pqr-tipo--queja">
+        <span class="pqr-tipo__icon">⚠️</span>
+        <h3>Queja</h3>
+        <p>Manifestación de inconformidad con la prestación de un servicio.</p>
+      </div>
+      <div class="pqr-tipo pqr-tipo--reclamo">
+        <span class="pqr-tipo__icon">🔔</span>
+        <h3>Reclamo</h3>
+        <p>Exigencia de corrección de una situación irregular o incumplimiento.</p>
+      </div>
+      <div class="pqr-tipo pqr-tipo--sugerencia">
+        <span class="pqr-tipo__icon">💡</span>
+        <h3>Sugerencia</h3>
+        <p>Propuesta para mejorar nuestros procesos, servicios o atención.</p>
+      </div>
+      <div class="pqr-tipo pqr-tipo--felicitacion">
+        <span class="pqr-tipo__icon">⭐</span>
+        <h3>Felicitación</h3>
+        <p>Reconocimiento a la calidad en el servicio o desempeño.</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="pqr-page__form-wrap">
+      <av-pqr-form />
+    </div>
+
+    <!-- Volver -->
+    <div class="pqr-page__back">
+      <a routerLink="/" class="btn btn-outline">← Volver al inicio</a>
+    </div>
+  </div>
+</section>

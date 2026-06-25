@@ -1,0 +1,119 @@
+@if (asistente.visible()) {
+  <div class="argo-asistente" [class.expandido]="asistente.expandido()" aria-live="polite">
+    @if (asistente.expandido()) {
+      <div class="argo-asistente-panel" role="dialog" [attr.aria-label]="'Mia — ayuda ' + moduloLabel()">
+        <header class="argo-asistente-head">
+          <div class="argo-asistente-brand">
+            <span class="argo-asistente-head-avatar" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="miaSvg" />
+            </span>
+            <span class="argo-asistente-nombre">Mia</span>
+            <span class="argo-asistente-tag">{{ moduloLabel() }}</span>
+          </div>
+          <button type="button" class="argo-asistente-x" (click)="asistente.cerrarPanel()" title="Minimizar">×</button>
+        </header>
+
+        @if (asistente.contexto(); as ctx) {
+          <p class="argo-asistente-saludo">{{ ctx.saludo }}</p>
+
+          @if (asistente.tipActual(); as tip) {
+            <div class="argo-asistente-tip-meta">{{ indiceHumano() }} de {{ totalTips() }} temas</div>
+            <article class="argo-asistente-tip">
+              <h4>{{ tip.titulo }}</h4>
+              <p>{{ tip.cuerpo }}</p>
+            </article>
+
+            @if (totalTips() > 1) {
+              <div class="argo-asistente-nav">
+                <button type="button" class="nav-btn" (click)="asistente.anteriorTip()" title="Anterior">‹</button>
+                <span class="nav-pag">{{ indiceHumano() }} / {{ totalTips() }}</span>
+                <button type="button" class="nav-btn" (click)="asistente.siguienteTip()" title="Siguiente">›</button>
+              </div>
+            }
+          }
+        }
+
+        <footer class="argo-asistente-foot">
+          <button
+            type="button"
+            class="foot-btn"
+            [class.off]="!asistente.sonido()"
+            (click)="asistente.toggleSonido()"
+            [title]="asistente.sonido() ? 'Silenciar sonidos' : 'Activar sonidos'">
+            {{ asistente.sonido() ? '🔊 Sonido' : '🔇 Silenciado' }}
+          </button>
+          <button type="button" class="foot-btn danger" (click)="asistente.toggleActivo()" title="Ocultar asistente">
+            Ocultar
+          </button>
+        </footer>
+      </div>
+    }
+
+    <div class="argo-mia-ring-host">
+      @if (!asistente.expandido()) {
+        <span class="argo-mia-wave" aria-hidden="true"></span>
+        <span class="argo-mia-wave argo-mia-wave--2" aria-hidden="true"></span>
+      }
+      <button
+        type="button"
+        class="argo-asistente-avatar argo-mia-alarm-btn"
+        [class.alarm-blink]="!asistente.expandido()"
+        (click)="asistente.toggleExpandido()"
+        [attr.aria-expanded]="asistente.expandido()"
+        title="Mia — asistente de facturación">
+        <span class="mia-avatar-inner" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="miaSvg" />
+        </span>
+        <span class="avatar-badge" aria-hidden="true">?</span>
+      </button>
+    </div>
+  </div>
+}
+
+@if (!asistente.activo() && asistente.contexto()) {
+  <button
+    type="button"
+    class="argo-asistente-reactivar alarm-blink"
+    (click)="asistente.toggleActivo(); asistente.toggleExpandido()"
+    title="Mostrar asistente Mia">
+    <span class="argo-mia-reactivar-ring">
+      <span class="argo-mia-wave" aria-hidden="true"></span>
+      <span class="argo-mia-wave argo-mia-wave--2" aria-hidden="true"></span>
+      <span class="reactivar-avatar" aria-hidden="true">
+        <ng-container *ngTemplateOutlet="miaSvg" />
+      </span>
+    </span>
+    Mia
+  </button>
+}
+
+<ng-template #miaSvg>
+  <svg class="mia-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="32" cy="32" r="30" fill="#2563eb" />
+    <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" />
+
+    <rect x="17" y="13" width="30" height="26" rx="9" fill="#cbd5e1" />
+    <rect x="19" y="15" width="26" height="22" rx="7" fill="#60a5fa" />
+
+    <g class="mia-eyes">
+      <ellipse cx="26" cy="24" rx="4.2" ry="5" fill="#fff" />
+      <ellipse cx="38" cy="24" rx="4.2" ry="5" fill="#fff" />
+      <circle class="mia-pupil" cx="26.5" cy="25" r="2.1" fill="#0f172a" />
+      <circle class="mia-pupil" cx="38.5" cy="25" r="2.1" fill="#0f172a" />
+      <circle cx="27.3" cy="23.8" r="0.7" fill="#fff" opacity="0.9" />
+      <circle cx="39.3" cy="23.8" r="0.7" fill="#fff" opacity="0.9" />
+    </g>
+
+    <rect class="mia-lid mia-lid--left" x="21" y="18" width="10" height="12" rx="4" fill="#2563eb" />
+    <rect class="mia-lid mia-lid--right" x="33" y="18" width="10" height="12" rx="4" fill="#2563eb" />
+
+    <path d="M 24 31 Q 32 36 40 31" fill="none" stroke="#1e3a8a" stroke-width="1.8" stroke-linecap="round" />
+
+    <g class="mia-doc">
+      <rect x="44" y="10" width="11" height="14" rx="2" fill="#fff" opacity="0.92" />
+      <line x1="46" y1="14" x2="53" y2="14" stroke="#2563eb" stroke-width="1.2" />
+      <line x1="46" y1="17" x2="53" y2="17" stroke="#2563eb" stroke-width="1.2" />
+      <line x1="46" y1="20" x2="51" y2="20" stroke="#2563eb" stroke-width="1.2" />
+    </g>
+  </svg>
+</ng-template>

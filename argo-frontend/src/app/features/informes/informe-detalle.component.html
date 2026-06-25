@@ -1,0 +1,129 @@
+@if (informe(); as def) {
+  <section class="inf-page card">
+    <header class="inf-head">
+      <div>
+        <a routerLink="/app/informes" class="inf-back">← Informes académicos</a>
+        <h1>{{ def.etiqueta }}</h1>
+        <p>{{ def.descripcion }}</p>
+      </div>
+    </header>
+
+    @if (msg(); as texto) {
+      <div class="inf-msg" [class.inf-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <section class="inf-panel inf-panel--filtros">
+      <header class="inf-panel__head">
+        <h2>Filtros</h2>
+        <p>Configure los parámetros y genere el listado.</p>
+      </header>
+      <div class="inf-filtros">
+        @for (f of def.filtros; track f.clave) {
+          @if (f.tipo === 'texto') {
+            <label class="inf-field inf-field--wide">
+              <span>{{ f.etiqueta }}</span>
+              <input type="text" [placeholder]="f.placeholder || ''"
+                     [ngModel]="valorFiltro(f.clave)"
+                     (ngModelChange)="setFiltro(f.clave, $event)" />
+            </label>
+          } @else if (f.tipo === 'fecha') {
+            <label class="inf-field">
+              <span>{{ f.etiqueta }}</span>
+              <argo-date-input [ngModel]="valorFiltro(f.clave)"
+                     (ngModelChange)="setFiltro(f.clave, $event)" ></argo-date-input>
+            </label>
+          } @else if (f.tipo === 'booleano') {
+            <label class="inf-check inf-check--full">
+              <input type="checkbox" [checked]="booleanoActivo(f.clave)"
+                     (change)="toggleBooleano(f.clave)" />
+              {{ f.etiqueta }}
+            </label>
+          } @else if (esCombo(f.tipo)) {
+            <div class="inf-field inf-field--combo" [class.inf-field--wide]="comboAncho(f.tipo)">
+              <argo-catalogo-enum-buscar
+                [label]="f.etiqueta"
+                [placeholder]="f.placeholder || 'Todos'"
+                [textoInicial]="textoComboFiltro(f.clave, f.tipo)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesCombo(f.clave, f.tipo)"
+                (seleccionado)="onSeleccionEnum(f.clave, $event)"
+                (limpiado)="onLimpiarEnum(f.clave)" />
+            </div>
+          }
+        }
+      </div>
+      <div class="inf-acciones">
+        <button type="button" class="primary" (click)="generarDesdeInicio()" [disabled]="generando()">
+          {{ generando() ? 'Generando…' : 'Generar informe' }}
+        </button>
+        <button type="button" class="ghost" (click)="limpiarFiltros()" [disabled]="generando()">
+          Limpiar filtros
+        </button>
+      </div>
+    </section>
+
+    @if (resultado(); as r) {
+      <section class="inf-panel inf-panel--resultado">
+        <header class="inf-panel__head inf-panel__head--row">
+          <div>
+            <h2>Resultado</h2>
+            <p>{{ pageLabel() }} registros</p>
+          </div>
+          <div class="inf-acciones inf-acciones--inline">
+            <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="r.skip <= 0 || generando()">
+              ← Anterior
+            </button>
+            <button type="button" class="ghost" (click)="paginaSiguiente()"
+                    [disabled]="r.skip + r.items.length >= r.total || generando()">
+              Siguiente →
+            </button>
+            <button type="button" class="ghost" (click)="imprimir()" [disabled]="!r.items.length">
+              Imprimir
+            </button>
+            <button type="button" class="ghost" (click)="exportarExcel()" [disabled]="exportando() || !r.total">
+              {{ exportando() ? 'Exportando…' : 'Excel' }}
+            </button>
+          </div>
+        </header>
+        <div class="inf-table-wrap">
+          <table class="inf-table">
+            <thead>
+              <tr>
+                @for (col of r.columnas; track col.clave) {
+                  <th [class.num]="col.tipo === 'moneda'">{{ col.etiqueta }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of r.items; track $index) {
+                <tr>
+                  @for (col of r.columnas; track col.clave) {
+                    <td [class.num]="col.tipo === 'moneda'">
+                      @if (col.tipo === 'moneda') {
+                        {{ $any(celdaValor(row, col)) | currency:'COP':'symbol-narrow':'1.0-0':'es-CO' }}
+                      } @else if (col.tipo === 'fecha') {
+                        {{ $any(celdaValor(row, col)) | date:'yyyy-MM-dd' }}
+                      } @else {
+                        {{ celdaValor(row, col) || '—' }}
+                      }
+                    </td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td [attr.colspan]="r.columnas.length">Sin registros para los filtros indicados.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </section>
+} @else if (!msg()) {
+  <section class="inf-page card">
+    <p class="inf-hint">Cargando informe…</p>
+  </section>
+}

@@ -1,0 +1,257 @@
+<div class="caja-page">
+  <div class="resumen-toolbar">
+    <div class="head-actions" *ngIf="!cajaAbierta()">
+      <button type="button" class="btn-abrir" (click)="abrirCaja()">Abrir mi caja</button>
+    </div>
+    <div class="head-actions" *ngIf="cajaAbierta()">
+      <span class="sesion-badge">Sesión #{{ sesion()?.idSesion }} · {{ sesion()?.usuario }}</span>
+      <button type="button" class="ghost sm" (click)="refrescar()">Actualizar</button>
+    </div>
+  </div>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="warn-docs card no-print" *ngIf="cajaAbierta() && cantSinSoporte() > 0">
+    <strong>Aviso: egresos sin soporte adjunto ({{ cantSinSoporte() }})</strong>
+    <p class="hint">Falta imagen de factura, voucher o comprobante en egresos de su sesión.</p>
+    <ul>
+      <li *ngFor="let e of egresosSinSoporte() | slice: 0 : 5">
+        {{ e.numRecibo || '—' }} — {{ e.concepto }}
+      </li>
+    </ul>
+    <a routerLink="/app/caja/egresos" class="linkish">Ir a Egresos para adjuntar soporte →</a>
+  </div>
+
+  <!-- KPIs fila superior -->
+  <div class="kpi-grid">
+    <article class="kpi-card">
+      <span class="kpi-icon ventas">📈</span>
+      <div>
+        <h3>Ventas brutas</h3>
+        <p class="kpi-val">{{ ventasBrutas() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">{{ cantidadRecibos() }} recibo(s)</p>
+      </div>
+    </article>
+    <article class="kpi-card highlight">
+      <span class="kpi-icon esperado">🧮</span>
+      <div>
+        <h3>Efectivo esperado</h3>
+        <p class="kpi-val">{{ efectivoEsperado() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">Base + cobros efectivo − egresos efectivo</p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon gastos">📤</span>
+      <div>
+        <h3>Gastos</h3>
+        <p class="kpi-val">{{ totalGastos() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">Egresos en efectivo del turno</p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon retiros">↩</span>
+      <div>
+        <h3>Retiros</h3>
+        <p class="kpi-val">{{ totalRetiros() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">Tipo egreso «Retiro» (efectivo)</p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon base">🏦</span>
+      <div>
+        <h3>Base inicial</h3>
+        <p class="kpi-val">{{ saldoInicial() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">Al abrir caja</p>
+      </div>
+    </article>
+  </div>
+
+  <argo-caja-resumen-servicios
+    *ngIf="cajaAbierta() && ingresosPorServicio().length"
+    [servicios]="ingresosPorServicio()"
+  />
+
+  <!-- Ventas por método de pago -->
+  <section class="panel">
+    <h2 class="panel-title">Ventas por método de pago</h2>
+    <div class="metodos-grid">
+      <article class="metodo-card" *ngFor="let m of metodosPago()" [class]="'tone-' + m.tone">
+        <span class="metodo-icon">{{ m.icon }}</span>
+        <h4>{{ m.label }}</h4>
+        <p class="metodo-val">{{ m.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="metodo-cant">{{ m.cantidad }} pago(s)</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Cerrar caja -->
+  <section class="panel cerrar-panel" *ngIf="cajaAbierta()">
+    <h2 class="panel-title">Cerrar caja del día</h2>
+    <div class="alert-descuadre" *ngIf="hayDescuadreCierre()">
+      <span class="alert-icon">⚠</span>
+      <div>
+        <strong>Descuadre detectado</strong>
+        <p>
+          Diferencia de
+          {{ diferenciaCierre()! | currency: 'COP':'symbol-narrow':'1.0-0' }}.
+          Se requiere autorización de un administrador para cerrar con este descuadre.
+          Si el cajero no cuadra antes de liquidar nómina, se incluirá la deuda en la deducción del mes.
+        </p>
+      </div>
+    </div>
+    <p class="cerrar-hint">
+      Al cerrar la caja se guardará el resumen y ya no podrá registrar movimientos en esta sesión.
+      Puede imprimir el cuadre desde el historial.
+    </p>
+    <argo-caja-arqueo-panel
+      [lineas]="arqueoLineas()"
+      [esperado]="efectivoEsperado()"
+      (lineasChange)="onArqueoChange($event)"
+    />
+    <div class="cerrar-form">
+      <label class="field-obs">
+        <span>Observaciones</span>
+        <textarea rows="3" [ngModel]="obsCierre()" (ngModelChange)="obsCierre.set($event)"></textarea>
+      </label>
+      <button type="button" class="btn-cerrar" [disabled]="loading()" (click)="cerrarCaja()">
+        🔒 Cerrar caja e imprimir informe
+      </button>
+    </div>
+  </section>
+
+  <!-- Historial -->
+  <section class="panel">
+    <h2 class="panel-title">
+      Cierres anteriores
+      <span class="badge-alerta" *ngIf="descuadresPendientesHistorial() > 0">
+        {{ descuadresPendientesHistorial() }} descuadre(s) pendiente(s)
+      </span>
+    </h2>
+    <div class="table-wrap">
+      <table class="tabla-cierres">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cajero</th>
+            <th>Ventas</th>
+            <th>Esperado</th>
+            <th>Contado</th>
+            <th>Diferencia</th>
+            <th>Alerta</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of historial()" [class.fila-descuadre]="tieneDescuadrePendiente(s)">
+            <td>{{ (s.fechaCierre || s.fechaApertura) | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ s.usuario }}</td>
+            <td class="num">{{ ventasHistorial(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td class="num">{{ esperadoHistorial(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td class="num">
+              {{
+                contadoHistorial(s) != null
+                  ? (contadoHistorial(s)! | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : '—'
+              }}
+            </td>
+            <td
+              class="num"
+              [class.diff-pos]="diferenciaHistorial(s) != null && diferenciaHistorial(s)! > 0"
+              [class.diff-neg]="diferenciaHistorial(s) != null && diferenciaHistorial(s)! < 0"
+            >
+              {{
+                diferenciaHistorial(s) != null
+                  ? (diferenciaHistorial(s)! | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : '—'
+              }}
+            </td>
+            <td>
+              <span class="tag-pendiente" *ngIf="tieneDescuadrePendiente(s)" title="Corrija movimientos o descontará en nómina">
+                ⚠ Pendiente
+                <ng-container *ngIf="montoDebeHistorial(s) > 0">
+                  · debe {{ montoDebeHistorial(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}
+                </ng-container>
+              </span>
+              <span class="tag-nomina" *ngIf="enNominaDescuadre(s)">📋 En nómina</span>
+              <span class="tag-ok" *ngIf="s.descuadreEstado === 'resuelto'">✓ Resuelto</span>
+            </td>
+            <td>
+              <button type="button" class="ghost sm" (click)="verCierre(s)">Ver detalle</button>
+              <a
+                *ngIf="isAdmin()"
+                class="ghost sm linkish"
+                [routerLink]="['/app/cierres', s.idSesion]"
+              >
+                Admin
+              </a>
+              <button type="button" class="ghost sm icon-btn" (click)="verResumenSesion(s)" title="Imprimir">
+                🖨
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!historial().length">
+            <td colspan="8" class="empty">Sin cierres registrados</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Modal autorización cierre con descuadre -->
+<div class="modal-backdrop" *ngIf="mostrarAuthCierre()" (click)="cancelarAuthCierre()">
+  <div class="modal card auth-modal" (click)="$event.stopPropagation()">
+    <h2>Autorizar cierre con descuadre</h2>
+    <p class="modal-hint">
+      Diferencia:
+      <strong>{{ diferenciaCierre() | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+    </p>
+    <div class="auth-error" *ngIf="authError()">{{ authError() }}</div>
+    <ng-container *ngIf="!isAdmin()">
+      <label>
+        Usuario administrador
+        <input type="text" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" autocomplete="username" />
+      </label>
+      <label>
+        Contraseña
+        <input
+          type="password"
+          [ngModel]="authAdminPass()"
+          (ngModelChange)="authAdminPass.set($event)"
+          autocomplete="current-password"
+        />
+      </label>
+    </ng-container>
+    <p class="modal-hint small" *ngIf="isAdmin()">Como administrador puede confirmar el cierre directamente.</p>
+    <div class="modal-actions">
+      <button type="button" class="ghost" (click)="cancelarAuthCierre()">Cancelar</button>
+      <button type="button" class="danger" [disabled]="loading()" (click)="confirmarCierreConAuth()">
+        Autorizar y cerrar caja
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal apertura -->
+<div class="modal-backdrop" *ngIf="mostrarApertura()" (click)="mostrarApertura.set(false)">
+  <div class="modal card" (click)="$event.stopPropagation()">
+    <h2>Apertura de caja</h2>
+    <label>
+      Base / saldo inicial en efectivo
+      <input
+        type="number"
+        min="0"
+        [ngModel]="saldoInicialApertura()"
+        (ngModelChange)="saldoInicialApertura.set(+$event || 0)"
+      />
+    </label>
+    <label>
+      Observaciones
+      <textarea rows="2" [ngModel]="obsApertura()" (ngModelChange)="obsApertura.set($event)"></textarea>
+    </label>
+    <div class="modal-actions">
+      <button type="button" class="ghost" (click)="mostrarApertura.set(false)">Cancelar</button>
+      <button type="button" class="primary" [disabled]="loading()" (click)="confirmarApertura()">Abrir</button>
+    </div>
+  </div>
+</div>

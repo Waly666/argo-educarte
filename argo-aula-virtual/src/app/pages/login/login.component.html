@@ -1,0 +1,24 @@
+<section class="container auth card">
+  <h1>Acceder</h1>
+  <p class="muted">Ingresa con tu correo registrado en el portal.</p>
+
+  <label>Correo</label>
+  <input type="email" [(ngModel)]="email" autocomplete="username" />
+
+  <label>Contraseña</label>
+  <input type="password" [(ngModel)]="password" autocomplete="current-password" />
+
+  @if (error()) {
+    <p class="err">{{ error() }}</p>
+  }
+
+  @if (turnstileSiteKey()) {
+    <av-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+  }
+
+  <button type="button" class="btn btn-primary" [disabled]="loading()" (click)="enviar()">
+    {{ loading() ? 'Ingresando…' : 'Entrar' }}
+  </button>
+
+  <p class="muted">¿No tienes cuenta? <a routerLink="/registro">Regístrate</a></p>
+</section>

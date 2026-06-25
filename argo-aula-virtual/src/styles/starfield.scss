@@ -1,0 +1,74 @@
+/* Fondo estrellado compartido (home, fundación, etc.) — usa variables del tema */
+.section-starfield,
+.section-carreras {
+  position: relative;
+  overflow: hidden;
+  padding: 4rem 0 3.5rem;
+  background: var(--av-starfield-bg);
+  color: var(--av-text);
+}
+
+.hero.section-starfield,
+.section-starfield:has(.hero-info-cards) {
+  overflow: visible;
+}
+
+.starfield-bg,
+.carreras-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--av-starfield-decor-opacity, 1);
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1px 1px at 28% 64%, rgba(255, 255, 255, 0.35), transparent 100%),
+    radial-gradient(1.4px 1.4px at 41% 12%, rgba(255, 255, 255, 0.45), transparent 100%),
+    radial-gradient(1px 1px at 57% 84%, rgba(255, 255, 255, 0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 66% 31%, rgba(255, 255, 255, 0.4), transparent 100%),
+    radial-gradient(1px 1px at 78% 58%, rgba(255, 255, 255, 0.35), transparent 100%),
+    radial-gradient(1.5px 1.5px at 87% 16%, rgba(255, 255, 255, 0.45), transparent 100%),
+    radial-gradient(1px 1px at 8% 81%, rgba(255, 255, 255, 0.3), transparent 100%),
+    radial-gradient(1.2px 1.2px at 93% 76%, rgba(255, 255, 255, 0.4), transparent 100%),
+    radial-gradient(1px 1px at 49% 47%, rgba(255, 255, 255, 0.25), transparent 100%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    width: min(640px, 80vw);
+    height: min(640px, 80vw);
+    transform: translate(-50%, -50%);
+    background: var(--av-starfield-accent-glow-radial);
+    filter: blur(4px);
+  }
+}
+
+.starfield-container,
+.carreras-container {
+  position: relative;
+  z-index: 1;
+}
+
+.starfield-head,
+.carreras-head {
+  h2,
+  .title-reveal--h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .section-lead,
+  .fund-section__lead {
+    color: var(--av-starfield-section-lead);
+  }
+
+  .kicker,
+  .fund-kicker:not(.fund-kicker--dark) {
+    color: var(--av-accent);
+    background: color-mix(in srgb, var(--av-accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--av-accent) 35%, transparent);
+  }
+}

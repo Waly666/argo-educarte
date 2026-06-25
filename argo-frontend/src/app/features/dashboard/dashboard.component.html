@@ -1,0 +1,517 @@
+<section class="dash-page">
+  <header class="dash-head">
+    <div>
+      <p class="eyebrow">Panel ejecutivo</p>
+      <h1>Hola{{ nombre() ? ', ' + nombre() : '' }}</h1>
+      <p class="sub">Resumen consolidado ARGO — alumnos, programas, pagos, certificados y caja.</p>
+    </div>
+    <div class="head-meta" *ngIf="stats()">
+      <span class="pill">Actualizado {{ stats()!.actualizadoEn | date: 'dd/MM/yyyy HH:mm' }}</span>
+      <button type="button" class="ghost sm" (click)="cargar()" [disabled]="loading()">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <argo-alerta-pago-alumno-banner modo="panel" />
+
+  <form class="date-filter" (ngSubmit)="cargar()">
+    <div class="df-head">
+      <h2>Período de análisis (caja)</h2>
+      <p class="df-hint">Filtra ingresos, egresos y resumen financiero. El resto del panel es global.</p>
+    </div>
+    <div class="df-row">
+      <label>
+        <span>Desde</span>
+        <argo-date-input [ngModel]="fechaDesde()" (ngModelChange)="fechaDesde.set($event)" name="desde" ></argo-date-input>
+      </label>
+      <label>
+        <span>Hasta</span>
+        <argo-date-input [ngModel]="fechaHasta()" (ngModelChange)="fechaHasta.set($event)" name="hasta" ></argo-date-input>
+      </label>
+      <div class="df-actions">
+        <button type="submit" class="primary sm" [disabled]="loading()">Aplicar</button>
+        <button type="button" class="ghost sm" (click)="aplicarPresetMesActual(); cargar()" [disabled]="loading()">
+          Mes actual
+        </button>
+        <button type="button" class="ghost sm" (click)="presetMesAnterior()" [disabled]="loading()">Mes anterior</button>
+        <button type="button" class="ghost sm" (click)="presetUltimos30()" [disabled]="loading()">Últimos 30 días</button>
+        <button type="button" class="ghost sm" (click)="presetAnioActual()" [disabled]="loading()">Año actual</button>
+        <button type="button" class="ghost sm" (click)="limpiarFiltro()" [disabled]="loading()">Sin filtro</button>
+      </div>
+    </div>
+    <p class="df-active" *ngIf="filtroActivo()">
+      Mostrando caja del período: <strong>{{ periodoLabel() }}</strong>
+    </p>
+  </form>
+
+  <p class="flash err" *ngIf="error()">{{ error() }}</p>
+  <p class="loading-msg" *ngIf="loading()">Cargando indicadores…</p>
+
+  <ng-container *ngIf="stats() && !loading()">
+    <section class="dash-hero">
+      <div class="kpi-hero-grid">
+        <ng-container *ngFor="let k of kpiHeroCards()">
+          <a *ngIf="k.link" class="kpi-card" [class]="'tone-' + k.tone" [routerLink]="k.link">
+            <span class="kpi-icon">{{ k.icon }}</span>
+            <div class="kpi-body">
+              <span class="kpi-label">{{ k.label }}</span>
+              <strong
+                class="kpi-value"
+                [class.kpi-value-count]="!isMoneyKpi(k.label)"
+                [attr.title]="
+                  isMoneyKpi(k.label) && typeof k.value === 'number'
+                    ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                    : k.value
+                ">{{
+                isMoneyKpi(k.label) && typeof k.value === 'number'
+                  ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : k.value
+              }}</strong>
+              <span class="kpi-sub" *ngIf="k.sub" [attr.title]="k.sub">{{ k.sub }}</span>
+              <svg *ngIf="k.spark?.length" class="kpi-spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
+                <path [attr.d]="sparklinePath(k.spark)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+          </a>
+          <div *ngIf="!k.link" class="kpi-card static" [class]="'tone-' + k.tone">
+            <span class="kpi-icon">{{ k.icon }}</span>
+            <div class="kpi-body">
+              <span class="kpi-label">{{ k.label }}</span>
+              <strong
+                class="kpi-value"
+                [class.kpi-value-count]="!isMoneyKpi(k.label)"
+                [attr.title]="
+                  isMoneyKpi(k.label) && typeof k.value === 'number'
+                    ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                    : k.value
+                ">{{
+                isMoneyKpi(k.label) && typeof k.value === 'number'
+                  ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : k.value
+              }}</strong>
+              <span class="kpi-sub" *ngIf="k.sub">{{ k.sub }}</span>
+              <svg *ngIf="k.spark?.length" class="kpi-spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
+                <path [attr.d]="sparklinePath(k.spark)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </section>
+
+    <section class="kpi-secondary-block" *ngIf="kpiSecondaryCards().length">
+      <h2 class="dash-section-title">Más indicadores</h2>
+      <div class="kpi-row">
+        <ng-container *ngFor="let k of kpiSecondaryCards()">
+          <a *ngIf="k.link" class="kpi-card" [class]="'tone-' + k.tone" [routerLink]="k.link">
+            <span class="kpi-icon">{{ k.icon }}</span>
+            <div class="kpi-body">
+              <span class="kpi-label">{{ k.label }}</span>
+              <strong
+                class="kpi-value"
+                [class.kpi-value-count]="!isMoneyKpi(k.label)"
+                [attr.title]="
+                  isMoneyKpi(k.label) && typeof k.value === 'number'
+                    ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                    : k.value
+                ">{{
+                isMoneyKpi(k.label) && typeof k.value === 'number'
+                  ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : k.value
+              }}</strong>
+              <span class="kpi-sub" *ngIf="k.sub" [attr.title]="k.sub">{{ k.sub }}</span>
+            </div>
+          </a>
+          <div *ngIf="!k.link" class="kpi-card static" [class]="'tone-' + k.tone">
+            <span class="kpi-icon">{{ k.icon }}</span>
+            <div class="kpi-body">
+              <span class="kpi-label">{{ k.label }}</span>
+              <strong
+                class="kpi-value"
+                [class.kpi-value-count]="!isMoneyKpi(k.label)"
+                [attr.title]="
+                  isMoneyKpi(k.label) && typeof k.value === 'number'
+                    ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                    : k.value
+                ">{{
+                isMoneyKpi(k.label) && typeof k.value === 'number'
+                  ? (k.value | currency: 'COP':'symbol-narrow':'1.0-0')
+                  : k.value
+              }}</strong>
+              <span class="kpi-sub" *ngIf="k.sub">{{ k.sub }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </section>
+
+    <nav class="chip-nav">
+      <a *ngFor="let c of navChips()" class="chip" [class]="'chip-' + c.tone" [routerLink]="c.path">{{
+        c.label
+      }}</a>
+    </nav>
+
+    <section class="mega-stats" *ngIf="stats()!.resumenFinanciero as rf">
+      <h2 class="mega-title">Resumen financiero — {{ filtroActivo() ? periodoLabel() : 'mes actual' }}</h2>
+      <div class="mega-grid">
+        <div class="mega-card" *ngIf="!filtroActivo()">
+          <span>Ingresos históricos</span>
+          <strong>{{ fmtMoney(rf.ingresosHistorico) }}</strong>
+          <small>{{ stats()!.kpis.recibosTotal }} recibos en total</small>
+        </div>
+        <div class="mega-card ing">
+          <span>{{ filtroActivo() ? 'Ingresos del período' : 'Ingresos este mes' }}</span>
+          <strong>{{ fmtMoney(rf.ingresosMes) }}</strong>
+          <small>{{ stats()!.kpis.recibosMes }} recibos</small>
+        </div>
+        <div class="mega-card egr">
+          <span>{{ filtroActivo() ? 'Egresos del período' : 'Egresos este mes' }}</span>
+          <strong>{{ fmtMoney(rf.egresosMes) }}</strong>
+          <small>{{ stats()!.kpis.egresosCount }} movimientos</small>
+        </div>
+        <div class="mega-card" [class.neg]="rf.netoMes < 0">
+          <span>{{ filtroActivo() ? 'Neto caja (período)' : 'Neto caja (mes)' }}</span>
+          <strong>{{ fmtMoney(rf.netoMes) }}</strong>
+        </div>
+        <div class="mega-card">
+          <span>Valor facturado (liquidaciones)</span>
+          <strong>{{ fmtMoney(rf.valorFacturado) }}</strong>
+          <small>{{ stats()!.kpis.liquidaciones }} liquidaciones</small>
+        </div>
+        <div class="mega-card">
+          <span>Total abonado</span>
+          <strong>{{ fmtMoney(rf.totalAbonado) }}</strong>
+        </div>
+        <div class="mega-card warn">
+          <span>Cartera por cobrar</span>
+          <strong>{{ fmtMoney(rf.porCobrar) }}</strong>
+        </div>
+        <div class="mega-card" *ngIf="!filtroActivo()">
+          <span>Egresos históricos</span>
+          <strong>{{ fmtMoney(rf.egresosHistorico) }}</strong>
+        </div>
+      </div>
+
+      <div class="forma-pago-block">
+        <div class="forma-pago-head">
+          <h3 class="forma-pago-title">Ventas por método de pago</h3>
+          <p class="forma-pago-hint">
+            {{ filtroActivo() ? 'Período: ' + periodoLabel() : 'Mes actual' }} —
+            {{ fmtMoney(totalFormaPago()) }} cobrados (según tipo de pago del recibo)
+          </p>
+        </div>
+        <div class="metodos-grid">
+          <article class="metodo-card" *ngFor="let m of metodosPago()" [class]="'tone-' + m.tone">
+            <span class="metodo-icon">{{ m.icon }}</span>
+            <h4>{{ m.label }}</h4>
+            <p
+              class="metodo-val"
+              [attr.title]="m.total | currency: 'COP':'symbol-narrow':'1.0-0'">
+              {{ m.total | currency: 'COP':'symbol-narrow':'1.0-0' }}
+            </p>
+            <p class="metodo-cant">{{ m.cantidad }} pago(s)</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="panel-row charts-main caja-tipo-row">
+      <article class="panel">
+        <h2>Ingresos por tipo</h2>
+        <p class="panel-hint">
+          {{ filtroActivo() ? 'Período: ' + periodoLabel() : 'Mes actual' }} —
+          {{ stats()!.ingresosPorTipo?.length || 0 }} tipo(s)
+        </p>
+        <div class="tipo-chart-layout" *ngIf="stats()!.ingresosPorTipo?.length">
+          <div class="bar-chart tipo-v scroll-x">
+            <div class="bar-col" *ngFor="let t of stats()!.ingresosPorTipo; let i = index">
+              <span class="bar-lbl" [title]="t.tipo">{{ t.tipo }}</span>
+              <div
+                class="bar-fill ing"
+                [style.height.%]="barHeight(t.total, maxIngresosTipo())"
+                [style.background]="barColor(i)"
+                [attr.title]="
+                  t.tipo + ' — ' + t.cantidad + ' rec. — ' + (t.total | currency: 'COP':'symbol-narrow':'1.0-0')
+                "></div>
+              <span class="bar-qty">{{ t.cantidad }}</span>
+            </div>
+          </div>
+          <div class="donut-side" *ngIf="pathsIngresosTipo().length">
+            <div class="donut-wrap sm">
+              <svg
+                class="donut-svg"
+                [attr.width]="donutSizeSm"
+                [attr.height]="donutSizeSm"
+                [attr.viewBox]="'0 0 ' + donutSizeSm + ' ' + donutSizeSm">
+                <path
+                  *ngFor="let seg of pathsIngresosTipo(); trackBy: trackPath"
+                  [attr.d]="seg.d"
+                  [attr.fill]="seg.color"
+                  stroke="rgba(0,0,0,0.12)"
+                  stroke-width="0.5" />
+              </svg>
+            </div>
+            <ul class="legend">
+              <li *ngFor="let s of slicesIngresosTipo(); trackBy: trackSlice">
+                <span class="dot" [style.background-color]="s.color"></span>
+                <span class="lbl">{{ s.label }}</span>
+                <span class="pct">{{ s.pct }}%</span>
+                <span class="val" [attr.title]="s.value | currency: 'COP':'symbol-narrow':'1.0-0'">{{
+                  s.value | currency: 'COP':'symbol-narrow':'1.0-0'
+                }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!stats()!.ingresosPorTipo?.length">Sin ingresos en el período</p>
+      </article>
+
+      <article class="panel">
+        <h2>Egresos por tipo</h2>
+        <p class="panel-hint">
+          {{ filtroActivo() ? 'Período: ' + periodoLabel() : 'Mes actual' }} —
+          {{ stats()!.egresosPorTipo?.length || 0 }} tipo(s)
+        </p>
+        <div class="tipo-chart-layout" *ngIf="stats()!.egresosPorTipo?.length">
+          <div class="bar-chart tipo-v scroll-x">
+            <div class="bar-col" *ngFor="let t of stats()!.egresosPorTipo; let i = index">
+              <span class="bar-lbl" [title]="t.tipo">{{ t.tipo }}</span>
+              <div
+                class="bar-fill egr"
+                [style.height.%]="barHeight(t.total, maxEgresosTipo())"
+                [style.background]="barColor(i)"
+                [attr.title]="
+                  t.tipo + ' — ' + t.cantidad + ' mov. — ' + (t.total | currency: 'COP':'symbol-narrow':'1.0-0')
+                "></div>
+              <span class="bar-qty">{{ t.cantidad }}</span>
+            </div>
+          </div>
+          <div class="donut-side" *ngIf="pathsEgresosTipo().length">
+            <div class="donut-wrap sm">
+              <svg
+                class="donut-svg"
+                [attr.width]="donutSizeSm"
+                [attr.height]="donutSizeSm"
+                [attr.viewBox]="'0 0 ' + donutSizeSm + ' ' + donutSizeSm">
+                <path
+                  *ngFor="let seg of pathsEgresosTipo(); trackBy: trackPath"
+                  [attr.d]="seg.d"
+                  [attr.fill]="seg.color"
+                  stroke="rgba(0,0,0,0.12)"
+                  stroke-width="0.5" />
+              </svg>
+            </div>
+            <ul class="legend">
+              <li *ngFor="let s of slicesEgresosTipo(); trackBy: trackSlice">
+                <span class="dot" [style.background-color]="s.color"></span>
+                <span class="lbl">{{ s.label }}</span>
+                <span class="pct">{{ s.pct }}%</span>
+                <span class="val" [attr.title]="s.value | currency: 'COP':'symbol-narrow':'1.0-0'">{{
+                  s.value | currency: 'COP':'symbol-narrow':'1.0-0'
+                }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!stats()!.egresosPorTipo?.length">Sin egresos en el período</p>
+      </article>
+    </div>
+
+    <article class="panel panel-servicios">
+      <h2>Servicios causados (liquidaciones)</h2>
+      <p class="panel-hint">
+        {{ stats()!.serviciosTodos.length }} servicio(s) — {{ totalServiciosCant() }} liquidaciones,
+        {{ totalServiciosValor() | currency: 'COP':'symbol-narrow':'1.0-0' }} en total.
+      </p>
+      <div class="servicios-layout" *ngIf="stats()!.serviciosTodos.length">
+        <div class="servicios-chart-wrap">
+          <div class="bar-chart servicios-v">
+            <div class="bar-col" *ngFor="let s of stats()!.serviciosTodos; let i = index">
+              <span class="bar-lbl" [title]="s.servicio">{{ s.servicio }}</span>
+              <div
+                class="bar-fill serv"
+                [style.height.%]="barHeight(s.cantidad, maxServiciosCant())"
+                [style.background]="barColor(i)"
+                [attr.title]="
+                  s.servicio + ' — ' + s.cantidad + ' liq. — ' + (s.total | currency: 'COP':'symbol-narrow':'1.0-0')
+                "></div>
+              <span class="bar-qty">{{ s.cantidad }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="servicios-table-wrap">
+          <table class="tbl-mini tbl-servicios">
+            <thead>
+              <tr>
+                <th>Servicio</th>
+                <th class="num">Liq.</th>
+                <th class="num">Valor</th>
+                <th class="num">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of stats()!.serviciosTodos; let i = index">
+                <td>
+                  <span class="dot-inline" [style.background-color]="barColor(i)"></span>
+                  <span [title]="s.servicio">{{ s.servicio }}</span>
+                </td>
+                <td class="num">{{ s.cantidad }}</td>
+                <td class="num">{{ s.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ pctServicio(s.total) }}%</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td><strong>Total</strong></td>
+                <td class="num"><strong>{{ totalServiciosCant() }}</strong></td>
+                <td class="num">
+                  <strong>{{ totalServiciosValor() | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </td>
+                <td class="num"><strong>100%</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      <p class="empty" *ngIf="!stats()!.serviciosTodos.length">Sin liquidaciones por servicio</p>
+    </article>
+
+    <div class="panel-row charts-main">
+      <article class="panel">
+        <h2>Ingresos por mes</h2>
+        <p class="panel-hint">{{ filtroActivo() ? 'Meses dentro del período' : 'Últimos 12 meses' }}</p>
+        <div class="bar-chart" *ngIf="stats()!.ingresosPorMes.length">
+          <div class="bar-col" *ngFor="let m of stats()!.ingresosPorMes; let i = index">
+            <div
+              class="bar-fill"
+              [style.height.%]="barHeight(m.total ?? 0, maxIngresosMes())"
+              [style.background]="barColor(i)"
+              [attr.title]="(m.total ?? 0) | currency: 'COP':'symbol-narrow':'1.0-0'"></div>
+            <span class="bar-lbl">{{ m.mes }}</span>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!stats()!.ingresosPorMes.length">Sin ingresos registrados</p>
+      </article>
+
+      <article class="panel">
+        <h2>Formas de pago (ingresos)</h2>
+        <p class="panel-hint">{{ filtroActivo() ? 'Período: ' + periodoLabel() : 'Mes actual' }}</p>
+        <div class="donut-row" *ngIf="pathsForma().length">
+          <div class="donut-wrap">
+            <svg class="donut-svg" [attr.width]="donutSize" [attr.height]="donutSize" [attr.viewBox]="'0 0 ' + donutSize + ' ' + donutSize">
+              <path
+                *ngFor="let seg of pathsForma(); trackBy: trackPath"
+                [attr.d]="seg.d"
+                [attr.fill]="seg.color"
+                stroke="rgba(0,0,0,0.15)"
+                stroke-width="0.5" />
+            </svg>
+          </div>
+          <ul class="legend">
+            <li *ngFor="let s of slicesFormaPago(); trackBy: trackSlice">
+              <span class="dot" [style.background-color]="s.color"></span>
+              <span class="lbl">{{ s.label }}</span>
+              <span class="pct">{{ s.pct }}%</span>
+              <span class="val">{{ s.value | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+            </li>
+          </ul>
+        </div>
+      </article>
+    </div>
+
+    <div class="panel-row three-cols">
+      <article class="panel">
+        <h2>Liquidaciones por estado</h2>
+        <div class="donut-row compact" *ngIf="pathsLiq().length">
+          <div class="donut-wrap sm">
+            <svg class="donut-svg" [attr.width]="donutSizeSm" [attr.height]="donutSizeSm" [attr.viewBox]="'0 0 ' + donutSizeSm + ' ' + donutSizeSm">
+              <path
+                *ngFor="let seg of pathsLiq(); trackBy: trackPath"
+                [attr.d]="seg.d"
+                [attr.fill]="seg.color"
+                stroke="rgba(0,0,0,0.12)"
+                stroke-width="0.5" />
+            </svg>
+          </div>
+          <table class="tbl-mini">
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th class="num">Cant.</th>
+                <th class="num">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of slicesLiq(); trackBy: trackSlice">
+                <td><span class="dot-inline" [style.background-color]="s.color"></span>{{ s.label }}</td>
+                <td class="num">{{ s.value }}</td>
+                <td class="num">{{ s.pct }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Matrículas por pago</h2>
+        <div class="donut-row compact" *ngIf="pathsPago().length">
+          <div class="donut-wrap sm">
+            <svg class="donut-svg" [attr.width]="donutSizeSm" [attr.height]="donutSizeSm" [attr.viewBox]="'0 0 ' + donutSizeSm + ' ' + donutSizeSm">
+              <path
+                *ngFor="let seg of pathsPago(); trackBy: trackPath"
+                [attr.d]="seg.d"
+                [attr.fill]="seg.color"
+                stroke="rgba(0,0,0,0.12)"
+                stroke-width="0.5" />
+            </svg>
+          </div>
+          <table class="tbl-mini">
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th class="num">Cant.</th>
+                <th class="num">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of slicesPago(); trackBy: trackSlice">
+                <td><span class="dot-inline" [style.background-color]="s.color"></span>{{ s.label }}</td>
+                <td class="num">{{ s.value }}</td>
+                <td class="num">{{ s.pct }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Certificados emitidos</h2>
+        <p class="panel-hint">Por mes</p>
+        <div class="bar-chart mini" *ngIf="stats()!.certificadosPorMes.length">
+          <div class="bar-col" *ngFor="let m of stats()!.certificadosPorMes; let i = index">
+            <div
+              class="bar-fill cert"
+              [style.height.%]="barHeight(m.cantidad, maxCertMes())"
+              [style.background]="barColor(i)"
+              [attr.title]="m.cantidad + ' cert.'"></div>
+            <span class="bar-lbl">{{ m.mes }}</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <article class="panel full">
+      <h2>Detalle liquidaciones por estado</h2>
+      <div class="status-cards">
+        <div
+          class="status-card"
+          *ngFor="let l of stats()!.liquidacionesPorEstado; let i = index"
+          [style.borderColor]="barColor(i)">
+          <span class="sc-label">{{ l.label }}</span>
+          <strong class="sc-qty">{{ l.cantidad }}</strong>
+          <span class="sc-pct">{{ l.pct }}%</span>
+          <span class="sc-money">Cartera {{ l.totalSaldo | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      </div>
+    </article>
+  </ng-container>
+</section>

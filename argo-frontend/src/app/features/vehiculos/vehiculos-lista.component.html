@@ -1,0 +1,275 @@
+<section class="lista-page lista-vehiculos">
+  <header class="page-head card">
+    <div class="head-row">
+      <div class="title">
+        <h1>Vehículos</h1>
+        <p *ngIf="vista() === 'lista'">
+          Flota del CEA con alertas de documentación, inspección diaria y estado operativo. Pulse un encabezado para ordenar.
+        </p>
+        <p *ngIf="vista() === 'cards'">
+          Tarjetas con alertas de documentos, inspección del día y datos principales del vehículo.
+        </p>
+      </div>
+      <button type="button" class="primary" (click)="nuevo()">+ Nuevo vehículo</button>
+    </div>
+  </header>
+
+  <div class="card toolbar">
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar por placa, marca, línea, modelo, motor o chasis..."
+        [ngModel]="query()"
+        (ngModelChange)="onBuscar($event)"
+        autocomplete="off"
+      />
+    </div>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button
+        type="button"
+        class="view-btn"
+        [class.active]="vista() === 'lista'"
+        (click)="setVista('lista')"
+        title="Vista tabla">
+        ☰ Lista
+      </button>
+      <button
+        type="button"
+        class="view-btn"
+        [class.active]="vista() === 'cards'"
+        (click)="setVista('cards')"
+        title="Vista tarjetas">
+        ▦ Cards
+      </button>
+    </div>
+    <span class="count">{{ pageLabel() }}</span>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando vehículos…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table vehiculos-grid">
+        <thead>
+          <tr>
+            <th class="col-id">idVehiculo</th>
+            <th *ngFor="let c of sortColumns">
+              <button
+                type="button"
+                class="th-sort"
+                [class.active]="sortCol() === c.key"
+                [attr.aria-sort]="sortAria(c.key)"
+                (click)="toggleSort(c.key)">
+                {{ c.label }} <span class="sort-icon">{{ sortIcon(c.key) }}</span>
+              </button>
+            </th>
+            <th>Servicio</th>
+            <th class="col-alertas">Alertas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of items()" class="row-click" (click)="abrir(v)">
+            <td class="col-id">
+              <span class="mongo-id" [ngClass]="capId(v._id)" [title]="v._id">{{ v._id }}</span>
+            </td>
+            <td><span [ngClass]="capPlaca(v.placa, v.tipoServicio)">{{ v.placa }}</span></td>
+            <td>
+              <span *ngIf="v.nombreMarca; else vacio" [ngClass]="capMarcaVehi(v.nombreMarca)">{{ v.nombreMarca }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.nombreLinea; else vacio" [ngClass]="capLineaVehi(v.nombreLinea)">{{ v.nombreLinea }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.modelo; else vacio" [ngClass]="capModeloVehi(v.modelo)">{{ v.modelo }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.claseVehiculo; else vacio" [ngClass]="capClaseVehi(v.claseVehiculo)">{{ v.claseVehiculo }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.color; else vacio" [ngClass]="capColorVehi(v.color)">{{ v.color }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.estado; else vacio" [ngClass]="capEstadoVehiculo(v.estado)">{{ v.estado }}</span>
+            </td>
+            <td>
+              <span *ngIf="v.tipoServicio; else vacio" [ngClass]="capTipoServicioVehi(v.tipoServicio)">{{ v.tipoServicio }}</span>
+            </td>
+            <td class="col-alertas" (click)="$event.stopPropagation()">
+              <ng-container *ngTemplateOutlet="alarmasTpl; context: { $implicit: v }"></ng-container>
+            </td>
+            <td class="actions">
+              <button type="button" class="ghost mini" (click)="abrir(v); $event.stopPropagation()">Abrir</button>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0">
+            <td colspan="11" class="empty">
+              <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article
+        class="list-card vehiculo-card"
+        *ngFor="let v of items()"
+        (click)="abrir(v)"
+        tabindex="0"
+        (keydown.enter)="abrir(v)">
+        <header class="card-title">
+          <h3><span [ngClass]="capPlaca(v.placa, v.tipoServicio)">{{ v.placa }}</span></h3>
+          <p class="card-sub">
+            <span *ngIf="v.nombreMarca" [ngClass]="capMarcaVehi(v.nombreMarca)">{{ v.nombreMarca }}</span>
+            <span *ngIf="v.nombreLinea" [ngClass]="capLineaVehi(v.nombreLinea)">{{ v.nombreLinea }}</span>
+            <span *ngIf="v.modelo" [ngClass]="capModeloVehi(v.modelo)">{{ v.modelo }}</span>
+          </p>
+        </header>
+
+        <div class="card-body veh-card-body">
+          <div class="card-main">
+            <div class="card-tags">
+              <span [ngClass]="capEstadoVehiculo(v.estado)">{{ v.estado || 'Libre' }}</span>
+              <span *ngIf="v.tipoServicio" [ngClass]="capTipoServicioVehi(v.tipoServicio)">{{ v.tipoServicio }}</span>
+              <span *ngIf="v.claseVehiculo" [ngClass]="capClaseVehi(v.claseVehiculo)">{{ v.claseVehiculo }}</span>
+              <span *ngIf="v.color" [ngClass]="capColorVehi(v.color)">{{ v.color }}</span>
+            </div>
+
+            <div class="card-alarms" (click)="$event.stopPropagation()">
+              <ng-container *ngTemplateOutlet="alarmasTpl; context: { $implicit: v }"></ng-container>
+            </div>
+
+            <dl class="card-fields">
+              <div class="span-2">
+                <dt>idVehiculo</dt>
+                <dd><span class="mongo-id" [ngClass]="capId(v._id)" [title]="v._id">{{ v._id }}</span></dd>
+              </div>
+              <div *ngIf="v.nombreMarca">
+                <dt>Marca</dt>
+                <dd><span [ngClass]="capMarcaVehi(v.nombreMarca)">{{ v.nombreMarca }}</span></dd>
+              </div>
+              <div *ngIf="v.nombreLinea">
+                <dt>Línea</dt>
+                <dd><span [ngClass]="capLineaVehi(v.nombreLinea)">{{ v.nombreLinea }}</span></dd>
+              </div>
+              <div *ngIf="v.modelo">
+                <dt>Modelo</dt>
+                <dd><span [ngClass]="capModeloVehi(v.modelo)">{{ v.modelo }}</span></dd>
+              </div>
+              <div *ngIf="v.color">
+                <dt>Color</dt>
+                <dd><span [ngClass]="capColorVehi(v.color)">{{ v.color }}</span></dd>
+              </div>
+              <div *ngIf="v.combustible">
+                <dt>Combustible</dt>
+                <dd>{{ v.combustible }}</dd>
+              </div>
+              <div *ngIf="v.carroceria">
+                <dt>Carrocería</dt>
+                <dd class="truncate" [title]="v.carroceria">{{ v.carroceria }}</dd>
+              </div>
+              <div *ngIf="v.modalidad">
+                <dt>Modalidad</dt>
+                <dd>{{ v.modalidad }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <footer class="card-foot" (click)="$event.stopPropagation()">
+          <span class="card-hint">Clic en la tarjeta para abrir ficha</span>
+          <div class="card-actions">
+            <button type="button" class="act open" (click)="abrir(v)" title="Abrir ficha">Abrir</button>
+            <button
+              type="button"
+              class="act doc-vence"
+              *ngIf="tieneAlarmaVencimientoDocs(v)"
+              (click)="abrirTab(v, 'documentos', $event)"
+              [title]="tituloVencimientoDocs(v)">!</button>
+            <button
+              type="button"
+              class="act doc-falta"
+              *ngIf="v.indicadores?.docsFaltantes"
+              (click)="abrirTab(v, 'documentos', $event)"
+              title="Documentos requeridos sin registrar">?</button>
+            <button
+              type="button"
+              class="act insp"
+              *ngIf="v.indicadores?.inspeccionPendiente"
+              (click)="abrirTab(v, 'inspeccion', $event)"
+              title="Inspección preoperacional pendiente hoy">⏳</button>
+          </div>
+        </footer>
+      </article>
+
+      <div class="empty cards-empty" *ngIf="items().length === 0">
+        <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+      </div>
+    </div>
+
+    <ng-template #vacio><span class="dim">—</span></ng-template>
+
+    <ng-template #alarmasTpl let-v>
+      <div class="row-alarms" *ngIf="tieneAlarmas(v); else sinAlarmas">
+        <button
+          type="button"
+          class="row-alarm doc-vence-alarm"
+          *ngIf="tieneAlarmaVencimientoDocs(v)"
+          (click)="abrirTab(v, 'documentos', $event)"
+          [attr.title]="tituloVencimientoDocs(v)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">{{ iconoVencimientoDocs(v) }}</span>
+          <span class="row-alarm-label">{{ etiquetaVencimientoDocs(v) }}</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm falta-alarm"
+          *ngIf="v.indicadores?.docsFaltantes"
+          (click)="abrirTab(v, 'documentos', $event)"
+          [attr.title]="tituloDocsFaltantes(v)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">?</span>
+          <span class="row-alarm-label">Faltan</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm insp-alarm"
+          *ngIf="v.indicadores?.inspeccionPendiente"
+          (click)="abrirTab(v, 'inspeccion', $event)"
+          [attr.title]="tituloInspeccionPendiente(v)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">⏳</span>
+          <span class="row-alarm-label">Inspección</span>
+        </button>
+        <button
+          type="button"
+          class="row-alarm ocupado-alarm"
+          *ngIf="v.indicadores?.ocupado"
+          (click)="abrir(v); $event.stopPropagation()"
+          [attr.title]="tituloOcupado(v)">
+          <span class="row-alarm-pulse" aria-hidden="true"></span>
+          <span class="row-alarm-icon">◉</span>
+          <span class="row-alarm-label">Ocupado</span>
+        </button>
+      </div>
+      <ng-template #sinAlarmas><span class="dim">—</span></ng-template>
+    </ng-template>
+
+    <ng-template #emptyTpl>
+      <ng-container *ngIf="query(); else sinDatos">
+        No hay resultados para «{{ query() }}».
+      </ng-container>
+      <ng-template #sinDatos>
+        No hay vehículos registrados. Use <strong>Nuevo vehículo</strong> para agregar uno.
+      </ng-template>
+    </ng-template>
+
+    <footer class="pager" *ngIf="total() > 0 && !loading()">
+      <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="page() === 0">← Anterior</button>
+      <span>Página {{ page() + 1 }} de {{ totalPages() }}</span>
+      <button type="button" class="ghost" (click)="paginaSiguiente()" [disabled]="page() >= totalPages() - 1">Siguiente →</button>
+    </footer>
+  </div>
+</section>

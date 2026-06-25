@@ -1,0 +1,71 @@
+<div class="recibo-page">
+  <div class="toolbar no-print" *ngIf="!loading() && !error() && (data() || usaMediaCarta())">
+    <button type="button" class="ghost" (click)="volver()">← Volver</button>
+    <button type="button" class="primary" (click)="imprimir()">Imprimir / Guardar PDF</button>
+    <button type="button" class="ghost" (click)="abrirHtml()" *ngIf="!usaMediaCarta()">Abrir en ventana</button>
+  </div>
+
+  <div class="loading no-print" *ngIf="loading()">Cargando recibo…</div>
+  <div class="err no-print" *ngIf="error()">{{ error() }}</div>
+
+  <div class="loading no-print media-carta-hint" *ngIf="!loading() && usaMediaCarta()">
+    Comprobante en formato media carta. Si no se abrió la ventana, use «Imprimir / Guardar PDF» o permita ventanas emergentes.
+  </div>
+
+  <ng-container *ngIf="data() as d">
+    <article class="ticket" *ngIf="!usaMediaCarta()">
+    <header class="center empresa-block">
+      <div class="empresa">{{ d.config.nombreEmpresa || '—' }}</div>
+      <div class="dato">NIT: {{ d.config.nit || '—' }}</div>
+      <div class="dato">Tel: {{ d.config.telefono || '—' }}</div>
+      <div class="dato">Dir: {{ d.config.direccion || '—' }}</div>
+      <div class="dato">Ciudad: {{ d.config.ciudad || '—' }}</div>
+      <div class="dato">Email: {{ d.config.email || '—' }}</div>
+    </header>
+
+    <div class="sep center">{{ linea() }}</div>
+
+    <div class="center titulo-block">
+      <div class="titulo">{{ d.config.mensajeEncabezado || 'COMPROBANTE DE INGRESO' }}</div>
+      <div class="slogan" *ngIf="d.config.slogan1">{{ d.config.slogan1 }}</div>
+    </div>
+    <div class="sep center">{{ linea() }}</div>
+
+    <table class="detalle">
+      <tr><td>Comprobante N°</td><td>{{ d.numeroRecibo }}</td></tr>
+      <tr><td>Fecha</td><td>{{ fmtFecha(d.ingreso['fecha'] || d.ingreso['createdAt']) }}</td></tr>
+      <ng-container *ngIf="d.esIngresoCaja; else reciboAlumno">
+        <tr><td>Tipo ingreso</td><td>{{ d.ingreso['tipoIngresoDescr'] || 'Ingreso de caja' }}</td></tr>
+        <tr><td>Recibido de</td><td>{{ d.alumno.nombreCompleto }}</td></tr>
+        <tr><td>Documento</td><td>{{ d.alumno.numDoc }}</td></tr>
+        <tr *ngIf="d.alumno.tipoPersona"><td>Persona</td><td>{{ d.alumno.tipoPersona === 'juridica' ? 'Jurídica' : 'Natural' }}</td></tr>
+        <tr><td>Concepto</td><td>{{ d.liquidacion?.descripcion || d.ingreso['concepto'] || '—' }}</td></tr>
+      </ng-container>
+      <ng-template #reciboAlumno>
+        <tr><td>Documento</td><td>{{ d.alumno.numDoc }}</td></tr>
+        <tr><td>Alumno</td><td>{{ d.alumno.nombreCompleto }}</td></tr>
+        <tr><td>Concepto</td><td>{{ d.liquidacion?.descripcion || 'Pago' }}</td></tr>
+        <tr *ngIf="d.ingreso['tipoAbonoDescr'] || d.ingreso['tipoAbono']">
+          <td>Pago</td>
+          <td>{{ d.ingreso['tipoAbonoDescr'] || (d.ingreso['tipoAbono'] === 'total' ? 'Total' : 'Abono') }}</td>
+        </tr>
+      </ng-template>
+      <tr><td>Forma pago</td><td>{{ d.ingreso['tipoPagoDescr'] || d.ingreso['idTipoPago'] }}</td></tr>
+      <tr *ngIf="d.ingreso['cuentaBancariaDescr']"><td>Cuenta empresa</td><td>{{ d.ingreso['cuentaBancariaDescr'] }}</td></tr>
+      <tr *ngIf="d.ingreso['bancoDescr']"><td>Banco</td><td>{{ d.ingreso['bancoDescr'] }}</td></tr>
+      <tr *ngIf="d.ingreso['numComprobante']"><td>Ref.</td><td>{{ d.ingreso['numComprobante'] }}</td></tr>
+      <tr class="total-row"><td>RECIBIDO</td><td>{{ fmtMoney(d.ingreso['valor']) }}</td></tr>
+      <tr *ngIf="d.liquidacion && !d.esIngresoCaja"><td>Total ítem</td><td>{{ fmtMoney(d.liquidacion.valor) }}</td></tr>
+      <tr *ngIf="d.liquidacion && !d.esIngresoCaja"><td>Abonado</td><td>{{ fmtMoney(d.liquidacion.abonado) }}</td></tr>
+      <tr *ngIf="d.liquidacion && !d.esIngresoCaja"><td>Saldo</td><td>{{ fmtMoney(d.liquidacion.saldo) }}</td></tr>
+      <tr *ngIf="d.ingreso['observaciones']"><td>Obs.</td><td>{{ d.ingreso['observaciones'] }}</td></tr>
+    </table>
+
+    <div class="sep center">{{ linea() }}</div>
+    <div class="qr center" *ngIf="d.qrDataUrl">
+      <img [src]="d.qrDataUrl" alt="Código QR verificación" width="100" height="100" />
+    </div>
+    <footer class="pie center">{{ d.config.mensajePie }}</footer>
+    </article>
+  </ng-container>
+</div>

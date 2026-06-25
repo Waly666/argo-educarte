@@ -1,0 +1,50 @@
+<div class="blog-post-page">
+  <section class="blog-post-hero">
+    <div class="container">
+      <a routerLink="/blog" class="blog-back">← Volver a {{ blogLabel() }}</a>
+
+      @if (loading()) {
+        <p class="blog-muted">Cargando artículo…</p>
+      } @else if (error()) {
+        <div class="blog-not-found">
+          <h1>Artículo no encontrado</h1>
+          <p>{{ error() }}</p>
+          <a routerLink="/blog" class="btn btn-primary">Ir al blog</a>
+        </div>
+      } @else {
+        @if (post(); as article) {
+          @if (fecha(article)) {
+            <time class="blog-post-date">{{ fecha(article) }}</time>
+          }
+          <h1>{{ article.titulo }}</h1>
+          <p class="blog-post-author">Por {{ article.autorNombre }}</p>
+        }
+      }
+    </div>
+  </section>
+
+  @if (post(); as article) {
+    <article class="blog-post-body container">
+      <div class="blog-post-content">
+        @for (parrafo of parrafos(article.contenido); track $index) {
+          <p>{{ parrafo }}</p>
+        }
+      </div>
+
+      @if (article.imagenes?.length) {
+        <div class="blog-post-gallery">
+          @for (img of article.imagenes; track img.url) {
+            <figure class="blog-post-figure">
+              @if (imagenUrl(img.url); as src) {
+                <img [src]="src" [alt]="img.leyenda || article.titulo" loading="lazy" />
+              }
+              @if (img.leyenda) {
+                <figcaption>{{ img.leyenda }}</figcaption>
+              }
+            </figure>
+          }
+        </div>
+      }
+    </article>
+  }
+</div>

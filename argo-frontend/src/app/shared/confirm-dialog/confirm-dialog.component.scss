@@ -1,0 +1,204 @@
+:host {
+  --cd-accent: #ef4444;
+  --cd-accent-soft: #fef2f2;
+  --cd-accent-glow: rgba(239, 68, 68, 0.45);
+  --cd-accent-shadow: rgba(239, 68, 68, 0.35);
+  --cd-dot: rgba(239, 68, 68, 0.35);
+  position: fixed;
+  inset: 0;
+  z-index: 10100;
+  pointer-events: none;
+}
+
+.cd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(3, 8, 26, 0.72);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.cd-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px 32px 28px;
+  text-align: center;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  pointer-events: auto;
+  font-family: var(--font, system-ui, sans-serif);
+  color: #0f172a;
+
+  &.variant-primary {
+    --cd-accent: #3b82f6;
+    --cd-accent-soft: #eff6ff;
+    --cd-accent-glow: rgba(59, 130, 246, 0.45);
+    --cd-accent-shadow: rgba(59, 130, 246, 0.35);
+    --cd-dot: rgba(59, 130, 246, 0.35);
+  }
+
+  &.variant-success {
+    --cd-accent: #10b981;
+    --cd-accent-soft: #ecfdf5;
+    --cd-accent-glow: rgba(16, 185, 129, 0.45);
+    --cd-accent-shadow: rgba(16, 185, 129, 0.35);
+    --cd-dot: rgba(16, 185, 129, 0.35);
+  }
+
+  &.variant-warn {
+    --cd-accent: #f59e0b;
+    --cd-accent-soft: #fffbeb;
+    --cd-accent-glow: rgba(245, 158, 11, 0.45);
+    --cd-accent-shadow: rgba(245, 158, 11, 0.35);
+    --cd-dot: rgba(245, 158, 11, 0.4);
+  }
+}
+
+.cd-icon-wrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 20px;
+}
+
+.cd-icon-ring {
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  height: 72px;
+  margin: 8px auto 0;
+  border-radius: 50%;
+  background: var(--cd-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 12px var(--cd-accent-soft),
+    0 0 32px var(--cd-accent-glow);
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.cd-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--cd-dot);
+}
+
+.cd-dot-1 { width: 8px; height: 8px; top: 4px; left: 8px; opacity: 0.7; }
+.cd-dot-2 { width: 6px; height: 6px; top: 18px; right: 4px; opacity: 0.5; }
+.cd-dot-3 { width: 10px; height: 10px; bottom: 12px; left: 0; opacity: 0.45; }
+.cd-dot-4 { width: 5px; height: 5px; bottom: 4px; right: 14px; opacity: 0.6; }
+.cd-dot-5 { width: 7px; height: 7px; top: 50%; right: -2px; opacity: 0.35; }
+
+.cd-title {
+  margin: 0 0 12px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.cd-message {
+  margin: 0 0 28px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #64748b;
+  white-space: pre-line;
+}
+
+.cd-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+
+  &.single {
+    .cd-btn-confirm {
+      flex: 1;
+      max-width: 220px;
+    }
+  }
+}
+
+.cd-input-wrap {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+  text-align: left;
+}
+
+.cd-input-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.cd-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: #f8fafc;
+
+  &:focus {
+    outline: none;
+    border-color: var(--cd-accent);
+    box-shadow: 0 0 0 3px var(--cd-accent-glow);
+    background: #fff;
+  }
+}
+
+.cd-btn {
+  flex: 1;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s;
+  border: none;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.cd-btn-cancel {
+  background: #fff;
+  color: #0f172a;
+  border: 1.5px solid #e2e8f0;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+}
+
+.cd-btn-confirm {
+  background: var(--cd-accent);
+  color: #fff;
+  box-shadow: 0 8px 20px var(--cd-accent-shadow);
+
+  &:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 10px 24px var(--cd-accent-shadow);
+  }
+}

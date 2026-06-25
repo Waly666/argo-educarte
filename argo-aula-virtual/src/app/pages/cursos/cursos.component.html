@@ -1,0 +1,56 @@
+<section class="catalog-page">
+  <div class="catalog-page__head">
+    <div class="container">
+      <header class="page-head">
+        <h1>{{ modo() === 'tienda' ? landing().catalogo.tituloTienda : landing().catalogo.tituloCursos }}</h1>
+        <p class="page-lead">
+          {{ modo() === 'tienda' ? landing().catalogo.leadTienda : landing().catalogo.leadCursos }}
+        </p>
+      </header>
+
+      <div class="filters">
+        <div class="search">
+          <input
+            type="search"
+            [placeholder]="landing().catalogo.placeholderBuscar"
+            [value]="q()"
+            (input)="q.set($any($event.target).value)"
+            (keyup.enter)="cargar()" />
+          <button type="button" class="btn btn-primary btn-sm" (click)="cargar()">Buscar</button>
+        </div>
+        @if (categorias().length) {
+          <div class="cat-chips">
+            <button
+              type="button"
+              class="chip"
+              [class.active]="catSel() === null"
+              (click)="filtrarCategoria(null)">
+              Todas
+            </button>
+            @for (cat of categorias(); track cat.idCategoria) {
+              <button
+                type="button"
+                class="chip"
+                [class.active]="catSel() === cat.idCategoria"
+                (click)="filtrarCategoria(cat.idCategoria)">
+                {{ cat.nombre }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="catalog-page__grid-wrap">
+    <div class="container">
+      <div class="catalog-grid">
+        @for (c of cursos(); track c.idPrograma) {
+          <av-curso-card [curso]="c" [modo]="modo()" [logoUrl]="logoUrl()" />
+        } @empty {
+          <p class="catalog-empty">No hay cursos publicados. Active «Publicado en portal» en ARGO → Aula virtual.</p>
+        }
+      </div>
+    </div>
+  </div>
+</section>

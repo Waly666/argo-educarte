@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /aula
+Disallow: /login
+Disallow: /registro
+
+Sitemap: https://finstruvial.edu.co/sitemap.xml

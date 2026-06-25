@@ -1,0 +1,101 @@
+$head-alarm-h: 3.35rem;
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+:host:empty {
+  display: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.head-alarm-root {
+  position: relative;
+  width: 100%;
+}
+
+.head-alarm-wrap {
+  position: relative;
+  height: $head-alarm-h;
+  max-height: $head-alarm-h;
+  overflow: visible;
+}
+
+.head-alarm {
+  position: relative;
+  height: $head-alarm-h;
+  min-height: $head-alarm-h;
+  max-height: $head-alarm-h;
+  overflow: visible;
+  padding-right: 5.5rem;
+  box-sizing: border-box;
+}
+
+.head-alarm-body {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.head-alarm-pulse {
+  z-index: 0;
+  pointer-events: none;
+}
+
+.head-alarm-title,
+.head-alarm-detail,
+.head-alarm-text,
+.head-alarm-direccion {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.head-alarm-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  align-self: auto;
+  transform: none;
+  opacity: 1;
+  box-sizing: border-box;
+
+  span[aria-hidden='true'] {
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.72);
+    filter: none;
+    opacity: 1;
+  }
+}

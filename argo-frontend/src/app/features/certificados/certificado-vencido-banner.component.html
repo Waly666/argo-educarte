@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-cert-vencido"
+  icon="⛔"
+  [title]="titulo()"
+  [hint]="'Certificados vencidos — últimos ' + (alertSvc.data()?.diasVentana ?? 3) + ' días'"
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

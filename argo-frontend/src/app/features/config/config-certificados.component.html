@@ -1,0 +1,459 @@
+<section class="cert-page card">
+  <header class="cert-head">
+    <div class="cert-head-main">
+      <h1>Configuración de certificados</h1>
+      <p>
+        Por cada tipo de capacitación elija un solo formato — vertical u horizontal — y suba el PNG de fondo.
+        Ajuste textos, firmas, QR y certificación automática al pagar.
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="cert-head-badges">
+        <span class="cert-chip cert-chip--sky">{{ plantillasAsignadas() }} formato{{ plantillasAsignadas() === 1 ? '' : 's' }}</span>
+        <span class="cert-chip" [class.cert-chip--on]="form().mostrarQr !== false" [class.cert-chip--off]="form().mostrarQr === false">
+          QR {{ form().mostrarQr !== false ? 'ON' : 'OFF' }}
+        </span>
+        <span class="cert-chip" [class.cert-chip--on]="form().autoCertificadoAlPagar !== false" [class.cert-chip--off]="form().autoCertificadoAlPagar === false">
+          Auto-cert {{ form().autoCertificadoAlPagar !== false ? 'ON' : 'OFF' }}
+        </span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="cert-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="cert-msg" [class.cert-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="cert-form argo-form-shell">
+      <!-- 1. Datos -->
+      <section class="cert-section cert-section--sky">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">1</span>
+          <div>
+            <h2 class="cert-section-title">Datos del certificado</h2>
+            <p class="cert-section-desc">Encabezado institucional, firmantes y prefijo del identificador (2.º prefijo opcional, ej. año).</p>
+          </div>
+        </header>
+        <div class="cert-section-body cert-stack">
+          <div class="cert-grid cert-grid--datos1">
+            <label class="cert-field cert-field--grow">
+              <span class="cert-label">Nombre institución (encabezado)</span>
+              <input type="text" [ngModel]="form().nombreInstitucion" (ngModelChange)="patch('nombreInstitucion', $event)" />
+            </label>
+            <label class="cert-field">
+              <span class="cert-label">Ciudad (pie del certificado)</span>
+              <input type="text" [ngModel]="form().ciudad" (ngModelChange)="patch('ciudad', $event)" placeholder="Ej. Villavicencio" />
+            </label>
+          </div>
+          <div class="cert-grid cert-grid--datos2">
+            <label class="cert-field">
+              <span class="cert-label">Nombre director</span>
+              <input type="text" [ngModel]="form().nombreDirector" (ngModelChange)="patch('nombreDirector', $event)" />
+            </label>
+            <label class="cert-field">
+              <span class="cert-label">Nombre instructor</span>
+              <input type="text" [ngModel]="form().nombreInstructor" (ngModelChange)="patch('nombreInstructor', $event)" />
+            </label>
+          </div>
+          <div class="num-id-block num-card--cert">
+            <h3 class="num-card-title num-card-title--cert">Identificador del certificado</h3>
+            <div class="num-codigo-form">
+              <div class="num-codigo-grid num-codigo-grid--2">
+                <div class="num-codigo-cell">
+                  <div class="num-codigo-head">
+                    <span class="num-codigo-label">Prefijo</span>
+                    <argo-switch
+                      [checked]="form().usarPrefijoCertificado !== false"
+                      (checkedChange)="patch('usarPrefijoCertificado', $event)"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    [ngModel]="form().prefijoCertificado"
+                    (ngModelChange)="patch('prefijoCertificado', $event)"
+                    [disabled]="form().usarPrefijoCertificado === false"
+                    placeholder="CERT"
+                  />
+                </div>
+                <div class="num-codigo-cell">
+                  <div class="num-codigo-head">
+                    <span class="num-codigo-label">2.º prefijo</span>
+                    <argo-switch
+                      [checked]="!!form().usarSegundoPrefijoCertificado"
+                      (checkedChange)="patch('usarSegundoPrefijoCertificado', $event)"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    [ngModel]="form().segundoPrefijoCertificado"
+                    (ngModelChange)="patch('segundoPrefijoCertificado', $event)"
+                    [disabled]="!form().usarSegundoPrefijoCertificado"
+                    [placeholder]="anioActual"
+                  />
+                </div>
+              </div>
+              <p class="num-codigo-note">Use el switch para incluir u omitir cada segmento. El 2.º prefijo suele ser el año.</p>
+              <div class="num-codigo-preview">
+                <span class="num-codigo-preview-k">Vista previa</span>
+                <code class="num-codigo-preview-v">{{ previewCodigoCertificado() }}</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Alertas -->
+      <section class="cert-section cert-section--amber">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">2</span>
+          <div>
+            <h2 class="cert-section-title">Alertas de vencimiento</h2>
+            <p class="cert-section-desc">
+              Cuándo aparecen las alarmas del banner superior. Requiere permisos
+              <em>Certificados por vencer</em> / <em>Certificados vencidos</em> en el rol.
+            </p>
+          </div>
+        </header>
+        <div class="cert-section-body">
+          <div class="cert-grid cert-grid--pair">
+            <label class="cert-field">
+              <span class="cert-label">Días antes — certificados por vencer</span>
+              <input
+                type="number"
+                min="1"
+                max="60"
+                [ngModel]="form().diasAvisoCertificadoPorVencer ?? 15"
+                (ngModelChange)="patchNumeroAlerta('diasAvisoCertificadoPorVencer', $event, 60)" />
+              <span class="cert-field-hint">Desde N días antes hasta el día del vencimiento (incluye «vence hoy»).</span>
+            </label>
+            <label class="cert-field">
+              <span class="cert-label">Días después — certificados vencidos</span>
+              <input
+                type="number"
+                min="1"
+                max="30"
+                [ngModel]="form().diasAvisoCertificadoVencido ?? 3"
+                (ngModelChange)="patchNumeroAlerta('diasAvisoCertificadoVencido', $event, 30)" />
+              <span class="cert-field-hint">Cuántos días tras vencido sigue la alarma (día 1, 2… N después).</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. QR -->
+      <section class="cert-section cert-section--violet">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">3</span>
+          <div>
+            <h2 class="cert-section-title">Código QR (global)</h2>
+            <p class="cert-section-desc">
+              Active el QR aquí. La posición y el tamaño finos se ajustan en el editor de cada tipo (botón «Código QR»).
+            </p>
+          </div>
+        </header>
+        <div class="cert-section-body cert-stack">
+          <label class="cert-check">
+            <input type="checkbox" [ngModel]="form().mostrarQr !== false" (ngModelChange)="patch('mostrarQr', $event)" />
+            Incluir código QR en los certificados
+          </label>
+          @if (form().mostrarQr !== false) {
+            <div class="cert-grid cert-grid--pair">
+              <label class="cert-field">
+                <span class="cert-label">Posición inicial (si no personaliza por tipo)</span>
+                <select [ngModel]="form().qrPosicion || 'inferior_izquierda'" (ngModelChange)="patch('qrPosicion', $event)">
+                  @for (p of qrPosiciones; track p.id) {
+                    <option [value]="p.id">{{ p.label }}</option>
+                  }
+                </select>
+              </label>
+              <label class="cert-field cert-field--ancho">
+                <span class="cert-label">Tamaño inicial (% del ancho)</span>
+                <input
+                  type="number"
+                  min="5"
+                  max="22"
+                  step="0.5"
+                  [ngModel]="form().qrTamanoPct ?? 9.5"
+                  (ngModelChange)="patch('qrTamanoPct', clampQrPct($event))" />
+                <span class="cert-field-hint">~9–10% ≈ 20 mm en A4 vertical</span>
+              </label>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- 4. Firmas -->
+      <section class="cert-section cert-section--teal">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">4</span>
+          <div>
+            <h2 class="cert-section-title">Imágenes de firma</h2>
+            <p class="cert-section-desc">PNG o JPG del director e instructor para el pie del certificado.</p>
+          </div>
+        </header>
+        <div class="cert-section-body">
+          <div class="cert-grid cert-grid--pair">
+            <div class="cert-firma-block">
+              <span class="cert-label">Imagen firma director</span>
+              <label class="cert-file-btn ghost mini">
+                Subir imagen
+                <input type="file" accept="image/*" (change)="onFirmaDirector($event)" />
+              </label>
+              @if (form().urlFirmaDirector) {
+                <img class="cert-firma-preview" [src]="urlFirma(form().urlFirmaDirector)" alt="Firma director" />
+              }
+            </div>
+            <div class="cert-firma-block">
+              <span class="cert-label">Imagen firma instructor</span>
+              <label class="cert-file-btn ghost mini">
+                Subir imagen
+                <input type="file" accept="image/*" (change)="onFirmaInstructor($event)" />
+              </label>
+              @if (form().urlFirmaInstructor) {
+                <img class="cert-firma-preview" [src]="urlFirma(form().urlFirmaInstructor)" alt="Firma instructor" />
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Auto-cert -->
+      <section class="cert-section cert-section--rose">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">5</span>
+          <div>
+            <h2 class="cert-section-title">Certificación automática al pagar</h2>
+            <p class="cert-section-desc">
+              Al completar el pago (saldo $0) se genera el certificado según el formato.
+              Las jornadas se certifican por asistencia, no por pago.
+            </p>
+          </div>
+        </header>
+        <div class="cert-section-body cert-stack">
+          <label class="cert-check">
+            <input type="checkbox" [ngModel]="form().autoCertificadoAlPagar !== false" (ngModelChange)="patch('autoCertificadoAlPagar', $event)" />
+            Activar certificación automática al completar el pago
+          </label>
+          @if (form().autoCertificadoAlPagar !== false) {
+            <div class="cert-subblock">
+              <p class="cert-subtitle">Formatos que se certifican automáticamente</p>
+              <div class="cert-check-grid">
+                @for (t of tiposAutoCert; track t.id) {
+                  <label class="cert-check">
+                    <input type="checkbox" [ngModel]="autoActivo(t.id)" (ngModelChange)="toggleAuto(t.id, $event)" />
+                    {{ t.label }}
+                  </label>
+                }
+              </div>
+            </div>
+            @if (tiposCapacitacion().length) {
+              <div class="cert-subblock">
+                <p class="cert-subtitle">Excluir tipos de capacitación puntuales</p>
+                <p class="cert-field-hint">Aunque su formato esté activo, no se certificarán automáticamente.</p>
+                <div class="cert-check-grid">
+                  @for (tc of tiposCapacitacion(); track tc.idTipCap) {
+                    <label class="cert-check">
+                      <input type="checkbox" [ngModel]="tipoCapExcluido(tc.idTipCap)" (ngModelChange)="toggleTipoCapExcluido(tc.idTipCap, $event)" />
+                      {{ tc.label }}
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- 6. Formatos -->
+      <section class="cert-section cert-section--sky">
+        <header class="cert-section-head">
+          <span class="cert-section-badge">6</span>
+          <div>
+            <h2 class="cert-section-title">Formato por tipo de capacitación</h2>
+            <p class="cert-section-desc">
+              <span class="cert-step-pill">Paso 1</span>
+              Elija orientación y suba el PNG. Luego use el editor para ubicar cada texto y el QR.
+            </p>
+          </div>
+        </header>
+        <div class="cert-section-body cert-stack">
+          @for (t of tiposPrincipales; track t.id) {
+            <article class="cert-tipo-card">
+              <header class="cert-tipo-head">
+                <h3>{{ t.label }}</h3>
+                @if (plantillaDoc(slotTipo(t.id).id); as p) {
+                  <span class="cert-chip cert-chip--sky">{{ labelOrientacion(p.orientacion) }}</span>
+                  @if (p.urlFondo) {
+                    <span class="cert-chip cert-chip--on">PNG cargado</span>
+                  }
+                } @else {
+                  <span class="cert-chip cert-chip--warn">Sin plantilla</span>
+                }
+              </header>
+              <div class="cert-formato">
+                <div class="cert-orientacion">
+                  <span class="cert-ori-label">Orientación</span>
+                  @for (o of orientaciones; track o.id) {
+                    <label class="cert-ori-opt">
+                      <input
+                        type="radio"
+                        [name]="'ori-' + t.id"
+                        [value]="o.id"
+                        [ngModel]="slotTipo(t.id).orientacion"
+                        (ngModelChange)="onOrientacionTipo(t.id, $event)" />
+                      {{ o.label }}
+                    </label>
+                  }
+                </div>
+                @if (plantillaDoc(slotTipo(t.id).id); as p) {
+                  <div class="cert-thumb" [class.cert-thumb--horizontal]="p.orientacion === 'horizontal'">
+                    @if (p.urlFondo) {
+                      <img [src]="urlFondo(p)" [alt]="p.nombre" />
+                    } @else {
+                      <span class="cert-no-img">Sin imagen</span>
+                    }
+                  </div>
+                  <div class="cert-slot-actions">
+                    <label class="cert-file-btn ghost mini">
+                      {{ subiendoTipo(t.id) ? 'Subiendo…' : 'Reemplazar PNG' }}
+                      <input type="file" accept="image/png,image/webp,image/jpeg" [disabled]="subiendoTipo(t.id)" (change)="onFormatoFondo(t.id, $event)" />
+                    </label>
+                    <button type="button" class="danger mini" (click)="quitarFormato(t.id)">Quitar</button>
+                  </div>
+                } @else {
+                  <div class="cert-thumb cert-thumb--empty">
+                    <span class="cert-no-img">Sin plantilla {{ labelOrientacion(slotTipo(t.id).orientacion) | lowercase }}</span>
+                  </div>
+                  <label class="cert-file-btn primary mini">
+                    {{ subiendoTipo(t.id) ? 'Subiendo…' : 'Subir PNG' }}
+                    <input type="file" accept="image/png,image/webp,image/jpeg" [disabled]="subiendoTipo(t.id)" (change)="onFormatoFondo(t.id, $event)" />
+                  </label>
+                }
+              </div>
+              <argo-certificado-layout-editor
+                [tipo]="t.id"
+                [orientacion]="orientacionLayout(t.id)"
+                [urlFondoPreview]="urlFondoAbs(plantillaDoc(slotTipo(t.id).id))"
+                [urlFondoRel]="plantillaDoc(slotTipo(t.id).id)?.urlFondo || ''"
+                [layoutPorTipo]="form().layoutPorTipo || {}"
+                [mostrarQr]="form().mostrarQr !== false"
+                [qrPosicionGlobal]="form().qrPosicion || 'inferior_izquierda'"
+                [qrTamanoGlobalPct]="form().qrTamanoPct ?? 9.5"
+                (layoutChange)="onLayoutChange($event)" />
+            </article>
+          }
+
+          <article class="cert-tipo-card cert-tipo-card--special">
+            <header class="cert-tipo-head">
+              <h3>Mercancías peligrosas</h3>
+              <span class="cert-chip cert-chip--violet">Clasificación especial</span>
+              @if (plantillaDoc(slotTipo('mercancias_peligrosas').id); as p) {
+                <span class="cert-chip cert-chip--sky">{{ labelOrientacion(p.orientacion) }}</span>
+              }
+            </header>
+            <p class="cert-field-hint">Formato por nombre del programa (no usa el flujo estándar de pago).</p>
+            <div class="cert-formato">
+              <div class="cert-orientacion">
+                <span class="cert-ori-label">Orientación</span>
+                @for (o of orientaciones; track o.id) {
+                  <label class="cert-ori-opt">
+                    <input
+                      type="radio"
+                      name="ori-mp"
+                      [value]="o.id"
+                      [ngModel]="slotTipo('mercancias_peligrosas').orientacion"
+                      (ngModelChange)="onOrientacionTipo('mercancias_peligrosas', $event)" />
+                    {{ o.label }}
+                  </label>
+                }
+              </div>
+              @if (plantillaDoc(slotTipo('mercancias_peligrosas').id); as p) {
+                <div class="cert-thumb" [class.cert-thumb--horizontal]="p.orientacion === 'horizontal'">
+                  @if (p.urlFondo) {
+                    <img [src]="urlFondo(p)" [alt]="p.nombre" />
+                  } @else {
+                    <span class="cert-no-img">Sin imagen</span>
+                  }
+                </div>
+                <div class="cert-slot-actions">
+                  <label class="cert-file-btn ghost mini">
+                    {{ subiendoTipo('mercancias_peligrosas') ? 'Subiendo…' : 'Reemplazar PNG' }}
+                    <input type="file" accept="image/png,image/webp,image/jpeg" [disabled]="subiendoTipo('mercancias_peligrosas')" (change)="onFormatoFondo('mercancias_peligrosas', $event)" />
+                  </label>
+                  <button type="button" class="danger mini" (click)="quitarFormato('mercancias_peligrosas')">Quitar</button>
+                </div>
+              } @else {
+                <div class="cert-thumb cert-thumb--empty">
+                  <span class="cert-no-img">Sin plantilla</span>
+                </div>
+                <label class="cert-file-btn primary mini">
+                  {{ subiendoTipo('mercancias_peligrosas') ? 'Subiendo…' : 'Subir PNG' }}
+                  <input type="file" accept="image/png,image/webp,image/jpeg" [disabled]="subiendoTipo('mercancias_peligrosas')" (change)="onFormatoFondo('mercancias_peligrosas', $event)" />
+                </label>
+              }
+            </div>
+            <argo-certificado-layout-editor
+              tipo="mercancias_peligrosas"
+              [orientacion]="orientacionLayout('mercancias_peligrosas')"
+              [urlFondoPreview]="urlFondoAbs(plantillaDoc(slotTipo('mercancias_peligrosas').id))"
+              [urlFondoRel]="plantillaDoc(slotTipo('mercancias_peligrosas').id)?.urlFondo || ''"
+              [layoutPorTipo]="form().layoutPorTipo || {}"
+              [mostrarQr]="form().mostrarQr !== false"
+              [qrPosicionGlobal]="form().qrPosicion || 'inferior_izquierda'"
+              [qrTamanoGlobalPct]="form().qrTamanoPct ?? 9.5"
+              (layoutChange)="onLayoutChange($event)" />
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <!-- 7. Proceso de vencimiento manual -->
+    <section class="cert-section cert-section--slate">
+      <header class="cert-section-head">
+        <span class="cert-section-badge">⚙</span>
+        <div>
+          <h2 class="cert-section-title">Proceso de vencimiento</h2>
+          <p class="cert-section-desc">
+            El sistema actualiza automáticamente a <strong>Vencido</strong> todos los días a la <strong>01:00 AM</strong>.
+            Use este botón si necesita forzar el proceso ahora mismo sin esperar.
+          </p>
+        </div>
+      </header>
+      <div class="cert-section-body">
+        <div class="cert-marcar-vencidos">
+          <div class="cert-mv-info">
+            <span class="cert-mv-icon">🕐</span>
+            <div>
+              <p class="cert-mv-titulo">Marcar certificados vencidos ahora</p>
+              <p class="cert-mv-desc">
+                Busca todos los certificados con fecha de vencimiento pasada y los actualiza a estado <em>Vencido</em> en la base de datos.
+                Solo afecta los que aún figuren como <em>Vigente</em> y tengan fecha de vencimiento definida.
+              </p>
+            </div>
+          </div>
+          @if (msgVencidos(); as texto) {
+            <div class="cert-mv-result" [class.cert-mv-result--ok]="!msgVencidosError()" [class.cert-mv-result--err]="msgVencidosError()">
+              {{ texto }}
+            </div>
+          }
+          <button
+            type="button"
+            class="ghost"
+            [disabled]="marcandoVencidos()"
+            (click)="marcarVencidosAhora()">
+            {{ marcandoVencidos() ? 'Procesando…' : '⚡ Ejecutar proceso ahora' }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="cert-foot">
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  }
+</section>

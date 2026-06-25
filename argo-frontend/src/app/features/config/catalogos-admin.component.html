@@ -1,0 +1,438 @@
+<section class="cat-page card" [class.cat-page--wide]="esCatalogoItemsInspeccion()">
+  <header class="cat-head">
+    <div class="cat-head-main">
+      <h1>Catálogos del sistema</h1>
+      <p>
+        Administración de tablas catálogo: consultar, crear, editar, eliminar e importar datos.
+        Programas y servicios se gestionan en sus menús propios.
+      </p>
+    </div>
+    <div class="cat-head-actions">
+      @if (!loading() && catalogos().length) {
+        <span class="cat-chip">{{ catalogos().length }} tablas</span>
+      }
+      <button type="button" class="ghost" (click)="recargarExcel()" [disabled]="saving()">
+        Recargar desde Excel
+      </button>
+    </div>
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="cat-banner" [class.cat-banner--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="cat-layout" [class.cat-layout--wide-list]="esCatalogoItemsInspeccion()">
+    <aside class="cat-sidebar">
+      <div class="cat-sidebar-head">
+        <span class="cat-sidebar-title">Tablas</span>
+        <span class="cat-sidebar-count">{{ catalogosFiltrados().length }}</span>
+      </div>
+      <input
+        type="search"
+        class="cat-sidebar-search"
+        placeholder="Filtrar tablas…"
+        [ngModel]="filtroSidebar()"
+        (ngModelChange)="filtroSidebar.set($event)" />
+      <div class="cat-sidebar-list">
+        @for (c of catalogosFiltrados(); track c.nombre) {
+          <button
+            type="button"
+            class="cat-nav-item"
+            [class.cat-nav-item--active]="seleccionado() === c.nombre"
+            (click)="seleccionar(c.nombre)">
+            <span class="cat-nav-label">{{ c.label }}</span>
+            @if (c.grande) {
+              <span class="cat-nav-badge">grande</span>
+            }
+          </button>
+        }
+        @if (!catalogosFiltrados().length) {
+          <p class="cat-sidebar-empty">Sin coincidencias.</p>
+        }
+      </div>
+    </aside>
+
+    @if (seleccionado()) {
+      <main class="cat-main">
+        <header class="cat-main-head">
+          <div>
+            <h2>{{ labelActual() }}</h2>
+            @if (listado(); as L) {
+              <span class="cat-records">{{ L.total }} registro{{ L.total === 1 ? '' : 's' }}</span>
+            }
+          </div>
+        </header>
+
+        @if (!mostrarForm()) {
+          <div class="cat-toolbar">
+            <span class="cat-search-icon" aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              class="cat-search"
+              placeholder="Buscar (mín. 2 caracteres)…"
+              [ngModel]="busqueda()"
+              (ngModelChange)="busqueda.set($event)"
+              (keyup.enter)="pagina.set(0); cargar()" />
+            <button type="button" class="ghost" (click)="pagina.set(0); cargar()">Buscar</button>
+            <button type="button" class="primary cat-btn-new" (click)="nuevo()">+ Nuevo registro</button>
+            <button type="button" class="ghost" (click)="toggleImport()">Importar JSON</button>
+            <div class="cat-view-toggle" role="group" aria-label="Modo de vista">
+              <button type="button" class="cat-view-btn" [class.cat-view-btn--active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+              <button type="button" class="cat-view-btn" [class.cat-view-btn--active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+            </div>
+          </div>
+        }
+
+        @if (mostrarImport()) {
+          <section class="cat-import">
+            <header class="cat-import-head">
+              <h3>Importar JSON — {{ labelActual() }}</h3>
+              <p>
+                Pegue un arreglo <code>[&#123;...&#125;]</code> o <code>&#123; "rows": [...] &#125;</code>.
+                «Reemplazar» borra la tabla actual antes de importar.
+              </p>
+            </header>
+            <input type="file" accept=".json,application/json" (change)="onFileImport($event)" />
+            <textarea rows="6" [ngModel]="importJson()" (ngModelChange)="importJson.set($event)"></textarea>
+            <footer class="cat-import-foot">
+              <button type="button" class="ghost" (click)="toggleImport()">Cancelar</button>
+              <button type="button" class="ghost" (click)="ejecutarImport('agregar')" [disabled]="saving()">Agregar</button>
+              <button type="button" class="danger" (click)="ejecutarImport('reemplazar')" [disabled]="saving()">Reemplazar todo</button>
+            </footer>
+          </section>
+        }
+
+        @if (mostrarForm()) {
+          <div class="cat-form argo-form-shell" [class.cat-form--wide]="esCatalogoInspeccion() || esCatalogoDocumento()">
+            <header class="cat-form-head">
+              <div>
+                <span class="cat-form-kicker">{{ editandoId() ? 'Edición' : 'Alta' }}</span>
+                <h3>{{ editandoId() ? 'Editar registro' : 'Nuevo registro' }}</h3>
+                <p class="cat-form-sub">{{ labelActual() }}</p>
+              </div>
+              <button type="button" class="ghost cat-form-close" (click)="cancelar()" aria-label="Cerrar">×</button>
+            </header>
+
+            <div class="cat-fields-grid">
+              @if (!camposForm().length) {
+                <p class="cat-field-hint cat-field-hint--warn cat-field--wide">
+                  No se pudieron cargar los campos del formulario. Recargue la página o contacte soporte.
+                </p>
+              }
+              @for (c of camposForm(); track c) {
+                <div
+                  class="cat-field"
+                  [class.cat-field--wide]="esCatalogoInspeccion() && campoEsTextoLargo(c)"
+                  [class.cat-field--select]="esCampoSelectCaract(c) || esCampoSelectClaseServ(c) || esCampoSelectSede(c)">
+                  <span class="cat-label">{{ labelColumna(c) }}</span>
+                  @if (esCampoSelectClaseServ(c)) {
+                    <select [ngModel]="formDoc()[c]" (ngModelChange)="patchCampo(c, $event)">
+                      @for (opt of clasesServicioOpciones; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
+                  } @else if (esCampoSelectSede(c)) {
+                    <select [ngModel]="formDoc()[c]" (ngModelChange)="patchCampo(c, $event)">
+                      <option value="">— Seleccione sede —</option>
+                      @for (s of sedesCatalogo(); track s.idSede) {
+                        <option [value]="s.idSede">{{ s.nombre }}{{ s.codigo ? ' (' + s.codigo + ')' : '' }}</option>
+                      }
+                    </select>
+                    @if (!sedesCatalogo().length) {
+                      <p class="cat-field-hint cat-field-hint--warn">
+                        No hay sedes activas. Créelas primero en Configuración → Sedes.
+                      </p>
+                    }
+                  } @else if (esCatalogoInspeccion() && campoEsTextoLargo(c)) {
+                    <textarea rows="4" [ngModel]="formDoc()[c]" (ngModelChange)="patchCampo(c, $event)"></textarea>
+                  } @else if (esCatalogoCaractInspeccion() && c === 'idItem') {
+                    <div class="cat-combo-wrap">
+                      <argo-catalogo-enum-buscar
+                        placeholder="Seleccione o escriba para buscar ítem…"
+                        [textoInicial]="textoItemInspeccionForm()"
+                        [modoCombo]="true"
+                        [remoto]="false"
+                        [minLength]="1"
+                        [disabled]="cargandoItemsInspeccion()"
+                        [opcionesLocales]="opcionesItemInspeccionForm()"
+                        (seleccionado)="onItemInspeccionPick($event)"
+                        (limpiado)="onItemInspeccionLimpiar()" />
+                      @if (!cargandoItemsInspeccion() && !itemsInspeccionOpciones().length) {
+                        <p class="cat-field-hint cat-field-hint--warn">
+                          No hay ítems. Créelos primero en «Ítems inspección preoperacional».
+                        </p>
+                      }
+                      @if (itemInspeccionFormSeleccionado(); as sel) {
+                        <p class="cat-field-hint"><strong>Tipos de vehículo:</strong> {{ sel.tipos }}</p>
+                      }
+                      <button type="button" class="ghost mini linkish" (click)="cargarItemsInspeccionOpciones()">
+                        Actualizar lista de ítems
+                      </button>
+                    </div>
+                  } @else {
+                    <input
+                      [type]="inputTypeCampo(c)"
+                      [step]="esCampoMoneda(c) ? 1 : campoEsNumerico(c) ? 1 : undefined"
+                      [min]="inputTypeCampo(c) === 'number' ? 0 : undefined"
+                      [ngModel]="formDoc()[c]"
+                      (ngModelChange)="patchCampo(c, $event)"
+                      [readonly]="c === '_id'" />
+                  }
+                </div>
+              }
+            </div>
+
+            @if (esCatalogoDocumento()) {
+              <div class="clases-block">
+                <h4>Vencimiento del documento</h4>
+                <label class="clase-item clase-item--full">
+                  <input type="checkbox" [ngModel]="formControlaVencimiento()" (ngModelChange)="formControlaVencimiento.set($event)" />
+                  <span class="clase-item-text">Controla vencimiento (exige fechas de expedición y vencimiento al registrar)</span>
+                </label>
+                <p class="cat-hint">
+                  Desmarque para documentos permanentes (ej. cédula, tarjeta de propiedad).
+                  También configurable en Configuración → Requisitos vehículos / empleados.
+                </p>
+              </div>
+            }
+
+            @if (esCatalogoClaseVehiculo()) {
+              <div class="clases-block">
+                <h4>Licencias de conducción que puede capacitar</h4>
+                <p class="cat-hint">
+                  Marque las categorías (A1, B1, etc.) para las que este tipo de vehículo sirve en clases prácticas CEA.
+                </p>
+                <div class="clases-grid licencias-grid">
+                  @for (cat of categoriasLicenciaLista; track cat) {
+                    <label class="clase-item">
+                      <input type="checkbox" [checked]="licenciaCatMarcada(cat)" (change)="toggleLicenciaCat(cat, $any($event.target).checked)" />
+                      <span class="clase-item-text">{{ cat }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (esCatalogoItemsInspeccion()) {
+              <section class="tipo-vehiculo-panel">
+                <header class="tipo-vehiculo-head">
+                  <div class="tipo-vehiculo-title">
+                    <h4>Tipos de vehículo</h4>
+                    <p class="cat-hint">Seleccione dónde aplica el ítem. Vacío = todos los tipos.</p>
+                  </div>
+                  <span class="tipo-vehiculo-badge" [class.badge-all]="resumenTiposVehiculoInspeccion().todos">
+                    {{ resumenTiposVehiculoInspeccion().todos ? 'Todos los tipos' : resumenTiposVehiculoInspeccion().count + ' seleccionados' }}
+                  </span>
+                </header>
+                @if (clasesVehiculo().length) {
+                  <div class="tipo-vehiculo-toolbar">
+                    <input type="search" class="tipo-vehiculo-search" placeholder="Buscar tipo de vehículo…" [ngModel]="filtroTiposVehiculo()" (ngModelChange)="filtroTiposVehiculo.set($event)" />
+                    <div class="tipo-vehiculo-actions">
+                      <button type="button" class="ghost mini" (click)="marcarTiposVehiculoFiltrados()" [disabled]="!clasesVehiculoFiltradas().length">Marcar visibles</button>
+                      <button type="button" class="ghost mini" (click)="limpiarTiposVehiculo()" [disabled]="!formTiposVehiculo().length">Limpiar</button>
+                    </div>
+                  </div>
+                }
+                @if (clasesVehiculoFiltradas().length) {
+                  <div class="tipo-vehiculo-chips">
+                    @for (c of clasesVehiculoFiltradas(); track c.idClase) {
+                      <button type="button" class="tipo-chip" [class.selected]="tipoVehiculoMarcado(c.label)" (click)="toggleTipoVehiculoChip(c.label)">
+                        <span class="chip-mark" aria-hidden="true"></span>
+                        <span class="chip-text">{{ c.label }}</span>
+                      </button>
+                    }
+                  </div>
+                }
+                @if (clasesVehiculo().length && !clasesVehiculoFiltradas().length) {
+                  <p class="tipo-vehiculo-empty">No hay tipos que coincidan con «{{ filtroTiposVehiculo() }}».</p>
+                }
+                @if (!clasesVehiculo().length) {
+                  <p class="cat-hint">Cargue el catálogo «Clases de vehículo».</p>
+                }
+                @if (!resumenTiposVehiculoInspeccion().todos) {
+                  <div class="tipo-vehiculo-resumen">
+                    <span class="resumen-label">Aplica a:</span>
+                    @for (t of resumenTiposVehiculoInspeccion().labels; track t) {
+                      <span class="resumen-tag">{{ t }}</span>
+                    }
+                  </div>
+                }
+              </section>
+            }
+
+            @if (esCatalogoInspeccionLegacy()) {
+              <section class="tipo-vehiculo-panel legacy">
+                <header class="tipo-vehiculo-head">
+                  <div class="tipo-vehiculo-title">
+                    <h4>Clases de vehículo</h4>
+                    <p class="cat-hint">Catálogo legacy. Preferir «Ítems inspección preoperacional».</p>
+                  </div>
+                  <span class="tipo-vehiculo-badge" [class.badge-all]="resumenClasesLegacyInspeccion().todos">
+                    {{ resumenClasesLegacyInspeccion().todos ? 'Todas las clases' : resumenClasesLegacyInspeccion().count + ' seleccionadas' }}
+                  </span>
+                </header>
+                @if (clasesVehiculo().length) {
+                  <div class="tipo-vehiculo-toolbar">
+                    <input type="search" class="tipo-vehiculo-search" placeholder="Buscar clase…" [ngModel]="filtroTiposVehiculo()" (ngModelChange)="filtroTiposVehiculo.set($event)" />
+                    <div class="tipo-vehiculo-actions">
+                      <button type="button" class="ghost mini" (click)="marcarClasesLegacyFiltradas()" [disabled]="!clasesVehiculoFiltradas().length">Marcar visibles</button>
+                      <button type="button" class="ghost mini" (click)="limpiarClasesItem()" [disabled]="!formIdClases().length">Limpiar</button>
+                    </div>
+                  </div>
+                }
+                @if (clasesVehiculoFiltradas().length) {
+                  <div class="tipo-vehiculo-chips">
+                    @for (c of clasesVehiculoFiltradas(); track c.idClase) {
+                      <button type="button" class="tipo-chip" [class.selected]="claseMarcada(c.idClase)" (click)="toggleClaseLegacyChip(c.idClase)">
+                        <span class="chip-mark" aria-hidden="true"></span>
+                        <span class="chip-text">{{ c.label }}</span>
+                      </button>
+                    }
+                  </div>
+                }
+              </section>
+            }
+
+            <footer class="cat-form-foot">
+              <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+              <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+                {{ saving() ? 'Guardando…' : 'Guardar' }}
+              </button>
+            </footer>
+          </div>
+        }
+
+        @if (!mostrarForm() && !loading()) {
+          @if (listado(); as L) {
+            @if (L.total > 0) {
+              <div class="cat-pager">
+                <div class="cat-pager-info">
+                  <span class="cat-pager-count">
+                    Mostrando <strong>{{ rangoRegistros().desde }}–{{ rangoRegistros().hasta }}</strong>
+                    de <strong>{{ L.total }}</strong>
+                  </span>
+                  <span class="cat-pager-meta">Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+                </div>
+                <div class="cat-pager-nav">
+                  <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="!puedePaginaAnterior() || loading()">← Anterior</button>
+                  <button type="button" class="ghost" (click)="paginaSiguiente()" [disabled]="!puedePaginaSiguiente() || loading()">Siguiente →</button>
+                </div>
+              </div>
+            }
+
+            @if (vista() === 'lista') {
+              <div
+                class="cat-table-wrap"
+                [class.cat-table-wrap--wide]="esCatalogoInspeccion() || esCatalogoDocumento()"
+                [class.cat-table-wrap--items-inspeccion]="esCatalogoItemsInspeccion()">
+                <table class="cat-table">
+                  <thead>
+                    <tr>
+                      @for (c of columnasListado(); track c) {
+                        <th>{{ labelColumna(c) }}</th>
+                      }
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of L.rows; track idMongo(row)) {
+                      <tr>
+                        @for (c of columnasListado(); track c) {
+                          <td
+                            [class.col-texto]="campoEsTextoLargo(c) || c === 'tiposVehiculoItem'"
+                            [class.col-tipos-veh]="esCatalogoItemsInspeccion() && c === 'tiposVehiculo'"
+                            [class.col-id-item]="esCatalogoItemsInspeccion() && c === 'idItem'">
+                            @if (usarCapsula(c)) {
+                              <span [ngClass]="capParaCampo(c, valorCelda(row, c))">{{ valorCelda(row, c) }}</span>
+                            } @else {
+                              {{ valorCelda(row, c) }}
+                            }
+                          </td>
+                        }
+                        <td class="cat-row-actions">
+                          <button type="button" class="ghost mini" (click)="editar(row)">Editar</button>
+                          <button type="button" class="danger mini" (click)="eliminar(row)">Eliminar</button>
+                        </td>
+                      </tr>
+                    }
+                    @if (!L.rows.length) {
+                      <tr>
+                        <td [attr.colspan]="columnasListado().length + 1" class="cat-empty-cell">Sin registros.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="cat-cards" [class.cat-cards--wide]="esCatalogoInspeccion() || esCatalogoDocumento()">
+                @for (row of L.rows; track idMongo(row)) {
+                  <article class="cat-card">
+                    <header class="cat-card-head">
+                      <h3>{{ cardTitulo(row) }}</h3>
+                    </header>
+                    <dl class="cat-card-fields">
+                      @if (esCatalogoInspeccionLegacy()) {
+                        <div><dt>{{ labelCampo('idClases') }}</dt><dd>{{ formatIdClases(row['idClases']) }}</dd></div>
+                      }
+                      @if (esCatalogoDocumento()) {
+                        <div><dt>{{ labelCampo('controlaVencimiento') }}</dt><dd>{{ formatControlaVencimiento(row['controlaVencimiento']) }}</dd></div>
+                      }
+                      @for (c of columnasCards(); track c) {
+                        <div>
+                          <dt>{{ labelColumna(c) }}</dt>
+                          <dd>
+                            @if (usarCapsula(c)) {
+                              <span [ngClass]="capParaCampo(c, valorCelda(row, c))">{{ valorCelda(row, c) }}</span>
+                            } @else {
+                              {{ valorCelda(row, c) }}
+                            }
+                          </dd>
+                        </div>
+                      }
+                    </dl>
+                    <footer class="cat-card-foot">
+                      <button type="button" class="ghost mini" (click)="editar(row)">Editar</button>
+                      <button type="button" class="danger mini" (click)="eliminar(row)">Eliminar</button>
+                    </footer>
+                  </article>
+                }
+                @if (!L.rows.length) {
+                  <div class="cat-empty cat-empty--card">
+                    <span class="cat-empty-icon" aria-hidden="true">◎</span>
+                    <p>Sin registros en esta tabla.</p>
+                    <button type="button" class="ghost" (click)="nuevo()">+ Nuevo registro</button>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (L.total > pageSize) {
+              <div class="cat-pager cat-pager--foot">
+                <div class="cat-pager-info">
+                  <span class="cat-pager-count">
+                    Mostrando <strong>{{ rangoRegistros().desde }}–{{ rangoRegistros().hasta }}</strong>
+                    de <strong>{{ L.total }}</strong>
+                  </span>
+                  <span class="cat-pager-meta">Página {{ pagina() + 1 }} / {{ totalPaginas() }}</span>
+                </div>
+                <div class="cat-pager-nav">
+                  <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="!puedePaginaAnterior() || loading()">← Anterior</button>
+                  <button type="button" class="ghost" (click)="paginaSiguiente()" [disabled]="!puedePaginaSiguiente() || loading()">Siguiente →</button>
+                </div>
+              </div>
+            }
+          }
+        }
+
+        @if (loading()) {
+          <p class="cat-loading">Cargando registros…</p>
+        }
+      </main>
+    } @else {
+      <div class="cat-empty cat-empty--pick">
+        <span class="cat-empty-icon" aria-hidden="true">◎</span>
+        <p>Seleccione una tabla del panel izquierdo.</p>
+      </div>
+    }
+  </div>
+</section>

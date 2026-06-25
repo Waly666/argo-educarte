@@ -1,0 +1,80 @@
+name: argo
+
+services:
+  argo-mongo:
+    image: mongo:6
+    container_name: argo-mongo
+    restart: unless-stopped
+    volumes:
+      - argo_mongo_data:/data/db
+    networks:
+      - argo-net
+
+  argo-backend:
+    build:
+      context: ./argo-backend
+      dockerfile: Dockerfile
+    container_name: argo-backend
+    restart: unless-stopped
+    ports:
+      - "5002:3000"
+    environment:
+      TZ: America/Bogota
+    env_file:
+      - ./deploy/.env
+    volumes:
+      - ./data/uploads:/app/uploads
+      - ./data/backups:/app/backups
+    depends_on:
+      - argo-mongo
+    networks:
+      - argo-net
+
+  argo-frontend:
+    build:
+      context: ./argo-frontend
+      dockerfile: Dockerfile
+    container_name: argo-frontend
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    depends_on:
+      - argo-backend
+    networks:
+      - argo-net
+
+  argo-sitio:
+    build:
+      context: ./argo-sitio
+      dockerfile: Dockerfile
+    container_name: argo-sitio
+    restart: unless-stopped
+    ports:
+      - "8084:80"
+    volumes:
+      # MP4 no van en Git: montar videos subidos por WinSCP
+      - ./data/sitio-videos:/usr/share/nginx/html/videos:ro
+    networks:
+      - argo-net
+
+  argo-aula-virtual:
+    build:
+      context: ./argo-aula-virtual
+      dockerfile: Dockerfile
+    container_name: argo-aula-virtual
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    volumes:
+      - ./apk:/usr/share/nginx/html/apk:ro
+    depends_on:
+      - argo-backend
+    networks:
+      - argo-net
+
+volumes:
+  argo_mongo_data:
+
+networks:
+  argo-net:
+    driver: bridge

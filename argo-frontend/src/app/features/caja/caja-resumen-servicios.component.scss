@@ -1,0 +1,55 @@
+@use './caja-shared' as *;
+
+.resumen-servicios-panel {
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius, 10px);
+  border: 1px solid var(--line, rgba(78, 163, 255, 0.2));
+  background: linear-gradient(165deg, rgba(12, 28, 62, 0.92), rgba(6, 14, 34, 0.96));
+  margin-bottom: 1rem;
+
+  .panel-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    color: var(--text, #f1f5f9);
+  }
+
+  .hint {
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+}
+
+.tabla-servicios {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th,
+  td {
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid var(--line, rgba(78, 163, 255, 0.15));
+  }
+
+  thead th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 600;
+    background: rgba(6, 16, 41, 0.5);
+  }
+
+  tfoot tr {
+    background: rgba(78, 163, 255, 0.08);
+    border-top: 2px solid rgba(78, 163, 255, 0.25);
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .total-cell {
+    color: var(--accent-2, #93c5fd);
+    font-weight: 600;
+  }
+}

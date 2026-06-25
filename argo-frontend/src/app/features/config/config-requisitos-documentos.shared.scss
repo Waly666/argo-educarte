@@ -1,0 +1,72 @@
+.config-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+
+  header {
+    h1 { margin: 0 0 6px; }
+    p { margin: 0; color: var(--text-soft); font-size: 0.9rem; max-width: 820px; }
+  }
+}
+
+.msg.ok {
+  padding: 8px 12px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 8px;
+  color: #bbf7d0;
+}
+
+.msg.err {
+  padding: 8px 12px;
+  background: rgba(248, 114, 114, 0.1);
+  border: 1px solid rgba(248, 114, 114, 0.35);
+  border-radius: 8px;
+  color: #ffd6d6;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+table.compact input[type='text'] {
+  width: 100%;
+  min-width: 0;
+}
+
+.c { text-align: center; }
+.r { text-align: right; }
+.empty { color: var(--text-dim); text-align: center; padding: 16px; }
+
+.danger { color: #fca5a5; }
+
+.actions { padding-top: 4px; }
+
+@media (max-width: 900px) {
+  table.argo {
+    display: block;
+    overflow-x: auto;
+  }
+}

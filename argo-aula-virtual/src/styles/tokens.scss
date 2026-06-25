@@ -1,0 +1,24 @@
+/* Tokens de diseño — portal aula virtual */
+
+/* Breakpoints estándar: lg 1100 · md 960 · sm 640 */
+$av-bp-lg: 1100px;
+$av-bp-md: 960px;
+$av-bp-sm: 640px;
+
+:root {
+  --av-section-y: clamp(2.75rem, 5vw, 3.5rem);
+  --av-section-y-lg: clamp(3.5rem, 6vw, 4rem);
+  --av-prose: 760px;
+  --av-prose-head: 720px;
+  --av-prose-wide: 860px;
+  --av-btn-pad-y: 0.7rem;
+  --av-btn-pad-x: 1.25rem;
+  --av-btn-sm-pad-y: 0.55rem;
+  --av-btn-sm-pad-x: 0.95rem;
+  --av-btn-sm-font: 0.82rem;
+  --av-border-strong: rgba(148, 163, 184, 0.45);
+  --av-footer-muted: #94a3b8;
+  --av-footer-text: #cbd5e1;
+  --av-dark-lead: #b6c5e8;
+  --av-dark-body: #a8b8d8;
+}

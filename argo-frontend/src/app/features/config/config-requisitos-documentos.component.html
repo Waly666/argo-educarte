@@ -1,0 +1,167 @@
+<section class="req-alu-page card">
+  <header class="req-alu-head">
+    <div class="req-alu-head-main">
+      <h1>Requisitos de documentos — Alumnos</h1>
+      <p>
+        Defina los tipos de documento y qué exige cada tipo de capacitación.
+        En la ficha del alumno se muestran según sus matrículas (activas, finalizadas o certificadas).
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="req-alu-badges">
+        <span class="req-alu-chip req-alu-chip--sky">{{ tiposDocumento().length }} tipo{{ tiposDocumento().length === 1 ? '' : 's' }} doc.</span>
+        <span class="req-alu-chip req-alu-chip--amber">{{ tiposActivos().length }} activo{{ tiposActivos().length === 1 ? '' : 's' }}</span>
+        <span class="req-alu-chip req-alu-chip--violet">{{ tiposCap().length }} capacitación{{ tiposCap().length === 1 ? '' : 'es' }}</span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="req-alu-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="req-alu-msg" [class.req-alu-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="req-alu-form argo-form-shell">
+      <!-- 1. Tipos de documento -->
+      <section class="req-alu-section req-alu-section--sky">
+        <header class="req-alu-section-head">
+          <span class="req-alu-section-badge">1</span>
+          <div class="req-alu-section-titles">
+            <h2 class="req-alu-section-title">Tipos de documento</h2>
+            <p class="req-alu-section-desc">Catálogo de documentos que puede exigirse al alumno (cédula, licencia, etc.).</p>
+          </div>
+          <button type="button" class="ghost mini req-alu-btn-add" (click)="agregarTipo()">+ Agregar tipo</button>
+        </header>
+        <div class="req-alu-section-body">
+          <div class="req-alu-table-wrap">
+            <table class="req-alu-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th class="req-alu-th-c">Activo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of tiposDocumento(); track t.id; let i = $index) {
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-alu-input"
+                        [ngModel]="t.codigo"
+                        (ngModelChange)="patchTipo(i, 'codigo', $event)"
+                        placeholder="CEDULA" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-alu-input"
+                        [ngModel]="t.nombre"
+                        (ngModelChange)="patchTipo(i, 'nombre', $event)"
+                        placeholder="Cédula de ciudadanía" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-alu-input"
+                        [ngModel]="t.descripcion"
+                        (ngModelChange)="patchTipo(i, 'descripcion', $event)" />
+                    </td>
+                    <td class="req-alu-td-c">
+                      <input
+                        type="checkbox"
+                        [ngModel]="t.activo !== false"
+                        (ngModelChange)="patchTipo(i, 'activo', $event)" />
+                    </td>
+                    <td class="req-alu-td-r">
+                      <button type="button" class="ghost mini danger" (click)="quitarTipo(i)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+                @if (!tiposDocumento().length) {
+                  <tr>
+                    <td colspan="5" class="req-alu-empty">Sin tipos definidos. Pulse «Agregar tipo» para comenzar.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Matriz requisitos -->
+      <section class="req-alu-section req-alu-section--violet">
+        <header class="req-alu-section-head">
+          <span class="req-alu-section-badge">2</span>
+          <div class="req-alu-section-titles">
+            <h2 class="req-alu-section-title">Requisitos por tipo de capacitación</h2>
+            <p class="req-alu-section-desc">
+              Marque los documentos obligatorios para cada tipo. Si el alumno tiene varias matrículas del mismo tipo,
+              el requisito se pide una sola vez.
+            </p>
+          </div>
+        </header>
+        <div class="req-alu-section-body">
+          @if (tiposCap().length && tiposActivos().length) {
+            <div class="req-alu-matrix-wrap">
+              <table class="req-alu-matrix">
+                <thead>
+                  <tr>
+                    <th class="req-alu-matrix-sticky">Tipo de capacitación</th>
+                    @for (d of tiposActivos(); track d.id) {
+                      <th class="req-alu-matrix-doc" [title]="d.codigo">{{ d.nombre }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (cap of tiposCap(); track cap.idTipCap) {
+                    <tr>
+                      <td class="req-alu-matrix-sticky">
+                        <strong>{{ cap.label }}</strong>
+                        <span class="req-alu-matrix-id">{{ cap.idTipCap }}</span>
+                      </td>
+                      @for (d of tiposActivos(); track d.id) {
+                        <td class="req-alu-td-c">
+                          <label class="req-alu-matrix-check">
+                            <input
+                              type="checkbox"
+                              [checked]="tieneDocCap(cap.idTipCap, d.id)"
+                              (change)="toggleDocCap(cap.idTipCap, d.id, $any($event.target).checked)" />
+                            <span class="sr-only">{{ d.nombre }} — {{ cap.label }}</span>
+                          </label>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else if (!tiposCap().length) {
+            <div class="req-alu-empty-block">
+              <span class="req-alu-empty-icon" aria-hidden="true">📋</span>
+              <p>No hay tipos de capacitación cargados.</p>
+              <span class="req-alu-field-hint">Cargue el catálogo «Tipos de capacitación» o recargue catálogos desde Excel.</span>
+            </div>
+          } @else {
+            <div class="req-alu-empty-block">
+              <span class="req-alu-empty-icon" aria-hidden="true">📄</span>
+              <p>No hay tipos de documento activos.</p>
+              <span class="req-alu-field-hint">Agregue y active al menos un tipo en la sección 1.</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <footer class="req-alu-foot">
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  }
+</section>

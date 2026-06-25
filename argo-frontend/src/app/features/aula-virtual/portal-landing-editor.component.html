@@ -1,0 +1,398 @@
+<div class="ple">
+  <div class="ple-toolbar">
+    <p class="av-muted">
+      Toque una sección para editarla. Los cursos del catálogo se administran en <strong>Aula virtual → Cursos</strong>.
+    </p>
+    <button type="button" class="av-btn av-btn--ghost" (click)="restaurarDefaults()">Volver a textos originales</button>
+  </div>
+
+  <div class="ple-nav">
+    @for (b of [
+      { id: 'general', label: 'Textos generales' },
+      { id: 'hero', label: 'Botones del banner' },
+      { id: 'info', label: 'Tarjetas de contacto' },
+      { id: 'nav', label: 'Nombres del menú' },
+      { id: 'ofertas', label: 'Qué ofrecemos' },
+      { id: 'beneficios', label: 'Beneficios' },
+      { id: 'servicios', label: 'Servicios' },
+      { id: 'valores', label: 'Por qué elegirnos' },
+      { id: 'testimonios', label: 'Testimonios' },
+      { id: 'cursos', label: 'Sección cursos' },
+      { id: 'carreras', label: 'Carreras técnicas' },
+      { id: 'pasos', label: 'Cómo matricularse' },
+      { id: 'appMobile', label: 'App Mobile' },
+      { id: 'blog', label: 'Página Blog' },
+      { id: 'faq', label: 'Preguntas frecuentes' },
+      { id: 'pilares', label: 'Capacitación' },
+      { id: 'footer', label: 'Pie de página' },
+      { id: 'catalogo', label: 'Página de cursos/tienda' }
+    ]; track b.id) {
+      <button type="button" class="ple-nav-btn" [class.active]="bloque() === b.id" (click)="toggleBloque(b.id)">
+        {{ b.label }}
+      </button>
+    }
+  </div>
+
+  @if (bloque() === 'general') {
+    <div class="ple-block">
+      <h3>Barra superior y cita</h3>
+      <div class="av-field">
+        <label>Texto barra institucional</label>
+        <input type="text" [(ngModel)]="landing.instBarTag" />
+      </div>
+      <div class="av-field">
+        <label>Frase destacada (banda azul)</label>
+        <textarea rows="2" [(ngModel)]="landing.quoteText"></textarea>
+      </div>
+      <div class="av-field">
+        <label>Etiqueta «O llámanos»</label>
+        <input type="text" [(ngModel)]="landing.quoteLabel" />
+      </div>
+      <h3>SEO (Colombia, Meta, Villavicencio)</h3>
+      <p class="av-muted">Incluya ubicación y servicios para mejorar búsquedas locales. Si deja vacío, se usan los textos por defecto del portal.</p>
+      <div class="av-field">
+        <label>Meta descripción</label>
+        <textarea rows="3" [(ngModel)]="landing.metaDescription" placeholder="Cursos virtuales en seguridad vial para Villavicencio, Meta y Colombia…"></textarea>
+      </div>
+      <div class="av-field">
+        <label>Palabras clave</label>
+        <textarea rows="4" [(ngModel)]="landing.metaKeywords" placeholder="cursos virtuales Colombia, capacitación Villavicencio, seguridad vial Meta…"></textarea>
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'hero') {
+    <div class="ple-block">
+      <div class="av-grid2">
+        <div class="av-field"><label>Botón principal</label><input [(ngModel)]="landing.hero.ctaPrincipal" /></div>
+        <div class="av-field"><label>Botón secundario</label><input [(ngModel)]="landing.hero.ctaSecundario" /></div>
+      </div>
+      <label class="av-check">
+        <input type="checkbox" [(ngModel)]="landing.hero.mostrarBotonLlamar" />
+        Mostrar botón «Llamar» si hay teléfono
+      </label>
+      <div class="av-field">
+        <label>Texto alternativo imagen hero</label>
+        <input [(ngModel)]="landing.hero.imagenAlt" />
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'info') {
+    <div class="ple-block">
+      @for (card of landing.infoCards; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Tarjeta {{ i + 1 }}</strong></div>
+          <div class="av-grid3">
+            <div class="av-field"><label>Icono</label><input [(ngModel)]="card.icon" /></div>
+            <div class="av-field"><label>Título</label><input [(ngModel)]="card.title" /></div>
+            <div class="av-field">
+              <label>Contenido</label>
+              <select [(ngModel)]="card.fuente">
+                <option value="texto">Texto fijo</option>
+                <option value="telefono">Teléfono de la empresa</option>
+                <option value="direccion">Dirección de la empresa</option>
+              </select>
+            </div>
+          </div>
+          @if (card.fuente === 'texto') {
+            <div class="av-field"><label>Texto</label><input [(ngModel)]="card.text" /></div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (bloque() === 'nav') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Home</label><input [(ngModel)]="landing.nav.home" /></div>
+        <div class="av-field"><label>Tienda</label><input [(ngModel)]="landing.nav.tienda" /></div>
+        <div class="av-field"><label>Cursos</label><input [(ngModel)]="landing.nav.cursos" /></div>
+        <div class="av-field"><label>Aula virtual</label><input [(ngModel)]="landing.nav.aula" /></div>
+        <div class="av-field"><label>Fundación</label><input [(ngModel)]="landing.nav.fundacion" /></div>
+        <div class="av-field"><label>Consultar certificados</label><input [(ngModel)]="landing.nav.consultaCertificados" /></div>
+        <div class="av-field"><label>Blog</label><input [(ngModel)]="landing.nav.blog" /></div>
+        <div class="av-field"><label>Acerca de</label><input [(ngModel)]="landing.nav.acerca" /></div>
+        <div class="av-field"><label>Acceder</label><input [(ngModel)]="landing.nav.acceder" /></div>
+        <div class="av-field"><label>Registrarse</label><input [(ngModel)]="landing.nav.registrarse" /></div>
+        <div class="av-field"><label>Salir</label><input [(ngModel)]="landing.nav.salir" /></div>
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'ofertas') {
+    <div class="ple-block">
+      <div class="av-field"><label>Título sección</label><input [(ngModel)]="landing.ofertas.titulo" /></div>
+      <div class="av-field"><label>Texto introductorio</label><textarea rows="2" [(ngModel)]="landing.ofertas.lead"></textarea></div>
+      @for (item of landing.ofertas.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head">
+            <strong>Tarjeta {{ i + 1 }}</strong>
+            <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeOferta(i)">Quitar</button>
+          </div>
+          <div class="av-grid3">
+            <div class="av-field"><label>Icono</label><input [(ngModel)]="item.icon" placeholder="💻" /></div>
+            <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="item.title" /></div>
+          </div>
+          <div class="av-field"><label>Descripción</label><textarea rows="2" [(ngModel)]="item.text"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addOferta()">+ Añadir tarjeta</button>
+    </div>
+  }
+
+  @if (bloque() === 'beneficios') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.beneficios.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.beneficios.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.beneficios.lead"></textarea></div>
+      @for (item of landing.beneficios.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Beneficio {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeBeneficio(i)">Quitar</button></div>
+          <div class="av-grid3">
+            <div class="av-field"><label>Icono</label><input [(ngModel)]="item.icon" /></div>
+            <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="item.title" /></div>
+          </div>
+          <div class="av-field"><label>Texto</label><textarea rows="2" [(ngModel)]="item.text"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addBeneficio()">+ Añadir beneficio</button>
+    </div>
+  }
+
+  @if (bloque() === 'servicios') {
+    <div class="ple-block">
+      <div class="av-field"><label>Título sección</label><input [(ngModel)]="landing.servicios.titulo" /></div>
+      @for (item of landing.servicios.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head">
+            <strong>Servicio {{ i + 1 }}</strong>
+            <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeServicio(i)">Quitar</button>
+          </div>
+          <div class="av-grid2">
+            <div class="av-field"><label>Icono</label><input [(ngModel)]="item.icon" placeholder="📋" /></div>
+            <div class="av-field"><label>Nombre</label><input [(ngModel)]="item.title" placeholder="Nombre del servicio" /></div>
+          </div>
+          <div class="av-field">
+            <label>Enlace (opcional)</label>
+            <input [(ngModel)]="item.url" placeholder="https://finstruvial.com.co/..." />
+          </div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addServicio()">+ Añadir servicio</button>
+    </div>
+  }
+
+  @if (bloque() === 'valores') {
+    <div class="ple-block">
+      <div class="av-field"><label>Título</label><input [(ngModel)]="landing.valores.titulo" /></div>
+      <div class="av-field"><label>Intro (opcional; si vacío usa nombre CEA)</label><textarea rows="2" [(ngModel)]="landing.valores.lead"></textarea></div>
+      @for (item of landing.valores.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Valor {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeValor(i)">Quitar</button></div>
+          <div class="av-field"><label>Título</label><input [(ngModel)]="item.title" /></div>
+          <div class="av-field"><label>Texto</label><textarea rows="2" [(ngModel)]="item.text"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addValor()">+ Añadir valor</button>
+    </div>
+  }
+
+  @if (bloque() === 'testimonios') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.testimonios.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.testimonios.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.testimonios.lead"></textarea></div>
+      @for (item of landing.testimonios.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Testimonio {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeTestimonio(i)">Quitar</button></div>
+          <div class="av-grid2">
+            <div class="av-field"><label>Nombre</label><input [(ngModel)]="item.nombre" /></div>
+            <div class="av-field"><label>Rol / cargo</label><input [(ngModel)]="item.rol" /></div>
+          </div>
+          <div class="av-field"><label>Texto</label><textarea rows="3" [(ngModel)]="item.texto"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addTestimonio()">+ Añadir testimonio</button>
+    </div>
+  }
+
+  @if (bloque() === 'cursos') {
+    <div class="ple-block">
+      <div class="av-grid2">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.cursos.kicker" /></div>
+        <div class="av-field"><label>Título</label><input [(ngModel)]="landing.cursos.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Título sin cursos publicados</label><input [(ngModel)]="landing.cursos.emptyTitulo" /></div>
+      <div class="av-field"><label>Texto sin cursos</label><textarea rows="2" [(ngModel)]="landing.cursos.emptyTexto"></textarea></div>
+    </div>
+  }
+
+  @if (bloque() === 'carreras') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.carreras.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.carreras.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.carreras.lead"></textarea></div>
+      @for (item of landing.carreras.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Carrera {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeCarrera(i)">Quitar</button></div>
+          <div class="av-field"><label>Nombre</label><textarea rows="2" [(ngModel)]="item.titulo"></textarea></div>
+          <div class="av-grid4">
+            <div class="av-field"><label>CNO</label><input [(ngModel)]="item.cno" /></div>
+            <div class="av-field"><label>Horas</label><input type="number" [(ngModel)]="item.horas" /></div>
+            <div class="av-field"><label>Semestres</label><input type="number" [(ngModel)]="item.semestres" /></div>
+            <div class="av-field"><label>Jornadas</label><input [(ngModel)]="item.jornadas" /></div>
+          </div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addCarrera()">+ Añadir carrera</button>
+    </div>
+  }
+
+  @if (bloque() === 'pasos') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.pasos.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.pasos.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.pasos.lead"></textarea></div>
+      @for (item of landing.pasos.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Paso {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removePaso(i)">Quitar</button></div>
+          <div class="av-grid3">
+            <div class="av-field"><label>Número</label><input [(ngModel)]="item.paso" /></div>
+            <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="item.title" /></div>
+          </div>
+          <div class="av-field"><label>Descripción</label><textarea rows="2" [(ngModel)]="item.text"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addPaso()">+ Añadir paso</button>
+    </div>
+  }
+
+  @if (bloque() === 'appMobile') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.appMobile.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.appMobile.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.appMobile.lead"></textarea></div>
+      <div class="av-grid2">
+        <div class="av-field"><label>Texto botón descarga</label><input [(ngModel)]="landing.appMobile.btnDescargar" /></div>
+        <div class="av-field"><label>Nota instalación</label><input [(ngModel)]="landing.appMobile.notaInstalacion" /></div>
+      </div>
+      <div class="av-grid2">
+        <div class="av-field"><label>URL APK</label><input [(ngModel)]="landing.appMobile.apkUrl" placeholder="/apk/aula-virtual-finstruvial.apk" /></div>
+        <div class="av-field"><label>Nombre archivo APK</label><input [(ngModel)]="landing.appMobile.apkNombre" /></div>
+      </div>
+      @for (item of landing.appMobile.features; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Característica {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeAppMobileFeature(i)">Quitar</button></div>
+          <div class="av-grid3">
+            <div class="av-field"><label>Icono</label><input [(ngModel)]="item.icon" /></div>
+            <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="item.title" /></div>
+          </div>
+          <div class="av-field"><label>Descripción</label><textarea rows="2" [(ngModel)]="item.text"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addAppMobileFeature()">+ Añadir característica</button>
+    </div>
+  }
+
+  @if (bloque() === 'blog') {
+    <div class="ple-block">
+      <p class="av-muted">Textos de la página pública <strong>/blog</strong>. Los artículos se administran en <strong>Aula virtual → Blog</strong>.</p>
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.blog.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.blog.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.blog.lead"></textarea></div>
+      <div class="av-field"><label>Título sin artículos</label><input [(ngModel)]="landing.blog.emptyTitulo" /></div>
+      <div class="av-field"><label>Texto sin artículos</label><textarea rows="2" [(ngModel)]="landing.blog.emptyTexto"></textarea></div>
+    </div>
+  }
+
+  @if (bloque() === 'faq') {
+    <div class="ple-block">
+      <div class="av-grid3">
+        <div class="av-field"><label>Etiqueta</label><input [(ngModel)]="landing.faq.kicker" /></div>
+        <div class="av-field av-field--span2"><label>Título</label><input [(ngModel)]="landing.faq.titulo" /></div>
+      </div>
+      <div class="av-field"><label>Intro</label><textarea rows="2" [(ngModel)]="landing.faq.lead"></textarea></div>
+      <div class="av-field"><label>Texto contacto (final FAQ)</label><input [(ngModel)]="landing.faq.contactoTexto" /></div>
+      @for (item of landing.faq.items; track $index; let i = $index) {
+        <div class="ple-card">
+          <div class="ple-card-head"><strong>Pregunta {{ i + 1 }}</strong><button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeFaq(i)">Quitar</button></div>
+          <div class="av-field"><label>Pregunta</label><input [(ngModel)]="item.pregunta" /></div>
+          <div class="av-field"><label>Respuesta</label><textarea rows="3" [(ngModel)]="item.respuesta"></textarea></div>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addFaq()">+ Añadir pregunta</button>
+    </div>
+  }
+
+  @if (bloque() === 'pilares') {
+    <div class="ple-block">
+      <div class="av-grid2">
+        <div class="av-field"><label>Pestaña capacitación</label><input [(ngModel)]="landing.pilares.tabCapacitacion" /></div>
+        <div class="av-field"><label>Pestaña campañas</label><input [(ngModel)]="landing.pilares.tabCampanas" /></div>
+      </div>
+      <h3>Capacitación</h3>
+      @for (linea of landing.pilares.capacitacion; track $index; let i = $index) {
+        <div class="ple-card ple-card--inline">
+          <input class="ple-grow" [(ngModel)]="landing.pilares.capacitacion[i]" />
+          <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removePilar('capacitacion', i)">×</button>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addPilar('capacitacion')">+ Línea capacitación</button>
+      <h3>Campañas</h3>
+      @for (linea of landing.pilares.campanas; track $index; let i = $index) {
+        <div class="ple-card ple-card--inline">
+          <input class="ple-grow" [(ngModel)]="landing.pilares.campanas[i]" />
+          <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removePilar('campanas', i)">×</button>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addPilar('campanas')">+ Línea campañas</button>
+    </div>
+  }
+
+  @if (bloque() === 'footer') {
+    <div class="ple-block">
+      <div class="av-grid2">
+        <div class="av-field"><label>Año fundación</label><input [(ngModel)]="landing.footer.founded" /></div>
+        <div class="av-field"><label>Título enlaces</label><input [(ngModel)]="landing.footer.tituloEnlaces" /></div>
+        <div class="av-field"><label>Título servicios</label><input [(ngModel)]="landing.footer.tituloServicios" /></div>
+        <div class="av-field"><label>Título contacto</label><input [(ngModel)]="landing.footer.tituloContacto" /></div>
+      </div>
+      <div class="av-field">
+        <label>Copyright (pie inferior)</label>
+        <textarea rows="2" [(ngModel)]="landing.footer.copyright"></textarea>
+      </div>
+      <h3>Lista «Servicios» en el pie</h3>
+      @for (s of landing.footerServicios; track $index; let i = $index) {
+        <div class="ple-card ple-card--inline">
+          <input class="ple-grow" [(ngModel)]="landing.footerServicios[i]" />
+          <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="removeFooterServicio(i)">×</button>
+        </div>
+      }
+      <button type="button" class="av-btn av-btn--ghost" (click)="addFooterServicio()">+ Añadir ítem</button>
+    </div>
+  }
+
+  @if (bloque() === 'catalogo') {
+    <div class="ple-block">
+      <div class="av-field"><label>Título página cursos</label><input [(ngModel)]="landing.catalogo.tituloCursos" /></div>
+      <div class="av-field"><label>Intro página cursos</label><textarea rows="2" [(ngModel)]="landing.catalogo.leadCursos"></textarea></div>
+      <div class="av-field"><label>Título tienda</label><input [(ngModel)]="landing.catalogo.tituloTienda" /></div>
+      <div class="av-field"><label>Intro tienda</label><textarea rows="2" [(ngModel)]="landing.catalogo.leadTienda"></textarea></div>
+      <div class="av-field"><label>Placeholder buscador</label><input [(ngModel)]="landing.catalogo.placeholderBuscar" /></div>
+    </div>
+  }
+</div>

@@ -1,0 +1,168 @@
+<section class="mon-page card">
+  <header class="mon-head">
+    <div class="mon-head-main">
+      <h1>
+        Monitor de recursos
+        @if (autoRefresh()) {
+          <span class="mon-live" aria-live="polite">
+            <span class="mon-live-dot"></span>
+            En vivo
+          </span>
+        }
+      </h1>
+      <p>
+        Consumo del servidor API (memoria y CPU del proceso Node), tráfico HTTP agregado y usuarios
+        con sesión activa reciente, incluyendo cuánta red consume cada uno.
+      </p>
+      @if (ultimaActualizacion(); as ts) {
+        <p class="mon-sync">
+          Última actualización: {{ ts | date: 'HH:mm:ss' }}
+          @if (actualizando()) {
+            <span class="mon-sync-spin"> · actualizando…</span>
+          }
+        </p>
+      }
+    </div>
+    @if (data(); as d) {
+      <div class="mon-badges">
+        <span class="mon-chip mon-chip--sky">CPU {{ sistema()?.cpuProcesoPct ?? 0 }}%</span>
+        <span class="mon-chip mon-chip--teal">{{ d.usuariosConectados ?? 0 }} en línea</span>
+        <span class="mon-chip mon-chip--amber">{{ formatBytes(trafico()?.bytesTotal) }} red</span>
+      </div>
+    }
+  </header>
+
+  <div class="mon-toolbar">
+    <label class="mon-field mon-field--select">
+      <span class="mon-label">Ventana de red (min)</span>
+      <select [ngModel]="ventanaMinutos()" (ngModelChange)="ventanaMinutos.set($event); onVentanaChange()" name="ventana">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="15">15</option>
+        <option [ngValue]="30">30</option>
+      </select>
+    </label>
+    <button type="button" class="ghost" (click)="cargar()">Actualizar</button>
+    <label class="mon-check">
+      <input type="checkbox" [checked]="autoRefresh()" (change)="toggleAutoRefresh()" />
+      Tiempo real (cada 4 s)
+    </label>
+  </div>
+
+  @if (error(); as err) {
+    <div class="mon-msg mon-msg--err" role="alert">{{ err }}</div>
+  }
+
+  @if (loading() && !data()) {
+    <p class="mon-hint">Cargando monitor…</p>
+  } @else if (data()) {
+    <div class="mon-metrics">
+      <article class="mon-metric mon-metric--cpu">
+        <h2>CPU proceso (API)</h2>
+        <p class="mon-metric-val">{{ sistema()?.cpuProcesoPct ?? 0 }}%</p>
+        <p class="mon-metric-sub">Load sistema (1 min): {{ sistema()?.cpuSistemaLoad1 ?? 0 }}</p>
+        <div class="mon-bar">
+          <span class="mon-bar-fill mon-bar-fill--cpu" [style.width.%]="pctBar(sistema()?.cpuProcesoPct)"></span>
+        </div>
+      </article>
+
+      <article class="mon-metric">
+        <h2>Memoria proceso</h2>
+        <p class="mon-metric-val">{{ sistema()?.memoriaProceso?.rssMb ?? 0 }} <small>MB</small></p>
+        <p class="mon-metric-sub">
+          Heap {{ sistema()?.memoriaProceso?.heapUsedMb ?? 0 }} /
+          {{ sistema()?.memoriaProceso?.heapTotalMb ?? 0 }} MB
+        </p>
+      </article>
+
+      <article class="mon-metric mon-metric--mem">
+        <h2>Memoria servidor</h2>
+        <p class="mon-metric-val">{{ sistema()?.memoriaSistema?.usoPct ?? 0 }}%</p>
+        <p class="mon-metric-sub">
+          {{ sistema()?.memoriaSistema?.usadaMb ?? 0 }} / {{ sistema()?.memoriaSistema?.totalMb ?? 0 }} MB
+        </p>
+        <div class="mon-bar">
+          <span class="mon-bar-fill mon-bar-fill--mem" [style.width.%]="pctBar(sistema()?.memoriaSistema?.usoPct)"></span>
+        </div>
+      </article>
+
+      <article class="mon-metric">
+        <h2>Red API (ventana)</h2>
+        <p class="mon-metric-val mon-metric-val--sm">{{ formatBytes(trafico()?.bytesTotal) }}</p>
+        <p class="mon-metric-sub">
+          ↓ {{ formatBytes(trafico()?.bytesEntrada) }} · ↑ {{ formatBytes(trafico()?.bytesSalida) }}
+          · {{ trafico()?.peticiones ?? 0 }} pet.
+        </p>
+      </article>
+
+      <article class="mon-metric">
+        <h2>Usuarios conectados</h2>
+        <p class="mon-metric-val">{{ data()?.usuariosConectados ?? 0 }}</p>
+        <p class="mon-metric-sub">Actividad en los últimos {{ data()?.minutosVentana ?? ventanaMinutos() }} min</p>
+      </article>
+
+      <article class="mon-metric">
+        <h2>Uptime API</h2>
+        <p class="mon-metric-val mon-metric-val--sm">{{ formatUptime(sistema()?.uptimeSegundos) }}</p>
+        <p class="mon-metric-sub">{{ sistema()?.node }} · {{ sistema()?.nucleos }} núcleos</p>
+      </article>
+    </div>
+
+    <section class="mon-section">
+      <header class="mon-section-head">
+        <span class="mon-section-badge">◎</span>
+        <div>
+          <h2 class="mon-section-title">Usuarios en línea y consumo de red</h2>
+          <p class="mon-section-desc">{{ usuarios().length }} usuario{{ usuarios().length === 1 ? '' : 's' }} con actividad en la ventana</p>
+        </div>
+      </header>
+      <div class="mon-section-body">
+        @if (!usuarios().length) {
+          <div class="mon-empty">
+            <span class="mon-empty-icon" aria-hidden="true">👥</span>
+            <p>No hay usuarios con actividad en la ventana seleccionada.</p>
+          </div>
+        } @else {
+          <div class="mon-table-wrap">
+            <table class="mon-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Pantalla actual</th>
+                  <th>Peticiones</th>
+                  <th>Red ↓</th>
+                  <th>Red ↑</th>
+                  <th>Total red</th>
+                  <th>Última actividad</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of usuarios(); track trackUsuario(u)) {
+                  <tr>
+                    <td>
+                      <strong>{{ u.nombreUsuario || u.usuario }}</strong>
+                      <span class="mon-sub">{{ u.usuario }}</span>
+                    </td>
+                    <td>{{ u.rol || '—' }}</td>
+                    <td class="mon-actividad">
+                      <strong>{{ u.ultimaActividad }}</strong>
+                      @if (u.rutaPantalla) {
+                        <span class="mon-sub">{{ u.rutaPantalla }}</span>
+                      }
+                    </td>
+                    <td>{{ u.peticionesRecientes ?? 0 }}</td>
+                    <td>{{ formatBytes(u.bytesEntrada) }}</td>
+                    <td>{{ formatBytes(u.bytesSalida) }}</td>
+                    <td><strong>{{ formatBytes(u.bytesTotal) }}</strong></td>
+                    <td class="mon-fecha">{{ u.ultimaFecha | date: 'dd/MM HH:mm:ss' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</section>

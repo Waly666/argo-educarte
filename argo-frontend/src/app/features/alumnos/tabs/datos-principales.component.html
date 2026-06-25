@@ -1,0 +1,546 @@
+<section class="datos card">
+  <header class="form-head">
+    <div class="form-head-text">
+      <h2>{{ isEdit() ? 'Editar Alumno' : 'Nuevo Alumno' }}</h2>
+      <p>Complete identificación, datos personales, contacto y observaciones del alumno.</p>
+    </div>
+    <div class="actions save-actions">
+      <div
+        class="btn-alarm"
+        *ngIf="saveAlarmVisible() || saveAlarmFlash()"
+        [class.flash]="saveAlarmFlash()"
+        role="status"
+        [attr.aria-live]="saveAlarmFlash() ? 'assertive' : 'polite'">
+        <span class="btn-alarm-pulse" aria-hidden="true"></span>
+        <span class="btn-alarm-icon" aria-hidden="true">!</span>
+        <span class="btn-alarm-text">{{ saveAlarmTexto() }}</span>
+      </div>
+      <button
+        type="button"
+        class="primary btn-save"
+        [class.needs-save]="saveAlarmVisible()"
+        [class.alarm-flash]="saveAlarmFlash()"
+        (click)="guardar()"
+        [disabled]="saving() || (!isEdit() && !!docDuplicado())"
+        [attr.title]="saveAlarmVisible() ? saveAlarmTexto() : ''">
+        {{ saving() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear') }}
+      </button>
+    </div>
+  </header>
+
+  <div class="msg ok" *ngIf="message() && !docDuplicado() && !saveAlarmFlash()">{{ message() }}</div>
+  <div class="msg err" *ngIf="message() && (docDuplicado() || saveAlarmFlash())">{{ message() }}</div>
+
+  <div class="dup" *ngIf="docDuplicado() as dup">
+    <span>Documento ya registrado: <strong>{{ dup.nombreCompleto }}</strong></span>
+    <button type="button" class="primary mini" (click)="irAlDuplicado()">Abrir registro</button>
+  </div>
+
+  <div class="scan-panel" *ngIf="scanVisible() && !isEdit()">
+    <div class="scan-head">
+      <div>
+        <h3>Escanear cédula</h3>
+        <p>Fotografía solo el frente de la cédula. Se sugieren documento y nombres; el resto se digita manualmente.</p>
+      </div>
+      <button type="button" class="ghost mini" (click)="omitirEscaneo()">Digitar manual</button>
+    </div>
+    <div class="scan-body">
+      <div class="scan-preview" *ngIf="scanPreview() as src">
+        <img [src]="src" alt="Vista previa cédula" />
+      </div>
+      <div class="scan-preview empty" *ngIf="!scanPreview()">
+        <span>Sin imagen</span>
+      </div>
+      <div class="scan-actions">
+        <label class="upload scan-upload">
+          <input type="file" accept="image/*" capture="environment" (change)="onCedulaScan($event)" hidden />
+          <span>{{ scanPreview() ? 'Cambiar imagen' : 'Seleccionar imagen' }}</span>
+        </label>
+        <button type="button" class="primary" (click)="escanearCedula()" [disabled]="scanning() || !scanFile()">
+          {{ scanning() ? 'Leyendo…' : 'Leer cédula' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scan-banner" *ngIf="!scanVisible() && !isEdit() && scanApplied()">
+    <span>Datos sugeridos desde la cédula. Revise cada campo antes de guardar.</span>
+    <button type="button" class="ghost mini" (click)="volverEscaneo()">Volver a escanear</button>
+  </div>
+
+  <ul class="scan-warn" *ngIf="scanWarnings().length">
+    <li *ngFor="let w of scanWarnings()">{{ w }}</li>
+  </ul>
+
+  <p class="scan-edit-link" *ngIf="isEdit() && !scanVisible()">
+    <button type="button" class="ghost mini" (click)="volverEscaneo()">Escanear cédula para rellenar campos</button>
+  </p>
+
+  <div class="scan-panel compact" *ngIf="scanVisible() && isEdit()">
+    <div class="scan-head">
+      <div>
+        <h3>Escanear cédula</h3>
+        <p>Solo frente de la cédula (documento y nombres).</p>
+      </div>
+      <button type="button" class="ghost mini" (click)="omitirEscaneo()">Cancelar</button>
+    </div>
+    <div class="scan-body">
+      <div class="scan-preview" *ngIf="scanPreview() as src">
+        <img [src]="src" alt="Vista previa cédula" />
+      </div>
+      <div class="scan-actions">
+        <label class="upload scan-upload">
+          <input type="file" accept="image/*" capture="environment" (change)="onCedulaScan($event)" hidden />
+          <span>{{ scanPreview() ? 'Cambiar imagen' : 'Seleccionar imagen' }}</span>
+        </label>
+        <button type="button" class="primary" (click)="escanearCedula()" [disabled]="scanning() || !scanFile()">
+          {{ scanning() ? 'Leyendo…' : 'Aplicar datos' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-cols argo-form-shell">
+      <div class="form-section tone-blue">
+        <div class="section-head">
+          <span class="section-icon ic-blue">◉</span>
+          <div>
+            <h3>Identificación</h3>
+            <p>Documento, nombres, fecha de nacimiento y foto</p>
+          </div>
+        </div>
+        <div class="section-body section-body-split">
+          <div class="ident-fields">
+          <div class="row" *ngIf="isEdit()">
+            <div class="col-6">
+              <label>Fecha registro</label>
+              <input type="text" [value]="fechaHoraDisplay(form().fechaReg)" readonly class="readonly" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Tipo de alumno"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="form().tipoAlumno || ''"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [disabled]="esAlumnoJornada()"
+                [opcionesLocales]="opcionesTipoAlumno()"
+                (seleccionado)="onTipoAlumnoPick($event)"
+                (limpiado)="onTipoAlumnoLimpiar()"
+              />
+              <p class="hint" *ngIf="!isEdit() && esAlumnoJornada()">Alta para Jornadas de Capacitación (no Regular).</p>
+              <p class="hint virtual-hint" *ngIf="normalizarTipoAlumno(form().tipoAlumno) === 'Virtual'">
+                Alumno del <strong>aula virtual</strong> (portal en línea).
+              </p>
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Tipo documento *"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(tiposDoc(), form().tipoDoc)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesTiposDoc()"
+                (seleccionado)="onCatalogoPick('tipoDoc', $event)"
+                (limpiado)="onCatalogoLimpiar('tipoDoc', '1')"
+              />
+            </div>
+            <div class="col-3">
+              <label>Número documento *</label>
+              <input
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                [attr.maxlength]="numDocMaxLength"
+                [ngModel]="form().numDoc"
+                (ngModelChange)="patch('numDoc', $event)"
+                (blur)="verificarDoc()"
+                [readonly]="isEdit()" />
+              <p class="hint doc-hint">Solo dígitos · {{ numDocHint }}</p>
+            </div>
+            <div class="col-6">
+              <argo-municipio-buscar
+                label="Expedida en"
+                placeholder="Seleccione o escriba municipio…"
+                [modoCombo]="true"
+                [textoInicial]="expedidaTexto()"
+                (seleccionado)="onExpedidaSel($event)"
+                (limpiado)="onExpedidaLimpiar()"
+                (textoChange)="onExpedidaTexto($event)"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-3">
+              <label>Primer apellido *</label>
+              <input type="text" class="input-nombre-alumno" autocapitalize="characters" spellcheck="false"
+                     [ngModel]="form().apellido1" (ngModelChange)="patch('apellido1', $event)" />
+            </div>
+            <div class="col-3">
+              <label>Segundo apellido</label>
+              <input type="text" class="input-nombre-alumno" autocapitalize="characters" spellcheck="false"
+                     [ngModel]="form().apellido2" (ngModelChange)="patch('apellido2', $event)" />
+            </div>
+            <div class="col-3">
+              <label>Primer nombre *</label>
+              <input type="text" class="input-nombre-alumno" autocapitalize="characters" spellcheck="false"
+                     [ngModel]="form().nombre1" (ngModelChange)="patch('nombre1', $event)" />
+            </div>
+            <div class="col-3">
+              <label>Segundo nombre</label>
+              <input type="text" class="input-nombre-alumno" autocapitalize="characters" spellcheck="false"
+                     [ngModel]="form().nombre2" (ngModelChange)="patch('nombre2', $event)" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-3">
+              <argo-date-input label="Fecha nacimiento" [ngModel]="form().fechaNac" (ngModelChange)="patch('fechaNac', $event)" ></argo-date-input>
+            </div>
+          </div>
+          </div>
+          <div class="foto-col">
+            <label class="field-label">Foto del alumno</label>
+            <div class="foto">
+              <img *ngIf="fotoPreview() as p" [src]="p" alt="Foto" />
+              <span *ngIf="!fotoPreview()">Sin foto</span>
+            </div>
+            <label class="upload">
+              <input type="file" accept="image/*" (change)="onFoto($event)" hidden />
+              <span>Cargar foto</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section tone-purple">
+        <div class="section-head">
+          <span class="section-icon ic-purple">◈</span>
+          <div>
+            <h3>Datos personales</h3>
+            <p>Salud, formación, jornada y ocupación</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row">
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Género"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(generos(), form().genero)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesGeneros()"
+                (seleccionado)="onCatalogoPick('genero', $event)"
+                (limpiado)="onCatalogoLimpiar('genero')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Tipo de sangre"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(tiposSangre(), form().tipoSangre)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesTiposSangre()"
+                (seleccionado)="onCatalogoPick('tipoSangre', $event)"
+                (limpiado)="onCatalogoLimpiar('tipoSangre')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Jornada"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(jornadas(), form().jornada)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesJornadas()"
+                (seleccionado)="onCatalogoPick('jornada', $event)"
+                (limpiado)="onCatalogoLimpiar('jornada')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Estado civil"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(estadosCiviles(), form().estadoCivil)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesEstadosCivil()"
+                (seleccionado)="onCatalogoPick('estadoCivil', $event)"
+                (limpiado)="onCatalogoLimpiar('estadoCivil')"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Estrato"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(estratos(), form().estrato)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesEstratos()"
+                (seleccionado)="onCatalogoPick('estrato', $event)"
+                (limpiado)="onCatalogoLimpiar('estrato')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Régimen de salud"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(regimenesSalud(), form().regimenSalud)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesRegimenSalud()"
+                (seleccionado)="onCatalogoPick('regimenSalud', $event)"
+                (limpiado)="onCatalogoLimpiar('regimenSalud')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Nivel de formación"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(nivelesFormacion(), form().nivelFormacion)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesNivelFormacion()"
+                (seleccionado)="onCatalogoPick('nivelFormacion', $event)"
+                (limpiado)="onCatalogoLimpiar('nivelFormacion')"
+              />
+            </div>
+            <div class="col-3">
+              <argo-catalogo-enum-buscar
+                label="Ocupación"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(ocupaciones(), form().ocupacion)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesOcupaciones()"
+                (seleccionado)="onCatalogoPick('ocupacion', $event)"
+                (limpiado)="onCatalogoLimpiar('ocupacion')"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section tone-teal">
+        <div class="section-head">
+          <span class="section-icon ic-teal">⌖</span>
+          <div>
+            <h3>Contacto y ubicación</h3>
+            <p>Correo, celular, dirección y municipio de origen</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row">
+            <div class="col-6">
+              <label>Correo</label>
+              <input type="email" [ngModel]="form().correo" (ngModelChange)="patch('correo', $event)" placeholder="correo@ejemplo.com" />
+            </div>
+            <div class="col-6">
+              <label>Celular</label>
+              <input type="tel" [ngModel]="form().celular" (ngModelChange)="patch('celular', $event)" placeholder="3001234567" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <label>Dirección</label>
+              <input type="text" [ngModel]="form().direccion" (ngModelChange)="patch('direccion', $event)" placeholder="Dirección de residencia" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8">
+              <argo-municipio-buscar
+                label="Municipio de origen"
+                placeholder="Seleccione o escriba municipio…"
+                [modoCombo]="true"
+                [textoInicial]="munOrigenTexto()"
+                (seleccionado)="onMunOrigenSel($event)"
+                (limpiado)="onMunOrigenLimpiar()"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section tone-teal">
+        <div class="section-head">
+          <span class="section-icon ic-teal">💰</span>
+          <div>
+            <h3>Recordatorio de cobro</h3>
+            <p>Para técnicos con cuotas recurrentes: avisa al cajero qué día cobrar (se borra al registrar un abono).</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row">
+            <div class="col-4">
+              <label>Frecuencia</label>
+              <select
+                [ngModel]="form().alertaPagoFrecuencia || ''"
+                (ngModelChange)="patch('alertaPagoFrecuencia', $event)">
+                <option value="">Sin recordatorio</option>
+                <option value="mensual">Mensual</option>
+                <option value="quincenal">Quincenal</option>
+              </select>
+            </div>
+            <div class="col-4" *ngIf="form().alertaPagoFrecuencia">
+              <argo-date-input
+                label="Día de referencia"
+                [ngModel]="form().alertaPago || ''"
+                (ngModelChange)="patch('alertaPago', $event || null)"
+              ></argo-date-input>
+              <p class="hint doc-hint">Mensual: mismo día cada mes. Quincenal: cada 15 días desde esta fecha.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section tone-orange">
+        <div class="section-head">
+          <span class="section-icon ic-orange">◐</span>
+          <div>
+            <h3>Origen y diversidad</h3>
+            <p>Discapacidad, multiculturalidad y observaciones</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row">
+            <div class="col-4">
+              <argo-catalogo-enum-buscar
+                label="Discapacidad"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(discapacidades(), form().discapacidad)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesDiscapacidades()"
+                (seleccionado)="onCatalogoPick('discapacidad', $event)"
+                (limpiado)="onCatalogoLimpiar('discapacidad', '9')"
+              />
+            </div>
+            <div class="col-4">
+              <argo-catalogo-enum-buscar
+                label="Multiculturalidad"
+                placeholder="Seleccione o escriba…"
+                [textoInicial]="etiquetaCatalogo(multiCulturalidades(), form().multiCulturalidad)"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [opcionesLocales]="opcionesMultiCulturalidad()"
+                (seleccionado)="onCatalogoPick('multiCulturalidad', $event)"
+                (limpiado)="onCatalogoLimpiar('multiCulturalidad', 'NO_APLICA')"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <label>Observaciones</label>
+              <textarea
+                class="observaciones-field"
+                rows="6"
+                [ngModel]="form().observaciones"
+                (ngModelChange)="patch('observaciones', $event)"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EMPRESA ── -->
+      <div class="form-section tone-amber">
+        <div class="section-head">
+          <span class="section-icon ic-amber">🏢</span>
+          <div>
+            <h3>Empresa</h3>
+            <p>Empresa de transporte u organización a la que pertenece el alumno</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row">
+            <div class="col-12">
+              <div class="empresa-field">
+                <label>Empresa / Organización</label>
+                <div class="empresa-input-wrap">
+                  <input
+                    type="text"
+                    class="empresa-input"
+                    placeholder="Escriba el nombre de la empresa para buscar…"
+                    [value]="empresaBusqueda()"
+                    (input)="buscarEmpresa($any($event.target).value)"
+                    (blur)="onEmpresaBlur()"
+                    autocomplete="off" />
+                  @if (empresaCargando()) {
+                    <span class="empresa-spinner">⏳</span>
+                  }
+                  @if (empresaBusqueda() && !empresaCargando()) {
+                    <button type="button" class="empresa-clear" (click)="limpiarEmpresa()" title="Limpiar empresa">✕</button>
+                  }
+                  @if (empresaDropdownOpen() && empresaSugerencias().length > 0) {
+                    <ul class="empresa-dropdown">
+                      @for (c of empresaSugerencias(); track c._id) {
+                        <li (mousedown)="seleccionarEmpresa(c)" tabindex="0" role="option">
+                          <span class="emp-nombre">{{ c.razonSocial || c.nombres || c.nombreComercial || '—' }}</span>
+                          <span class="emp-nit">{{ c.identificacion }}</span>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+                @if (form().empresaId) {
+                  <p class="empresa-seleccionada">
+                    <span class="emp-chip">🏢 {{ form().empresaNombre || empresaBusqueda() }}</span>
+                    <span class="emp-chip-id">NIT/ID vinculado</span>
+                  </p>
+                } @else {
+                  <p class="empresa-hint">Sin empresa asignada — el alumno es independiente</p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section tone-slate" *ngIf="isEdit()">
+        <div class="section-head">
+          <span class="section-icon ic-slate">◷</span>
+          <div>
+            <h3>Auditoría</h3>
+            <p>Registro de creación y última modificación</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="row audit">
+            <div class="col-3">
+              <label>Fecha auditoría</label>
+              <input type="text" [value]="fechaHoraDisplay(form().fechaAudi)" readonly class="readonly" />
+            </div>
+            <div class="col-3">
+              <label>Creado por</label>
+              <input type="text" [value]="form().userAddReg || '—'" readonly class="readonly" />
+            </div>
+            <div class="col-3">
+              <label>Modificado por</label>
+              <input type="text" [value]="form().userChangeRecord || '—'" readonly class="readonly" />
+            </div>
+            <div class="col-3">
+              <label>Última modificación</label>
+              <input type="text" [value]="fechaHoraDisplay(form().fechaMod)" readonly class="readonly" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>

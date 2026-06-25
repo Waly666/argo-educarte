@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-docs-falt-emp"
+  icon="📄"
+  [title]="'Papeles incompletos — empleados (' + rows().length + ')'"
+  hint="Documentos requeridos sin registrar. Pulse para abrir la ficha."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

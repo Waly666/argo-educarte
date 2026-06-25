@@ -1,0 +1,10 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-jornada"
+  icon="⛺"
+  [title]="'Jornadas en proceso (' + activas().length + ')'"
+  hint="Operaciones activas hoy. Pulse una fila para ir al detalle."
+  [items]="rows()"
+  (closed)="cerrar()"
+  (itemClick)="onItemClick($event)"
+/>

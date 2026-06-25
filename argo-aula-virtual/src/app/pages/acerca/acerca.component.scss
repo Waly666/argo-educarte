@@ -1,0 +1,375 @@
+:host {
+  display: block;
+  font-family: var(--av-font-sans);
+}
+
+.acerca-page {
+  --a-ink: #0f172a;
+  --a-muted: #475569;
+  --a-border: #e2e8f0;
+  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 35%, #fff 100%);
+  color: var(--a-ink);
+}
+
+/* —— Hero —— */
+.acerca-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.25rem, 5vw, 3.25rem) 0;
+  background:
+    radial-gradient(ellipse at 75% 25%, var(--av-primary-a35), transparent 55%),
+    radial-gradient(ellipse at 15% 85%, var(--av-accent-a22), transparent 50%),
+    var(--av-page-hero-bg);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto -5% -45% auto;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--av-page-hero-glow), transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.acerca-hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: center;
+}
+
+.acerca-hero__copy {
+  min-width: 0;
+}
+
+.acerca-kicker {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--av-page-hero-kicker-text);
+  background: var(--av-page-hero-kicker-bg);
+  border: 1px solid var(--av-page-hero-kicker-border);
+
+  &--light {
+    color: #4338ca;
+    background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+    border-color: #c7d2fe;
+  }
+}
+
+.acerca-hero h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 3.8vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.acerca-hero__lead {
+  margin: 0.85rem 0 0;
+  max-width: 36rem;
+  font-size: clamp(0.98rem, 2vw, 1.08rem);
+  line-height: 1.65;
+  color: #cbd5e1;
+}
+
+.acerca-hero__logo {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+
+  img {
+    max-width: min(200px, 28vw);
+    max-height: 120px;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+}
+
+/* —— Body —— */
+.acerca-body {
+  padding: clamp(1.75rem, 4vw, 2.75rem) 0 3.5rem;
+}
+
+.acerca-about {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.85fr);
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.acerca-panel {
+  position: relative;
+  overflow: visible;
+  background: #fff;
+  border: 1px solid var(--a-border);
+  border-radius: 18px;
+  padding: clamp(1.25rem, 3vw, 1.65rem);
+  box-shadow: 0 8px 28px rgba(79, 70, 229, 0.07);
+
+  &__head {
+    margin-bottom: 1rem;
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+      font-weight: 800;
+      color: var(--a-ink);
+      letter-spacing: -0.02em;
+    }
+  }
+
+  &--main {
+    border-top: 4px solid #6366f1;
+  }
+
+  &--side {
+    border-top: 4px solid #10b981;
+    align-self: start;
+  }
+}
+
+.acerca-texto {
+  p {
+    margin: 0 0 0.9rem;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--a-muted);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.acerca-cta {
+  margin-top: 1.35rem;
+}
+
+.acerca-contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+
+  li {
+    position: relative;
+    overflow: visible;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #6366f1;
+    margin-bottom: 0.15rem;
+  }
+
+  span,
+  a {
+    display: block;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--a-ink);
+    word-break: break-word;
+  }
+
+  a:hover {
+    color: #4338ca;
+    text-decoration: underline;
+  }
+}
+
+.acerca-contact-icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.acerca-link {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4338ca;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* —— Valores —— */
+.acerca-valores__head {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 1.75rem;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 800;
+    color: var(--a-ink);
+  }
+}
+
+.acerca-valores__lead {
+  margin: 0.65rem 0 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--a-muted);
+}
+
+.acerca-valores__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  overflow: visible;
+}
+
+.acerca-valor {
+  position: relative;
+  overflow: visible;
+  padding: 1.15rem 1.2rem;
+  border-radius: 16px;
+  border: 1px solid var(--a-border);
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  transition: box-shadow 0.15s ease;
+
+  &.card-wave-host:hover {
+    box-shadow: 0 10px 28px rgba(79, 70, 229, 0.1);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.65rem;
+    border-radius: 12px;
+    font-size: 1.2rem;
+  }
+
+  h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+    color: var(--a-ink);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--a-muted);
+  }
+
+  &--0 {
+    border-top: 3px solid #6366f1;
+
+    .acerca-valor__icon {
+      background: #eef2ff;
+    }
+  }
+
+  &--1 {
+    border-top: 3px solid #10b981;
+
+    .acerca-valor__icon {
+      background: #ecfdf5;
+    }
+  }
+
+  &--2 {
+    border-top: 3px solid var(--av-accent);
+
+    .acerca-valor__icon {
+      background: #ecfeff;
+    }
+  }
+
+  &--3 {
+    border-top: 3px solid #f59e0b;
+
+    .acerca-valor__icon {
+      background: #fffbeb;
+    }
+  }
+
+  &--4 {
+    border-top: 3px solid #ec4899;
+
+    .acerca-valor__icon {
+      background: #fdf2f8;
+    }
+  }
+
+  &--5 {
+    border-top: 3px solid #8b5cf6;
+
+    .acerca-valor__icon {
+      background: #f5f3ff;
+    }
+  }
+}
+
+.acerca-contacto-form {
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+  padding-top: clamp(1.5rem, 3vw, 2rem);
+  border-top: 1px solid var(--a-border);
+}
+
+@media (max-width: 960px) {
+  .acerca-hero__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .acerca-hero__logo {
+    justify-self: start;
+
+    img {
+      max-width: 180px;
+    }
+  }
+
+  .acerca-about {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .acerca-valores__grid {
+    grid-template-columns: 1fr;
+  }
+}

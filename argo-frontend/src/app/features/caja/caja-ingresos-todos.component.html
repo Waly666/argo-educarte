@@ -1,0 +1,169 @@
+<section class="listado-admin admin-list-page">
+  <header class="caja-head page-head card">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Todos los ingresos</p>
+      <h1>Todos los ingresos</h1>
+      <p class="hint">Histórico completo de ingresos y cobros. Solo administradores.</p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--amber">Administración</span>
+      <button type="button" class="ghost sm" (click)="cargar()">Actualizar</button>
+      <span class="total-badge">{{ totalValor() | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+  </header>
+
+  <argo-caja-descuadres-banner />
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <p class="filtro-sesion-activo" *ngIf="idSesion()">
+    Filtrando sesión #{{ idSesion() }}
+    <button type="button" class="linkish" (click)="limpiarFiltros()">Quitar filtro</button>
+    <button type="button" class="linkish" (click)="irAlCierre(+idSesion())">Ir al cierre →</button>
+  </p>
+
+  <div class="card filtros">
+    <label>
+      Buscar
+      <input type="search" placeholder="Nombre, concepto, servicio, recibo…" [ngModel]="q()" (ngModelChange)="q.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <label>
+      Documento
+      <input type="text" placeholder="Nº documento" [ngModel]="numDoc()" (ngModelChange)="numDoc.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <label>
+      Sesión caja
+      <input type="number" min="1" placeholder="# sesión" [ngModel]="idSesion()" (ngModelChange)="idSesion.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <argo-date-input label="Desde" [ngModel]="desde()" (ngModelChange)="desde.set($event)" ></argo-date-input>
+    <argo-date-input label="Hasta" [ngModel]="hasta()" (ngModelChange)="hasta.set($event)" ></argo-date-input>
+    <div class="filtro-actions">
+      <button type="button" class="primary sm" (click)="cargar()">Filtrar</button>
+      <button type="button" class="ghost sm" (click)="limpiarFiltros()">Limpiar</button>
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+        <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+      </div>
+      <span class="count">{{ items().length }} de {{ total() }}</span>
+    </div>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando ingresos…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table ingresos-todos-table">
+        <colgroup>
+          <col class="col-fecha" />
+          <col class="col-recibo" />
+          <col class="col-sesion" />
+          <col class="col-pagador" />
+          <col class="col-doc" />
+          <col class="col-tipo" />
+          <col class="col-concepto" />
+          <col class="col-pago" />
+          <col class="col-valor" />
+          <col class="col-actions" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Recibo</th>
+            <th>Sesión</th>
+            <th>Alumno / Pagador</th>
+            <th>Documento</th>
+            <th>Tipo ingreso</th>
+            <th class="col-concepto">Concepto / Servicio</th>
+            <th>Forma pago</th>
+            <th class="r">Valor</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of items()" [class.row-cuadre]="i.cuadreDescuadre">
+            <td><span [ngClass]="capFecha(i.fecha || i.createdAt)">{{ (i.fecha || i.createdAt) | date: 'dd/MM/yyyy HH:mm' }}</span></td>
+            <td><span [ngClass]="capRecibo(i.numRecibo)">{{ i.numRecibo || '—' }}</span></td>
+            <td class="sesion-cell">
+              <ng-container *ngIf="i.idSesion; else sinSesion">
+                <button type="button" class="linkish" (click)="filtrarPorSesion(i.idSesion)">#{{ i.idSesion }}</button>
+                <button type="button" class="ghost mini" (click)="irAlCierre(i.idSesion)" title="Detalle cierre">📋</button>
+              </ng-container>
+              <ng-template #sinSesion>—</ng-template>
+            </td>
+            <td><span [ngClass]="capBeneficiario(pagadorLabel(i))">{{ pagadorLabel(i) }}</span></td>
+            <td><span [ngClass]="capDoc(i.numDoc)">{{ i.numDoc ?? '—' }}</span></td>
+            <td><span [ngClass]="capTipoIngreso(i.tipoIngresoDescr)">{{ i.tipoIngresoDescr || '—' }}</span></td>
+            <td class="col-concepto" [title]="conceptoLabel(i)">
+              <span class="concepto-cell-text">{{ conceptoCorto(i) }}</span>
+              <span class="tag-cuadre" *ngIf="i.cuadreDescuadre">Cuadre</span>
+            </td>
+            <td><span [ngClass]="capFormaPago(formaPagoLabel(i))">{{ formaPagoLabel(i) }}</span></td>
+            <td class="num"><span [ngClass]="capValorIngreso()">{{ i.valor | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></td>
+            <td class="actions-cell">
+              <button type="button" class="ghost mini" (click)="verRecibo(i)">Ver</button>
+              <button type="button" class="ghost mini" (click)="imprimirRecibo(i)">Imprimir</button>
+              <button
+                type="button"
+                class="primary mini"
+                *ngIf="tieneSoporte(i)"
+                (click)="abrirSoporte(i)"
+                title="Abrir imagen del soporte de pago">
+                Soporte
+              </button>
+              <button type="button" class="danger mini" (click)="anularIngreso(i)">Anular</button>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0"><td colspan="10" class="empty">Sin resultados.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article class="list-card" *ngFor="let i of items()" [class.row-cuadre]="i.cuadreDescuadre">
+        <div class="card-title">
+          <h3>{{ i.numRecibo || 'Ingreso' }}</h3>
+          <p class="card-sub">
+            {{ pagadorLabel(i) }} · {{ (i.fecha || i.createdAt) | date: 'dd/MM/yyyy HH:mm' }}
+            <span *ngIf="i.idSesion"> · Sesión #{{ i.idSesion }}</span>
+          </p>
+        </div>
+        <div class="card-body">
+          <div class="card-row"><span class="lbl">Tipo</span><span [ngClass]="capTipoIngreso(i.tipoIngresoDescr)">{{ i.tipoIngresoDescr || '—' }}</span></div>
+          <div class="card-row concepto-card-row">
+            <span class="lbl">Concepto</span>
+            <span class="concepto-cell-text" [title]="conceptoLabel(i)">{{ conceptoCorto(i, 40) }}</span>
+          </div>
+          <div class="card-row"><span class="lbl">Valor</span><span [ngClass]="capValorIngreso()">{{ i.valor | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></div>
+        </div>
+        <div class="card-foot">
+          <button type="button" class="ghost sm" *ngIf="i.idSesion" (click)="irAlCierre(i.idSesion)">Cierre #{{ i.idSesion }}</button>
+          <button type="button" class="ghost sm" (click)="verRecibo(i)">Ver recibo</button>
+          <button type="button" class="primary sm" *ngIf="tieneSoporte(i)" (click)="abrirSoporte(i)">Ver soporte</button>
+          <button type="button" class="danger sm" (click)="anularIngreso(i)">Anular</button>
+        </div>
+      </article>
+      <p class="cards-empty empty" *ngIf="items().length === 0">Sin resultados.</p>
+    </div>
+  </div>
+</section>
+
+<div class="modal-backdrop auth-anular-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarAnularSupervisor()">
+  <div class="modal card auth-anular-modal" (click)="$event.stopPropagation()">
+    <h3>Autorización para anular ingreso</h3>
+    <p class="hint" *ngIf="ingresoPendienteAnular() as pi">
+      Movimiento de sesión #{{ pi.idSesion || '—' }} (no es su caja abierta actual). Ingrese credenciales de administrador.
+    </p>
+    <label>
+      Usuario administrador
+      <input type="text" autocomplete="username" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+    </label>
+    <label>
+      Contraseña
+      <input type="password" autocomplete="current-password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+    </label>
+    <div class="actions">
+      <button type="button" class="ghost mini" (click)="cancelarAnularSupervisor()">Cancelar</button>
+      <button type="button" class="danger mini" (click)="confirmarAnularSupervisor()">Autorizar y anular</button>
+    </div>
+  </div>
+</div>

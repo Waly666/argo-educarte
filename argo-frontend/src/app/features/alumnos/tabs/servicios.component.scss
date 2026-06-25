@@ -1,0 +1,789 @@
+.servicios {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: visible;
+}
+
+.saldo-servicios { margin-bottom: 2px; }
+
+.saldo-pendiente-cell { font-weight: 600; }
+
+.r { text-align: right; }
+.mini { padding: 4px 10px; font-size: .78rem; }
+.actions-cell {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.recibos-row td { background: rgba(78, 163, 255, 0.04); padding: 10px 12px; }
+.recibos-panel { margin: 0; }
+table.nested { font-size: .88rem; }
+.hint { color: var(--text-soft); font-size: .85rem; margin: 0 0 10px; }
+
+.revalidacion-banner {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(14, 116, 144, 0.12);
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #bae6fd;
+  }
+
+  p {
+    margin: 0 0 6px;
+    font-size: 0.86rem;
+    color: var(--text-soft);
+  }
+
+  .rev-meta {
+    font-size: 0.8rem;
+  }
+
+  .rev-actions {
+    margin-top: 6px;
+  }
+}
+
+.msg {
+  padding: 8px 10px;
+  background: rgba(78, 163, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: .88rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+
+  &:has(argo-catalogo-enum-buscar.dropdown-open) {
+    z-index: 5000;
+  }
+
+  .card {
+    overflow: visible;
+    position: relative;
+  }
+}
+
+.servicios > .card {
+  position: relative;
+  z-index: 0;
+  overflow: visible;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+  overflow: visible;
+}
+
+.row-align-fields {
+  align-items: end;
+}
+
+.field-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.input-valor-readonly {
+  min-height: 2.35rem;
+}
+
+.matricula-fields-row {
+  align-items: start;
+  margin-bottom: 0;
+
+  .field-cell > label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .field-cell--tarifa,
+  .field-cell--valor {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .field-cell argo-catalogo-enum-buscar {
+    display: block;
+    width: 100%;
+
+    ::ng-deep .input-wrap input {
+      min-height: 2.35rem;
+      box-sizing: border-box;
+    }
+  }
+
+  .input-valor-readonly {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
+}
+
+.matricula-dg-hint {
+  margin: 6px 0 10px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.col-3  { grid-column: span 3; position: relative; z-index: 0; }
+.col-4  { grid-column: span 4; position: relative; z-index: 0; }
+.col-6  { grid-column: span 6; position: relative; z-index: 0; }
+.col-12 {
+  grid-column: span 12;
+  position: relative;
+  z-index: 0;
+  min-width: 0;
+}
+
+.programa-combo-wrap,
+.servicio-combo-wrap,
+.combo-selector-wrap {
+  width: 100%;
+  min-width: 0;
+
+  argo-catalogo-enum-buscar {
+    display: block;
+    width: 100%;
+  }
+}
+
+.row .col-12:has(argo-catalogo-enum-buscar.dropdown-open),
+.row .col-3:has(argo-catalogo-enum-buscar.dropdown-open),
+.row .col-4:has(argo-catalogo-enum-buscar.dropdown-open),
+.row .col-6:has(argo-catalogo-enum-buscar.dropdown-open) {
+  z-index: 5000;
+}
+
+.portal-matricula {
+  margin: 4px 0 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.ajuste-valor-mat {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(234, 179, 8, 0.28);
+  border-radius: 10px;
+  background: rgba(234, 179, 8, 0.06);
+}
+
+.ajuste-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.ajuste-valor-row {
+  margin-bottom: 0;
+}
+
+.ajuste-hint {
+  margin: 8px 0 0;
+}
+
+/* ---- Cuotas por semestre ---- */
+.valor-mat-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+.cuotas-semestre-panel {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(6, 78, 59, 0.12));
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.06);
+}
+
+.cuotas-semestre-head {
+  margin-bottom: 0;
+}
+
+.cuotas-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  margin: 0;
+
+  input[type='checkbox'] {
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+}
+
+.cuotas-check-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.92rem;
+    color: #a7f3d0;
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-soft);
+  }
+}
+
+.cuotas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+
+.cuotas-formato-hint {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+}
+
+.cuotas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.cuotas-grid--editor {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.cuota-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  background: rgba(6, 24, 20, 0.45);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &--invalid {
+    border-color: rgba(248, 113, 113, 0.55);
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.2);
+  }
+
+  &--pagada {
+    border-color: rgba(52, 211, 153, 0.5);
+    background: rgba(16, 185, 129, 0.1);
+  }
+
+  &--parcial {
+    border-color: rgba(251, 191, 36, 0.45);
+    background: rgba(251, 191, 36, 0.06);
+  }
+}
+
+.cuota-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cuota-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.cuota-estado {
+  font-size: 0.72rem;
+  color: #fcd34d;
+  white-space: nowrap;
+}
+
+.cuota-nombre {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8px;
+
+  &--full {
+    white-space: normal;
+    line-height: 1.35;
+    margin: 0 0 8px;
+  }
+}
+
+.cuota-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.cuota-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin: 0;
+}
+
+.cuota-catalogo {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.cuota-input {
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.cuota-saldo-hint {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  color: #fcd34d;
+}
+
+.cuotas-resumen {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  margin-bottom: 10px;
+
+  &--editor {
+    margin-top: 4px;
+  }
+}
+
+.cuotas-resumen-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  padding: 3px 0;
+
+  strong {
+    color: #a7f3d0;
+    font-size: 0.92rem;
+  }
+
+  &--total {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(52, 211, 153, 0.25);
+
+    span {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    strong {
+      font-size: 1.05rem;
+      color: #6ee7b7;
+    }
+  }
+}
+
+.cuotas-motivo {
+  margin-bottom: 4px;
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+  }
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .opt {
+    font-weight: 400;
+    opacity: 0.75;
+  }
+}
+
+.cuotas-matriculas-card {
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.04), transparent);
+}
+
+.cuotas-matriculas-head {
+  margin-bottom: 12px;
+
+  h2 {
+    margin: 0 0 4px;
+  }
+
+  .hint {
+    margin: 0;
+  }
+}
+
+.cuotas-matricula-item {
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.cuotas-matricula-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(6, 24, 20, 0.35);
+
+  strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+.cuotas-mat-meta {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+.cuotas-edit-btn--active {
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #6ee7b7;
+}
+
+.cuotas-editor {
+  padding: 14px;
+  border-top: 1px solid rgba(52, 211, 153, 0.15);
+}
+
+.cuotas-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.solo-virtual-banner {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.08);
+
+  strong {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-soft);
+  }
+}
+
+.req {
+  color: #f87171;
+}
+
+.portal-matricula-lead {
+  margin: 0 0 10px;
+}
+
+.portal-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.portal-credenciales {
+  margin-top: 0;
+  code {
+    font-weight: 600;
+  }
+}
+
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+
+.r { text-align: right; }
+.empty { text-align: center; color: var(--text-soft); padding: 22px 8px; }
+.loading { color: var(--text-soft); padding: 8px 4px; }
+
+.mini { padding: 4px 10px; font-size: .78rem; }
+
+.msg {
+  padding: 8px 10px;
+  background: rgba(78, 163, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: .88rem;
+}
+
+.empty-card { text-align: center; padding: 40px 20px; }
+.empty-card p { color: var(--text-dim); }
+
+@media (max-width: 980px) {
+  .two-col { grid-template-columns: 1fr; }
+  .col-3, .col-6, .col-12 { grid-column: span 12; }
+}
+
+.msg.ok {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #bbf7d0;
+}
+
+.msg.err {
+  background: rgba(248, 114, 114, 0.1);
+  border-color: rgba(248, 114, 114, 0.35);
+  color: #ffd6d6;
+}
+
+.warn-docs {
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 8px;
+
+  ul {
+    margin: 8px 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+}
+
+.virtual-liq-banner {
+  position: relative;
+  margin: 0 0 12px;
+  padding: 12px 14px 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  background: rgba(99, 102, 241, 0.12);
+  overflow: hidden;
+
+  strong {
+    display: block;
+    color: #c7d2fe;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--text-dim);
+  }
+}
+
+.virtual-liq-banner-pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 0% 50%, rgba(129, 140, 248, 0.22), transparent 55%);
+  animation: argo-virtual-saldo-blink 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.liq-row-virtual td {
+  background: rgba(99, 102, 241, 0.07);
+  border-top: 1px solid rgba(129, 140, 248, 0.22);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.22);
+}
+
+.mini-badge {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.badge.virtual {
+  background: rgba(99, 102, 241, 0.22);
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  color: #c7d2fe;
+}
+
+.badge.virtual-estado.err,
+.badge.virtual-estado.warn {
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
+}
+
+/* ---- Combo de cursos ---- */
+.combo-selector-wrap {
+  width: 100%;
+
+  ::ng-deep .enum-buscar-host {
+    label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .input-wrap input {
+      font-size: 1.05rem !important;
+      padding: 0.9rem 2.5rem 0.9rem 1rem !important;
+      border-radius: 10px !important;
+      height: auto !important;
+    }
+
+    .combo-toggle {
+      width: 2.4rem !important;
+      font-size: 1.1rem !important;
+    }
+
+    .dropdown li {
+      padding: 0.75rem 1rem !important;
+
+      strong { font-size: 1rem !important; }
+    }
+  }
+}
+
+.combo-prevista {
+  margin-top: 0.85rem;
+  padding: 1rem 1.15rem;
+  background: rgba(78, 163, 255, 0.06);
+  border: 1px solid rgba(78, 163, 255, 0.22);
+  border-radius: 12px;
+  font-size: 0.875rem;
+
+  &__titulo {
+    font-weight: 700;
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+    color: var(--accent-2);
+    letter-spacing: 0.01em;
+  }
+
+  &__progs {
+    list-style: none;
+    margin: 0 0 0.65rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(78, 163, 255, 0.1);
+
+      &:last-child { border-bottom: none; }
+    }
+  }
+
+  .cp-nombre { color: var(--text-dim); flex: 1; min-width: 0; }
+  .cp-valor  { font-weight: 700; color: var(--accent); white-space: nowrap; font-size: 0.9rem; }
+
+  &__total {
+    margin: 0;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(78, 163, 255, 0.22);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    strong { color: var(--accent-2); font-size: 1.05rem; }
+  }
+}
+
+.combo-resultado {
+  margin-top: 0.85rem;
+  padding: 1rem 1.15rem;
+  background: rgba(54, 211, 153, 0.07);
+  border: 1px solid rgba(54, 211, 153, 0.3);
+  border-radius: 12px;
+  font-size: 0.875rem;
+
+  &--parcial {
+    background: rgba(251, 189, 35, 0.07);
+    border-color: rgba(251, 189, 35, 0.3);
+  }
+
+  .cr-msg {
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--ok);
+    font-size: 0.92rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: var(--text-dim);
+    li { margin: 0.25rem 0; font-size: 0.85rem; }
+  }
+
+  .cr-errores {
+    color: var(--err);
+    li { color: var(--err); }
+  }
+}

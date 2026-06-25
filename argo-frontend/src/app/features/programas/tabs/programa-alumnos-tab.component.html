@@ -1,0 +1,93 @@
+<section class="prog-alu card">
+  <header class="prog-alu-head">
+    <div>
+      <h2>Alumnos matriculados</h2>
+      <p>
+        {{ total() }} matrícula{{ total() === 1 ? '' : 's' }} en este programa.
+        @if (esVirtualPrograma()) {
+          Programa de <strong>aula virtual</strong> — puede haber matrículas presenciales históricas.
+        } @else {
+          Programa <strong>presencial</strong> — las matrículas con tarifa virtual aparecen marcadas.
+        }
+      </p>
+    </div>
+    <div class="prog-alu-chips">
+      <span class="chip chip--pres">{{ resumenPresencial() }} presencial</span>
+      <span class="chip chip--virt">{{ resumenVirtual() }} virtual</span>
+    </div>
+  </header>
+
+  <div class="prog-alu-toolbar">
+    <input
+      type="search"
+      placeholder="Buscar alumno por nombre o documento…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+      (keyup.enter)="cargar()" />
+    <select [ngModel]="modalidad()" (ngModelChange)="modalidad.set($event); cargar()">
+      <option value="todos">Todas las modalidades</option>
+      <option value="presencial">Solo presencial</option>
+      <option value="virtual">Solo virtual</option>
+    </select>
+    <select [ngModel]="pagada()" (ngModelChange)="pagada.set($event); cargar()">
+      <option value="">Cualquier pago</option>
+      <option value="Pagado">Pagado</option>
+      <option value="Pago Parcial">Pago parcial</option>
+      <option value="No Pago">No pago</option>
+    </select>
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+  </div>
+
+  @if (loading()) {
+    <p class="prog-alu-empty">Cargando matrículas…</p>
+  } @else if (!items().length) {
+    <p class="prog-alu-empty">No hay alumnos matriculados con los filtros actuales.</p>
+  } @else {
+    <div class="prog-alu-table-wrap">
+      <table class="prog-alu-table">
+        <thead>
+          <tr>
+            <th>Alumno</th>
+            <th>Documento</th>
+            <th>Modalidad</th>
+            <th>Fecha mat.</th>
+            <th>Valor</th>
+            <th>Pago</th>
+            <th>Saldo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of items(); track row.idMatricula) {
+            <tr>
+              <td>
+                <strong>{{ row.nombreCompleto || '—' }}</strong>
+                @if (row.celular) {
+                  <small>{{ row.celular }}</small>
+                }
+              </td>
+              <td class="mono">{{ fmtDoc(row.numDoc) }}</td>
+              <td>
+                <span class="mod-badge" [class.mod-badge--virtual]="row.modalidad === 'virtual'">
+                  {{ row.modalidadLabel }}
+                </span>
+              </td>
+              <td>{{ row.fechaMat | date:'dd/MM/yyyy' }}</td>
+              <td>{{ row.valorMat | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td>{{ row.pagada || '—' }}</td>
+              <td [class.saldo-pend]="row.saldo > 0">{{ row.saldo | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="acc">
+                @if (row.alumnoId) {
+                  <a [routerLink]="fichaAlumno(row)" [queryParams]="{ tab: 'servicios' }" class="ghost mini">Ficha</a>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (total() > items().length) {
+      <p class="prog-alu-more">Mostrando {{ items().length }} de {{ total() }}. Refine la búsqueda si necesita más resultados.</p>
+    }
+  }
+</section>

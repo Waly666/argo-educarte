@@ -1,0 +1,19 @@
+<section class="caja-shell">
+  <header class="caja-head caja-page-head">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app">Inicio</a> / Caja</p>
+      <h1>Mi caja — Resumen del día</h1>
+      <p class="hint">Cuadre, cobros, egresos y cierre de su turno de caja.</p>
+    </div>
+  </header>
+
+  <nav class="caja-nav" aria-label="Secciones de caja">
+    <a routerLink="/app/caja" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      Resumen del día
+    </a>
+    <a routerLink="/app/caja/ingresos" routerLinkActive="active">Cobros / Ingresos</a>
+    <a routerLink="/app/caja/egresos" routerLinkActive="active">Egresos</a>
+  </nav>
+
+  <router-outlet />
+</section>

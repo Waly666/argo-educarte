@@ -1,0 +1,389 @@
+<section class="empleados-page rrhh-page admin-list-page card">
+  <header class="rrhh-head page-head">
+    <div class="rrhh-head-main">
+      <p class="breadcrumb"><a routerLink="/app/rrhh/inicio">RRHH</a> / Empleados</p>
+      <h1>Empleados</h1>
+      <p class="hint">Ficha del personal, seguridad social, foto y documentos requeridos.</p>
+    </div>
+    <div class="rrhh-badges head-actions">
+      @if (!loading()) {
+        <span class="rrhh-chip rrhh-chip--sky">{{ empleados().length }} empleado{{ empleados().length === 1 ? '' : 's' }}</span>
+      }
+      <a routerLink="/app/rrhh/catalogos/cargos" class="ghost link-btn">Catálogos</a>
+      <a routerLink="/app/rrhh/contratos" class="ghost link-btn">Contratos</a>
+      <button type="button" class="primary" (click)="nuevo()">Nuevo empleado</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Buscar nombre o documento…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+      (keyup.enter)="cargar()"
+    />
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')" title="Vista tabla">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')" title="Vista tarjetas">▦ Cards</button>
+    </div>
+  </div>
+
+  @if (msg(); as texto) {
+    <div class="rrhh-msg" [class.rrhh-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="form-card card argo-form-shell" *ngIf="mostrarForm()">
+    <h2>{{ editando() ? 'Editar empleado' : 'Nuevo empleado' }}</h2>
+
+    <nav class="form-tabs" *ngIf="editando()?.idEmpleado">
+      <button type="button" [class.active]="formSeccion() === 'datos'" (click)="setFormSeccion('datos')">Datos</button>
+      <button type="button" [class.active]="formSeccion() === 'documentos'" (click)="setFormSeccion('documentos')">Documentos</button>
+    </nav>
+
+    <ng-container *ngIf="formSeccion() === 'datos'">
+    <h3 class="sec">Identificación</h3>
+    <div class="ident-layout">
+      <div class="ident-fields">
+        <div class="row">
+      <div class="col-3">
+        <label>Tipo documento *</label>
+        <select [ngModel]="form().tipoDocumento" (ngModelChange)="patch('tipoDocumento', $event)">
+          <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>numeroDocumento *</label>
+        <input type="text" [ngModel]="form().numeroDocumento" (ngModelChange)="patch('numeroDocumento', $event)" />
+      </div>
+      <div class="col-3">
+        <label>Estado</label>
+        <select [ngModel]="form().estado" (ngModelChange)="patch('estado', $event)">
+          <option *ngFor="let s of estados" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Sexo</label>
+        <select [ngModel]="form().sexo" (ngModelChange)="patch('sexo', $event)">
+          <option value="">—</option>
+          <option *ngFor="let s of sexos" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3">
+        <label>Primer nombre *</label>
+        <input type="text" [ngModel]="form().primerNombre" (ngModelChange)="patch('primerNombre', $event)" />
+      </div>
+      <div class="col-3">
+        <label>Segundo nombre</label>
+        <input type="text" [ngModel]="form().segundoNombre" (ngModelChange)="patch('segundoNombre', $event)" />
+      </div>
+      <div class="col-3">
+        <label>Primer apellido *</label>
+        <input type="text" [ngModel]="form().primerApellido" (ngModelChange)="patch('primerApellido', $event)" />
+      </div>
+      <div class="col-3">
+        <label>Segundo apellido</label>
+        <input type="text" [ngModel]="form().segundoApellido" (ngModelChange)="patch('segundoApellido', $event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3">
+        <argo-date-input label="Fecha nacimiento" [ngModel]="form().fechaNacimiento" (ngModelChange)="patch('fechaNacimiento', $event)" ></argo-date-input>
+      </div>
+      <div class="col-3">
+        <label>Estado civil</label>
+        <input type="text" [ngModel]="form().estadoCivil" (ngModelChange)="patch('estadoCivil', $event)" />
+      </div>
+    </div>
+      </div>
+      <div class="foto-col">
+        <label class="field-label">Foto del empleado</label>
+        <div class="foto">
+          <img *ngIf="fotoPreview() as p" [src]="p" alt="Foto" />
+          <span *ngIf="!fotoPreview()">Sin foto</span>
+        </div>
+        <label class="upload">
+          <input type="file" accept="image/*" (change)="onFoto($event)" hidden />
+          <span>Cargar foto</span>
+        </label>
+      </div>
+    </div>
+
+    <h3 class="sec">Contacto y ubicación</h3>
+    <div class="row">
+      <div class="col-4">
+        <label>Correo personal</label>
+        <input type="email" [ngModel]="form().correoPersonal" (ngModelChange)="patch('correoPersonal', $event)" />
+      </div>
+      <div class="col-4">
+        <label>Correo corporativo</label>
+        <input type="email" [ngModel]="form().correoCorporativo" (ngModelChange)="patch('correoCorporativo', $event)" />
+      </div>
+      <div class="col-2">
+        <label>Teléfono</label>
+        <input type="text" [ngModel]="form().telefono" (ngModelChange)="patch('telefono', $event)" />
+      </div>
+      <div class="col-2">
+        <label>Celular</label>
+        <input type="text" [ngModel]="form().celular" (ngModelChange)="patch('celular', $event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <label>Dirección</label>
+        <input type="text" [ngModel]="form().direccion" (ngModelChange)="patch('direccion', $event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <label>Ciudad</label>
+        <input type="text" [ngModel]="form().ciudad" (ngModelChange)="patch('ciudad', $event)" />
+      </div>
+      <div class="col-6">
+        <label>Departamento</label>
+        <input type="text" [ngModel]="form().departamento" (ngModelChange)="patch('departamento', $event)" />
+      </div>
+    </div>
+
+    <h3 class="sec">Laboral y seguridad social</h3>
+    <div class="row">
+      <div class="col-3">
+        <label>Cargo</label>
+        <select [ngModel]="form().cargoId" (ngModelChange)="onCargoChange($event)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let c of cargos()" [ngValue]="c.idCargo">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Departamento empresa</label>
+        <select [ngModel]="form().departamentoId" (ngModelChange)="patch('departamentoId', +$event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let d of departamentos()" [ngValue]="d.idDepartamento">{{ d.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Sede *</label>
+        <select [ngModel]="form().idSede" (ngModelChange)="patch('idSede', $event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let s of sedes()" [ngValue]="s.idSede">{{ s.nombre }}</option>
+        </select>
+        <p class="hint-inline">Se copia al usuario al crear cuenta automática (Cajero/Instructor).</p>
+      </div>
+      <div class="col-3">
+        <label>Tipo contrato</label>
+        <select [ngModel]="form().tipoContrato" (ngModelChange)="patch('tipoContrato', $event)">
+          <option value="">—</option>
+          <option *ngFor="let t of tiposContrato" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Salario</label>
+        <input type="number" min="0" [ngModel]="form().salario" (ngModelChange)="patch('salario', +$event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3">
+        <argo-date-input label="Fecha ingreso" [ngModel]="form().fechaIngreso" (ngModelChange)="patch('fechaIngreso', $event)" ></argo-date-input>
+      </div>
+      <div class="col-3">
+        <argo-date-input label="Fecha retiro" [ngModel]="form().fechaRetiro" (ngModelChange)="patch('fechaRetiro', $event)" ></argo-date-input>
+      </div>
+      <div class="col-3">
+        <label>EPS</label>
+        <select [ngModel]="form().epsId" (ngModelChange)="patch('epsId', +$event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let x of eps()" [ngValue]="x.idEps">{{ x.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>AFP</label>
+        <select [ngModel]="form().afpId" (ngModelChange)="patch('afpId', +$event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let x of afp()" [ngValue]="x.idAfp">{{ x.nombre }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4">
+        <label>ARL</label>
+        <select [ngModel]="form().arlId" (ngModelChange)="patch('arlId', +$event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let x of arl()" [ngValue]="x.idArl">{{ x.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <label>Caja compensación</label>
+        <select [ngModel]="form().cajaCompensacionId" (ngModelChange)="patch('cajaCompensacionId', +$event || undefined)">
+          <option [ngValue]="undefined">—</option>
+          <option *ngFor="let x of cajas()" [ngValue]="x.idCajaCompensacion">{{ x.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <section class="acceso-panel">
+      <div class="acceso-head">
+        <div>
+          <h3 class="sec acceso-sec">Acceso al sistema</h3>
+          <p class="hint acceso-hint" *ngIf="cargoSugiereAcceso()">
+            Cargo Cajero/Instructor: elija cómo asociar la cuenta de login. La sede del empleado se hereda al usuario automático.
+          </p>
+          <p class="hint acceso-hint" *ngIf="!cargoSugiereAcceso()">
+            Opcional: solo si este empleado debe ingresar al sistema.
+          </p>
+        </div>
+        <p class="acceso-actual" *ngIf="vinculoActual() as v">
+          Vinculado: <strong>{{ v.login }}</strong>
+          <span *ngIf="v.rol" class="acceso-rol">{{ v.rol }}</span>
+        </p>
+      </div>
+
+      <div class="acceso-opciones" role="radiogroup" aria-label="Modo de acceso al sistema">
+        <button
+          type="button"
+          class="acceso-opcion"
+          [class.active]="modoAcceso() === 'auto'"
+          (click)="setModoAcceso('auto')">
+          <span class="acceso-opcion-title">Crear automático</span>
+          <span class="acceso-opcion-desc">Login = documento. Solo aplica a Cajero o Instructor.</span>
+        </button>
+        <button
+          type="button"
+          class="acceso-opcion"
+          *ngIf="esAdmin()"
+          [class.active]="modoAcceso() === 'vincular'"
+          (click)="setModoAcceso('vincular')">
+          <span class="acceso-opcion-title">Vincular existente</span>
+          <span class="acceso-opcion-desc">Enlazar a un usuario ya creado en Configuración.</span>
+        </button>
+        <button
+          type="button"
+          class="acceso-opcion"
+          [class.active]="modoAcceso() === 'ninguno'"
+          (click)="setModoAcceso('ninguno')">
+          <span class="acceso-opcion-title">Sin acceso</span>
+          <span class="acceso-opcion-desc">Solo ficha de empleado, sin cuenta de login.</span>
+        </button>
+      </div>
+
+      <div class="acceso-vincular" *ngIf="modoAcceso() === 'vincular' && esAdmin()">
+        <label>Usuario a vincular *</label>
+        <select [ngModel]="idUsuarioVincular()" (ngModelChange)="idUsuarioVincular.set($event)">
+          <option value="">— Seleccione un usuario —</option>
+          <option *ngFor="let u of usuariosDisponibles()" [value]="usuarioId(u)">{{ labelUsuario(u) }}</option>
+        </select>
+        <p class="hint acceso-vincular-hint">
+          El login y documento del usuario no se cambian. Use el mismo <strong>numeroDocumento</strong> en la ficha del empleado que en Configuración → Usuarios.
+        </p>
+        <p class="hint acceso-vincular-hint" *ngIf="!usuariosDisponibles().length">
+          No hay usuarios disponibles. Créelos en <a routerLink="/app/configuracion/usuarios">Configuración → Usuarios</a>.
+        </p>
+        <p class="hint acceso-vincular-hint" *ngIf="usuarios().length && usuariosDisponibles().length < usuarios().length">
+          Solo aparecen usuarios sin empleado vinculado. Si falta alguien, puede estar enlazado a otro empleado en RRHH.
+        </p>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+    </ng-container>
+
+    <argo-empleado-documentos-panel
+      *ngIf="formSeccion() === 'documentos' && editando()?.idEmpleado as idEmp"
+      [idEmpleado]="idEmp"
+      [cargoId]="form().cargoId"
+    />
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+
+  <div class="rrhh-table-wrap emp-table-wrap" *ngIf="!loading() && vista() === 'lista'">
+    <table class="argo emp-lista-table">
+      <thead>
+        <tr>
+          <th class="th-foto"></th>
+          <th class="col-doc">Documento</th>
+          <th class="col-nombre">Nombre</th>
+          <th class="col-cargo">Cargo</th>
+          <th class="col-sede">Sede</th>
+          <th class="col-usuario">Usuario</th>
+          <th class="col-depto">Depto.</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-egresos">Egresos</th>
+          <th class="th-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of empleados()">
+          <td class="td-foto">
+            <div class="list-foto" aria-hidden="true">
+              <img *ngIf="fotoUrl(e.urlFoto) as f" [src]="f" alt="" />
+              <span *ngIf="!e.urlFoto">{{ iniciales(e) }}</span>
+            </div>
+          </td>
+          <td class="mono col-doc">{{ e.tipoDocumento }} {{ e.numeroDocumento }}</td>
+          <td class="col-nombre">{{ e.nombreCompleto }}</td>
+          <td class="col-cargo">{{ e.cargoNombre || '—' }}</td>
+          <td class="col-sede">{{ e.sedeNombre || e.idSede || '—' }}</td>
+          <td class="mono sm col-usuario">{{ e.usuarioLogin || '—' }}</td>
+          <td class="col-depto">{{ e.departamentoNombre || '—' }}</td>
+          <td class="col-estado">{{ e.estado }}</td>
+          <td class="mono col-egresos">{{ e.totalEgresos ?? 0 }}</td>
+          <td class="actions-cell">
+            <a [routerLink]="['/app/caja']" [queryParams]="{ numeroDocumento: e.numeroDocumento }" class="link-btn"
+              >Egresos</a
+            >
+            <button type="button" class="ghost sm" (click)="editar(e)">Editar</button>
+            <button type="button" class="danger sm" (click)="eliminar(e)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="empleados().length === 0">
+          <td colspan="10" class="empty">Sin empleados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+    <article class="list-card" *ngFor="let e of empleados()">
+      <header class="card-title"><h3>{{ e.nombreCompleto }}</h3></header>
+      <div class="card-body">
+        <div class="id-photo-wrap">
+          <div class="id-photo" aria-hidden="true">
+            <span class="id-photo-label">FOTO</span>
+            <img *ngIf="fotoUrl(e.urlFoto) as f" [src]="f" alt="" />
+            <span class="id-photo-iniciales" *ngIf="!e.urlFoto">{{ iniciales(e) }}</span>
+          </div>
+        </div>
+        <div class="card-main">
+          <div class="card-doc mono">{{ e.tipoDocumento }} {{ e.numeroDocumento }}</div>
+          <div class="card-tags">
+            <span class="cap cap-sm">{{ e.estado }}</span>
+            <span class="cap cap-sm cap-indigo" *ngIf="e.cargoNombre">{{ e.cargoNombre }}</span>
+          </div>
+          <dl class="card-fields">
+            <div><dt>Departamento</dt><dd>{{ e.departamentoNombre || '—' }}</dd></div>
+            <div><dt>Egresos</dt><dd class="mono">{{ e.totalEgresos ?? 0 }}</dd></div>
+            <div *ngIf="e.celular"><dt>Celular</dt><dd>{{ e.celular }}</dd></div>
+            <div *ngIf="e.correoPersonal"><dt>Correo</dt><dd class="truncate">{{ e.correoPersonal }}</dd></div>
+          </dl>
+        </div>
+      </div>
+      <footer class="card-foot">
+        <span class="card-hint">Empleado RRHH</span>
+        <div class="card-actions">
+          <a [routerLink]="['/app/caja']" [queryParams]="{ numeroDocumento: e.numeroDocumento }" class="act open">Egresos</a>
+          <button type="button" class="act open" (click)="editar(e)">Editar</button>
+          <button type="button" class="act doc" (click)="eliminar(e)">Eliminar</button>
+        </div>
+      </footer>
+    </article>
+    <div class="empty cards-empty" *ngIf="empleados().length === 0">Sin empleados.</div>
+  </div>
+</section>

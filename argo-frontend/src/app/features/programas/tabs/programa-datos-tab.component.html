@@ -1,0 +1,62 @@
+@if (detalle(); as d) {
+  <div class="prog-datos argo-form-shell">
+    <section class="prog-datos-section prog-datos-section--sky">
+      <header class="prog-datos-head">
+        <span class="prog-datos-badge">1</span>
+        <h2>Identificación</h2>
+      </header>
+      <div class="prog-datos-grid">
+        <div><span class="lbl">Código</span><strong>{{ d.programa.codigoProg || d.programa.idPrograma }}</strong></div>
+        <div><span class="lbl">ID programa</span><strong class="mono">{{ d.programa.idPrograma }}</strong></div>
+        <div><span class="lbl">Estado</span><strong>{{ d.programa.estado || '—' }}</strong></div>
+        <div><span class="lbl">Formato certificado</span><strong>{{ d.programa.tipoCertificado ? labelTipoCert(d.programa.tipoCertificado) : 'Automático' }}</strong></div>
+      </div>
+    </section>
+
+    <section class="prog-datos-section prog-datos-section--violet">
+      <header class="prog-datos-head">
+        <span class="prog-datos-badge">2</span>
+        <h2>Capacitación</h2>
+      </header>
+      <div class="prog-datos-grid">
+        <div><span class="lbl">Nombre en certificado</span><strong>{{ d.programa.nomCert || '—' }}</strong></div>
+        <div><span class="lbl">Horas totales</span><strong>{{ d.programa.horas ?? '—' }}</strong></div>
+        <div><span class="lbl">Teoría / práctica / taller</span><strong>{{ d.programa.horasTeoria ?? '—' }} / {{ d.programa.horasPractica ?? '—' }} / {{ d.programa.horasTaller ?? '—' }}</strong></div>
+        <div><span class="lbl">Semestres</span><strong>{{ d.programa.semestres ?? '—' }}</strong></div>
+        <div><span class="lbl">Vencimiento certificado (días)</span><strong>{{ d.programa.diasVencimiento ?? '—' }}</strong></div>
+        <div><span class="lbl">Usa cohortes</span><strong>{{ d.programa.usaCohortes ? 'Sí' : 'No' }}</strong></div>
+      </div>
+      @if (d.programa.descripcion) {
+        <p class="prog-datos-desc">{{ d.programa.descripcion }}</p>
+      }
+    </section>
+
+    <section class="prog-datos-section" [class.prog-datos-section--virtual]="d.programa.esCapacitacionVirtual" [class.prog-datos-section--amber]="!d.programa.esCapacitacionVirtual">
+      <header class="prog-datos-head">
+        <span class="prog-datos-badge">3</span>
+        <h2>{{ d.programa.esCapacitacionVirtual ? 'Matrícula virtual (portal)' : 'Matrícula presencial' }}</h2>
+      </header>
+      <div class="prog-datos-grid">
+        <div><span class="lbl">Valor matrícula</span><strong>{{ num(d.programa.valorMatricula) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+        @if (d.servicio) {
+          <div><span class="lbl">Tarifa 1 / 2 / 3</span><strong>{{ num(d.servicio.tarifa1) | currency:'COP':'symbol-narrow':'1.0-0' }} · {{ num(d.servicio.tarifa2) | currency:'COP':'symbol-narrow':'1.0-0' }} · {{ num(d.servicio.tarifa3) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+          @if (d.programa.esCapacitacionVirtual) {
+            <div><span class="lbl">Tarifa virtual (4)</span><strong>{{ num(d.servicio.tarifaVirtual) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+          }
+        }
+        <div><span class="lbl">Refrendación</span><strong>{{ (d.programa.diasVencimiento ?? 0) > 0 && d.programa.admiteRevalidacion ? 'Admite' : 'No aplica' }}</strong></div>
+      </div>
+      @if (d.programa.esCapacitacionVirtual) {
+        <div class="prog-datos-virtual">
+          @if (portadaUrl(d.programa.urlPortadaVirtual); as src) {
+            <img [src]="src" alt="Portada curso virtual" class="prog-portada" />
+          }
+          @if (d.programa.descripcionVirtual) {
+            <div class="prog-datos-desc" [innerHTML]="d.programa.descripcionVirtual"></div>
+          }
+          <a [routerLink]="['/app/aula-virtual/cursos', d.programa.idPrograma]" class="prog-link-portal">Ir a configuración del aula virtual →</a>
+        </div>
+      }
+    </section>
+  </div>
+}

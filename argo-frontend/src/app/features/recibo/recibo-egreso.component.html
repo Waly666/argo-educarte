@@ -1,0 +1,74 @@
+<div class="recibo-page">
+  <div class="toolbar no-print" *ngIf="!loading() && !error()">
+    <button type="button" class="ghost" (click)="volver()">← Volver</button>
+    <button type="button" class="primary" (click)="imprimir()">Imprimir / Guardar PDF</button>
+    <button type="button" class="ghost" (click)="abrirHtml()">Abrir en ventana</button>
+  </div>
+
+  <div class="loading no-print" *ngIf="loading()">Cargando comprobante…</div>
+  <div class="err no-print" *ngIf="error()">{{ error() }}</div>
+
+  <article class="ticket" *ngIf="data() as d">
+    <header class="center empresa-block">
+      <div class="empresa">{{ d.config.nombreEmpresa || '—' }}</div>
+      <div class="dato">NIT: {{ d.config.nit || '—' }}</div>
+      <div class="dato">Tel: {{ d.config.telefono || '—' }}</div>
+      <div class="dato">Dir: {{ d.config.direccion || '—' }}</div>
+      <div class="dato">Ciudad: {{ d.config.ciudad || '—' }}</div>
+      <div class="dato">Email: {{ d.config.email || '—' }}</div>
+    </header>
+
+    <div class="sep center">{{ linea() }}</div>
+
+    <div class="center titulo-block">
+      <div class="titulo">{{ titulo(d) }}</div>
+      <div class="slogan" *ngIf="d.config.slogan1">{{ d.config.slogan1 }}</div>
+    </div>
+    <div class="sep center">{{ linea() }}</div>
+
+    <table class="detalle">
+      <tr><td>Comprobante N°</td><td>{{ d.numeroRecibo }}</td></tr>
+      <tr><td>Fecha pago</td><td>{{ fmtFecha(d.egreso.fechaEgreso) }}</td></tr>
+      <tr><td>Pagado a</td><td>{{ d.egreso.pagueA }}</td></tr>
+      <tr *ngIf="d.egreso.numeroDocumento"><td>Documento</td><td>{{ d.egreso.numeroDocumento }}</td></tr>
+      <tr *ngIf="d.egreso.empleadoCargo"><td>Cargo</td><td>{{ d.egreso.empleadoCargo }}</td></tr>
+      <tr *ngIf="d.egreso.tipoEgresoDescr"><td>Tipo egreso</td><td>{{ d.egreso.tipoEgresoDescr }}</td></tr>
+      <tr *ngIf="d.egreso.nombreAutoriza || d.egreso.autorizadoPor">
+        <td>Autorizó</td>
+        <td>
+          {{ d.egreso.nombreAutoriza || d.egreso.autorizadoPor }}
+          <ng-container *ngIf="d.egreso.nombreAutoriza && d.egreso.autorizadoPor">
+            ({{ d.egreso.autorizadoPor }})
+          </ng-container>
+        </td>
+      </tr>
+      <tr *ngIf="d.egreso.autorizadoEn"><td>Fecha autorización</td><td>{{ fmtFecha(d.egreso.autorizadoEn) }}</td></tr>
+      <tr><td>Concepto</td><td>{{ d.egreso.concepto }}</td></tr>
+      <tr *ngIf="d.egreso.formaPago"><td>Forma pago</td><td>{{ d.egreso.formaPago }}</td></tr>
+      <tr *ngIf="d.egreso.cuentaOrigenDescr"><td>Cuenta origen</td><td>{{ d.egreso.cuentaOrigenDescr }}</td></tr>
+      <tr *ngIf="d.egreso.numTransferencia"><td>Ref / Voucher</td><td>{{ d.egreso.numTransferencia }}</td></tr>
+      <tr *ngIf="d.egreso.fechaTransferencia"><td>Fecha transfer.</td><td>{{ d.egreso.fechaTransferencia }}</td></tr>
+      <tr *ngIf="d.egreso.cuentaDestino"><td>Cuenta destino</td><td>{{ d.egreso.cuentaDestino }}</td></tr>
+      <tr *ngIf="d.egreso.bancoDestinoDescr"><td>Banco destino</td><td>{{ d.egreso.bancoDestinoDescr }}</td></tr>
+      <tr class="total-row"><td>VALOR PAGADO</td><td>{{ fmtMoney(d.egreso.valorEgreso) }}</td></tr>
+    </table>
+
+    <div class="sep center">{{ linea() }}</div>
+
+    <div class="firma-block">
+      <p class="nota-legal">
+        Prueba de pago: factura, voucher bancario o firma del beneficiario en este recibo.
+      </p>
+      <div class="linea-firma"></div>
+      <p><strong>Recibí conforme el valor indicado</strong></p>
+      <p>{{ d.egreso.pagueA }}</p>
+      <p>CC / NIT: {{ d.egreso.numeroDocumento || '________________' }}</p>
+      <p>Fecha: _________________________</p>
+    </div>
+
+    <div class="qr center" *ngIf="d.qrDataUrl">
+      <img [src]="d.qrDataUrl" alt="Código QR verificación" width="100" height="100" />
+    </div>
+    <footer class="pie center">{{ pie(d) }}</footer>
+  </article>
+</div>

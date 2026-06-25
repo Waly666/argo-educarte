@@ -1,0 +1,10 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-instructor"
+  icon="👨‍🏫"
+  [title]="titulo()"
+  hint="Pulse una fila para ir a su portal de instructor."
+  [items]="rows()"
+  (closed)="cerrar()"
+  (itemClick)="onItemClick($event)"
+/>

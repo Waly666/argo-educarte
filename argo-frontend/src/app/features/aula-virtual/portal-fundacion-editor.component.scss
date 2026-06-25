@@ -1,0 +1,67 @@
+.pfe-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.pfe-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.pfe-nav-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(6, 16, 41, 0.65);
+  color: var(--text-dim);
+
+  &.active {
+    background: rgba(37, 99, 235, 0.25);
+    border-color: rgba(96, 165, 250, 0.45);
+    color: #93c5fd;
+  }
+}
+
+.pfe-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 48rem;
+}
+
+.pfe-sub {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.pfe-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr 1fr auto;
+  gap: 0.4rem;
+  align-items: start;
+}
+
+.pfe-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.65rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.pfe-icon {
+  max-width: 3.5rem;
+  text-align: center;
+}

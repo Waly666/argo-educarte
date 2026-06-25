@@ -1,0 +1,321 @@
+<section class="nomina-page rrhh-page admin-list-page card">
+  <header class="rrhh-head page-head">
+    <div class="rrhh-head-main">
+      <p class="breadcrumb"><a routerLink="/app/rrhh/inicio">RRHH</a> / Nómina</p>
+      <h1>Liquidación de nómina</h1>
+      @if (config(); as c) {
+        <p class="hint">
+          Vigente: salud {{ c.saludEmpleadoPct * 100 }}% / pensión {{ c.pensionEmpleadoPct * 100 }}% empleado;
+          patronal salud {{ (c.saludEmpleadorPct || 0.085) * 100 }}%, pensión {{ (c.pensionEmpleadorPct || 0.12) * 100 }}%.
+          <a routerLink="/app/configuracion/nomina">Ajustar parámetros</a>.
+        </p>
+      }
+    </div>
+    <div class="rrhh-badges head-actions">
+      @if (!loading()) {
+        <span class="rrhh-chip rrhh-chip--amber">{{ periodos().length }} período{{ periodos().length === 1 ? '' : 's' }}</span>
+      }
+      <a routerLink="/app/configuracion/recibos" class="ghost link-btn" title="NIT y razón social">Empresa (NIT)</a>
+      <a routerLink="/app/rrhh/novedades" class="ghost link-btn">Novedades</a>
+      <a routerLink="/app/rrhh/empleados" class="ghost link-btn">Empleados</a>
+    </div>
+  </header>
+
+  <ol class="nomina-pasos">
+    <li>Crear período del mes</li>
+    <li><a routerLink="/app/rrhh/novedades">Novedades PILA</a> (si aplica) → <strong>Generar novedades</strong></li>
+    <li><strong>Liquidar</strong> → descargar PILA → cerrar → <a routerLink="/app/caja">Pagar en caja</a></li>
+  </ol>
+
+  @if (msg(); as texto) {
+    <div class="rrhh-msg" [class.rrhh-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="crear-periodo card row-inline">
+    <label>Nuevo período</label>
+    <input type="number" min="2020" max="2100" [ngModel]="anoNuevo()" (ngModelChange)="anoNuevo.set(+$event)" />
+    <select [ngModel]="mesNuevo()" (ngModelChange)="mesNuevo.set(+$event)">
+      <option *ngFor="let m of meses; let i = index" [ngValue]="i + 1">{{ m }}</option>
+    </select>
+    <button type="button" class="primary" (click)="crearPeriodo()">Crear período</button>
+  </div>
+
+  <div class="layout" *ngIf="!loading(); else loadTpl">
+    <div class="periodos-list">
+      <div class="periodos-head">
+        <h2>Períodos</h2>
+        <div class="view-toggle" role="group" aria-label="Vista períodos">
+          <button type="button" class="view-btn" [class.active]="vistaPeriodos() === 'lista'" (click)="setVistaPeriodos('lista')">☰ Lista</button>
+          <button type="button" class="view-btn" [class.active]="vistaPeriodos() === 'cards'" (click)="setVistaPeriodos('cards')">▦ Cards</button>
+        </div>
+      </div>
+      <table class="argo compact" *ngIf="vistaPeriodos() === 'lista'">
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Estado</th>
+            <th>Nov.</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let p of periodos()"
+            [class.sel]="sel()?.idPeriodo === p.idPeriodo"
+            (click)="seleccionar(p)"
+          >
+            <td>{{ labelMes(p.mes) }} {{ p.ano }}</td>
+            <td><span class="badge" [class]="estadoClass(p)">{{ labelEstado(p) }}</span></td>
+            <td class="mono">{{ p.totalNovedades ?? 0 }}</td>
+            <td class="actions-cell" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="ghost sm"
+                *ngIf="puedeGenerar(p)"
+                (click)="generarNovedades(p)"
+                title="Generar novedades automáticas"
+              >
+                1. Novedades
+              </button>
+              <button
+                type="button"
+                class="ghost sm"
+                *ngIf="puedeLiquidar(p)"
+                (click)="liquidar(p)"
+                title="Liquidar"
+              >
+                2. Liquidar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="periodos().length === 0">
+            <td colspan="4" class="empty">Cree un período para comenzar.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="cards-grid periodos-cards" *ngIf="vistaPeriodos() === 'cards'">
+        <article
+          class="list-card"
+          *ngFor="let p of periodos()"
+          [class.sel]="sel()?.idPeriodo === p.idPeriodo"
+          (click)="seleccionar(p)"
+          tabindex="0"
+          (keydown.enter)="seleccionar(p)">
+          <header class="card-title"><h3>{{ labelMes(p.mes) }} {{ p.ano }}</h3></header>
+          <div class="card-body">
+            <div class="entity-badge-wrap">
+              <div class="entity-badge tone-teal">{{ p.mes }}/{{ p.ano }}</div>
+            </div>
+            <div class="card-main">
+              <div class="card-tags">
+                <span class="badge" [class]="estadoClass(p)">{{ labelEstado(p) }}</span>
+                <span class="cap cap-sm mono">Nov. {{ p.totalNovedades ?? 0 }}</span>
+              </div>
+            </div>
+          </div>
+          <footer class="card-foot" (click)="$event.stopPropagation()">
+            <span class="card-hint">Período de nómina</span>
+            <div class="card-actions">
+              <button type="button" class="act open" *ngIf="puedeGenerar(p)" (click)="generarNovedades(p)">Novedades</button>
+              <button type="button" class="act open" *ngIf="puedeLiquidar(p)" (click)="liquidar(p)">Liquidar</button>
+            </div>
+          </footer>
+        </article>
+        <div class="empty cards-empty" *ngIf="periodos().length === 0">Cree un período para comenzar.</div>
+      </div>
+    </div>
+
+    <div class="detalle-panel card" *ngIf="sel() as p">
+      <h2>{{ labelMes(p.mes) }} {{ p.ano }}</h2>
+      <p class="sub">Estado: <strong>{{ labelEstado(p) }}</strong></p>
+      <p class="hint warn" *ngIf="esFuturo(p) || p.avisoFuturo">
+        {{ p.avisoFuturo || 'Mes futuro: cree el período si quiere planificar, pero la causación y liquidación solo cuando llegue ese mes.' }}
+      </p>
+
+      <div class="acciones">
+        <button type="button" class="primary" *ngIf="puedeGenerar(p)" (click)="generarNovedades(p)">
+          Generar novedades automáticas
+        </button>
+        <button type="button" class="primary" *ngIf="puedeLiquidar(p)" (click)="liquidar(p)">Liquidar</button>
+        <button type="button" class="ghost danger-outline" *ngIf="puedeReabrir(p)" (click)="reabrir(p)">
+          Reabrir (deshacer liquidación)
+        </button>
+        <button type="button" class="ghost" *ngIf="p.estado === 'liquidado'" (click)="cerrar(p)">Cerrar período</button>
+        <button type="button" class="ghost" *ngIf="p.estado === 'cerrado'" (click)="pagar(p)">
+          Pagar en caja (egresos)
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          *ngIf="liquidacion()?.detalle?.length"
+          (click)="descargarPilaTxt(p)"
+        >
+          Planilla PILA (.txt)
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          *ngIf="liquidacion()?.detalle?.length"
+          (click)="descargarPila(p)"
+        >
+          Resumen PILA (CSV)
+        </button>
+        <a
+          class="ghost link-btn"
+          [routerLink]="['/app/rrhh/novedades']"
+          [queryParams]="{ idPeriodo: p.idPeriodo }"
+          >Ver / agregar novedades</a
+        >
+      </div>
+
+      <div class="totales" *ngIf="liquidacion() as l">
+        <div class="tot-item">
+          <span>Devengos</span>
+          <strong>{{ l.totalDevengos | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item">
+          <span>Deducciones</span>
+          <strong>{{ l.totalDeducciones | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item neto">
+          <span>Neto a pagar</span>
+          <strong>{{ l.totalNeto | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item">
+          <span>Patronal</span>
+          <strong>{{ l.totalPatronal || 0 | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item">
+          <span>Provisiones</span>
+          <strong>{{ l.totalProvisiones || 0 | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item">
+          <span>Costo empresa</span>
+          <strong>{{ l.totalCostoEmpresa || 0 | number: '1.0-0' }}</strong>
+        </div>
+        <div class="tot-item">
+          <span>Empleados</span>
+          <strong>{{ l.cantidadEmpleados }}</strong>
+        </div>
+      </div>
+
+      <div class="liquidacion-head" *ngIf="liquidacion()?.detalle?.length">
+        <h3>Empleados liquidados</h3>
+        <div class="view-toggle" role="group" aria-label="Vista liquidación">
+          <button type="button" class="view-btn" [class.active]="vistaLiquidacion() === 'lista'" (click)="setVistaLiquidacion('lista')">☰ Lista</button>
+          <button type="button" class="view-btn" [class.active]="vistaLiquidacion() === 'cards'" (click)="setVistaLiquidacion('cards')">▦ Cards</button>
+        </div>
+      </div>
+
+      <table class="argo" *ngIf="liquidacion()?.detalle?.length && vistaLiquidacion() === 'lista'">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Documento</th>
+            <th class="num" title="Días cotizados a seguridad social (base 30)">Días PILA</th>
+            <th class="num">Devengos</th>
+            <th class="num">Deducciones</th>
+            <th class="num">Neto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of liquidacion()!.detalle">
+            <td>{{ d.empleadoNombre }}</td>
+            <td class="mono">{{ d.numeroDocumento }}</td>
+            <td class="num dias-pila">
+              <span *ngIf="diasPila(d) != null; else sinDias">{{ diasPila(d) }}</span>
+              <ng-template #sinDias>—</ng-template>
+              <span class="pila-tags" *ngIf="etiquetaNovedadesPila(d)" [title]="etiquetaNovedadesPila(d)">{{
+                etiquetaNovedadesPila(d)
+              }}</span>
+            </td>
+            <td class="num">{{ d.totalDevengos | number: '1.0-0' }}</td>
+            <td class="num">{{ d.totalDeducciones | number: '1.0-0' }}</td>
+            <td class="num"><strong>{{ d.netoPagar | number: '1.0-0' }}</strong></td>
+            <td class="actions-cell">
+              <button type="button" class="ghost sm" (click)="verDetalle(d)">Detalle</button>
+              <button type="button" class="ghost sm" (click)="abrirRecibo(p, d)">Colilla</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="cards-grid liquidacion-cards" *ngIf="liquidacion()?.detalle?.length && vistaLiquidacion() === 'cards'">
+        <article class="list-card" *ngFor="let d of liquidacion()!.detalle">
+          <header class="card-title"><h3>{{ d.empleadoNombre }}</h3></header>
+          <div class="card-body">
+            <div class="entity-badge-wrap">
+              <div class="entity-badge tone-purple">{{ d.numeroDocumento }}</div>
+            </div>
+            <div class="card-main">
+              <div class="card-tags">
+                <span class="pila-tags" *ngIf="etiquetaNovedadesPila(d)">{{ etiquetaNovedadesPila(d) }}</span>
+              </div>
+              <dl class="card-fields">
+                <div><dt>Días PILA</dt><dd>{{ diasPila(d) ?? '—' }}</dd></div>
+                <div><dt>Devengos</dt><dd>{{ d.totalDevengos | number: '1.0-0' }}</dd></div>
+                <div><dt>Deducciones</dt><dd>{{ d.totalDeducciones | number: '1.0-0' }}</dd></div>
+                <div><dt>Neto</dt><dd><strong>{{ d.netoPagar | number: '1.0-0' }}</strong></dd></div>
+              </dl>
+            </div>
+          </div>
+          <footer class="card-foot">
+            <span class="card-hint">Liquidación empleado</span>
+            <div class="card-actions">
+              <button type="button" class="act open" (click)="verDetalle(d)">Detalle</button>
+              <button type="button" class="act open" (click)="abrirRecibo(p, d)">Colilla</button>
+            </div>
+          </footer>
+        </article>
+      </div>
+
+      <div class="lineas-det card" *ngIf="detalleExpandido() as d">
+        <h3>{{ d.empleadoNombre }}</h3>
+        <p class="hint" *ngIf="d.advertencias?.length">{{ (d.advertencias || []).join(' · ') }}</p>
+        <p class="hint pila-resumen" *ngIf="diasPila(d) != null">
+          Días PILA (cotización): <strong>{{ diasPila(d) }}</strong> / 30
+          <span *ngIf="d.diasSalarioPila != null"> · Días con salario: {{ d.diasSalarioPila }}</span>
+          <span *ngIf="etiquetaNovedadesPila(d)"> · Novedades: {{ etiquetaNovedadesPila(d) }}</span>
+        </p>
+        <p class="hint" *ngIf="d.ibc">IBC: {{ d.ibc | number: '1.0-0' }}</p>
+        <h4>Devengos y deducciones</h4>
+        <table class="argo compact">
+          <thead>
+            <tr><th>Concepto</th><th>Naturaleza</th><th class="num">Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ln of d.lineas">
+              <td>{{ ln.concepto }}</td>
+              <td>{{ ln.naturaleza }}</td>
+              <td class="num">{{ ln.valor | number: '1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <h4>Aportes empleador</h4>
+        <table class="argo compact" *ngIf="d.lineasPatronales?.length">
+          <tbody>
+            <tr *ngFor="let ln of d.lineasPatronales">
+              <td>{{ ln.concepto }}</td>
+              <td class="num">{{ ln.valor | number: '1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <h4>Provisiones prestaciones</h4>
+        <table class="argo compact" *ngIf="d.lineasProvisiones?.length">
+          <tbody>
+            <tr *ngFor="let ln of d.lineasProvisiones">
+              <td>{{ ln.concepto }}</td>
+              <td class="num">{{ ln.valor | number: '1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadTpl>
+    <p class="loading">Cargando…</p>
+  </ng-template>
+</section>

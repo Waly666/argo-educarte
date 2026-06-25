@@ -1,0 +1,71 @@
+<div class="arqueo-panel">
+  <div class="arqueo-head">
+    <h3>Arqueo de efectivo</h3>
+    <p class="hint">Cuente billetes y monedas por denominación. El total se usa como efectivo contado.</p>
+    <button type="button" class="ghost sm" (click)="limpiar()">Limpiar conteo</button>
+  </div>
+
+  <div class="arqueo-grid">
+    <section>
+      <h4>Billetes</h4>
+      <table class="arqueo-tabla">
+        <thead>
+          <tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          @for (l of filas(); track l.denominacion + l.tipo; let i = $index) {
+            @if (l.tipo === 'billete') {
+              <tr>
+                <td>{{ l.etiqueta }}</td>
+                <td>
+                  <input type="number" min="0" step="1" [ngModel]="l.cantidad" (ngModelChange)="actualizarCantidad(i, $event)" />
+                </td>
+                <td class="num">{{ l.subtotal | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h4>Monedas</h4>
+      <table class="arqueo-tabla">
+        <thead>
+          <tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          @for (l of filas(); track l.denominacion + l.tipo; let i = $index) {
+            @if (l.tipo === 'moneda') {
+              <tr>
+                <td>{{ l.etiqueta }}</td>
+                <td>
+                  <input type="number" min="0" step="1" [ngModel]="l.cantidad" (ngModelChange)="actualizarCantidad(i, $event)" />
+                </td>
+                <td class="num">{{ l.subtotal | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="arqueo-totales">
+    <article>
+      <span>Total arqueo</span>
+      <strong>{{ total() | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+    </article>
+    @if (esperado() != null) {
+      <article>
+        <span>Efectivo esperado</span>
+        <strong>{{ esperado()! | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+      </article>
+    }
+    @if (diferencia() != null) {
+      <article [class.ok]="diferencia()! >= 0" [class.bad]="diferencia()! < 0">
+        <span>Diferencia</span>
+        <strong>{{ diferencia()! | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+      </article>
+    }
+  </div>
+</div>

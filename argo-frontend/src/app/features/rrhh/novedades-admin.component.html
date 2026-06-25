@@ -1,0 +1,181 @@
+<section class="catalog-page rrhh-page admin-list-page card">
+  <header class="rrhh-head page-head">
+    <div class="rrhh-head-main">
+      <p class="breadcrumb"><a routerLink="/app/rrhh/inicio">RRHH</a> / Novedades</p>
+      <h1>Novedades de nómina</h1>
+      <p class="hint">
+        Bonos y horas extra: devengo manual (valor &gt; 0).
+        <strong>PILA:</strong> incapacidades (IGE), licencias (LMA), suspensión (SLN), vacaciones/licencia remunerada (VAC_LR) con días y fechas.
+        Ingreso/retiro mid-mes se calculan desde fechas del empleado o contrato al regenerar novedades.
+        Préstamos: <a routerLink="/app/caja/egresos">Caja → Egresos</a>.
+      </p>
+    </div>
+    <div class="rrhh-badges actions row-inline head-actions">
+      @if (!loading()) {
+        <span class="rrhh-chip rrhh-chip--teal">{{ rows().length }} novedad{{ rows().length === 1 ? '' : 'es' }}</span>
+      }
+      <a routerLink="/app/rrhh/nomina" class="ghost link-btn">← Nómina</a>
+      <button type="button" class="ghost" *ngFor="let c of codigosPila" (click)="nuevaPila(c.codigo)">
+        + {{ c.codigo }}
+      </button>
+      <button type="button" class="primary" (click)="nuevo()">Nueva novedad manual</button>
+    </div>
+  </header>
+
+  <div class="toolbar row-inline">
+    <label>Período</label>
+    <select [ngModel]="filtroPeriodo()" (ngModelChange)="filtroPeriodo.set($event ? +$event : null); cargar()">
+      <option [ngValue]="null">Todos</option>
+      <option *ngFor="let p of periodos()" [ngValue]="p.idPeriodo">{{ p.nombre }}</option>
+    </select>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')" title="Vista tabla">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')" title="Vista tarjetas">▦ Cards</button>
+    </div>
+  </div>
+
+  @if (msg(); as texto) {
+    <div class="rrhh-msg" [class.rrhh-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="form-card card argo-form-shell" *ngIf="mostrarForm()">
+    <div class="row">
+      <div class="col-4">
+        <label>Período *</label>
+        <select [ngModel]="$any(form()).idPeriodo" (ngModelChange)="patch('idPeriodo', +$event)">
+          <option [ngValue]="''">—</option>
+          <option *ngFor="let p of periodos()" [ngValue]="p.idPeriodo">{{ p.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <label>Empleado *</label>
+        <select [ngModel]="$any(form()).empleadoId" (ngModelChange)="patch('empleadoId', +$event)">
+          <option [ngValue]="''">—</option>
+          <option *ngFor="let e of empleados()" [ngValue]="e.idEmpleado">{{ e.nombreCompleto }}</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <label>Código PILA</label>
+        <select [ngModel]="$any(form()).codigoPila" (ngModelChange)="patch('codigoPila', $event)">
+          <option value="">— (nómina normal)</option>
+          <option *ngFor="let c of codigosPila" [value]="c.codigo">{{ c.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" *ngIf="esPila($any(form()))">
+      <div class="col-3">
+        <label>Días (máx. 30)</label>
+        <input type="number" min="1" max="30" [ngModel]="$any(form()).diasNovedad" (ngModelChange)="patch('diasNovedad', +$event)" />
+      </div>
+      <div class="col-3">
+        <argo-date-input label="Inicio" [ngModel]="$any(form()).fechaInicioNovedad" (ngModelChange)="patch('fechaInicioNovedad', $event)" ></argo-date-input>
+      </div>
+      <div class="col-3">
+        <argo-date-input label="Fin" [ngModel]="$any(form()).fechaFinNovedad" (ngModelChange)="patch('fechaFinNovedad', $event)" ></argo-date-input>
+      </div>
+      <div class="col-3" *ngIf="$any(form()).codigoPila === 'VAC_LR'">
+        <label>Subtipo</label>
+        <select [ngModel]="$any(form()).subtipoVacLic" (ngModelChange)="patch('subtipoVacLic', $event)">
+          <option value="V">Vacaciones (X en PILA)</option>
+          <option value="L">Licencia remunerada (L)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" *ngIf="!esPila($any(form()))">
+      <div class="col-4">
+        <label>Naturaleza</label>
+        <select [ngModel]="$any(form()).naturaleza" (ngModelChange)="patch('naturaleza', $event)">
+          <option value="devengo">Devengo (+)</option>
+          <option value="deduccion">Deducción (-)</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <label>Tipo novedad *</label>
+        <input [ngModel]="$any(form()).tipoNovedad" (ngModelChange)="patch('tipoNovedad', $event)" placeholder="HORAS_EXTRA" />
+      </div>
+      <div class="col-4">
+        <label>Valor</label>
+        <input type="number" min="0" [ngModel]="$any(form()).valor" (ngModelChange)="patch('valor', +$event)" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4">
+        <argo-date-input label="Fecha registro" [ngModel]="$any(form()).fecha" (ngModelChange)="patch('fecha', $event)" ></argo-date-input>
+      </div>
+      <div class="col-8">
+        <label>Descripción</label>
+        <input [ngModel]="$any(form()).descripcion" (ngModelChange)="patch('descripcion', $event)" />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="ghost" (click)="mostrarForm.set(false)">Cancelar</button>
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">Guardar</button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+
+  <table class="argo" *ngIf="!loading() && vista() === 'lista'">
+    <thead>
+      <tr>
+        <th>Período</th>
+        <th>Empleado</th>
+        <th>Tipo / PILA</th>
+        <th>Días</th>
+        <th>Nat.</th>
+        <th>Valor</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of rows()">
+        <td>{{ r.idPeriodo || '—' }}</td>
+        <td>{{ r.empleadoNombre }}</td>
+        <td>
+          <span *ngIf="r.codigoPila" class="pila-tag">{{ r.codigoPila }}</span>
+          {{ r.tipoNovedad }}
+          <span class="auto-tag" *ngIf="r.autoGenerada">auto</span>
+        </td>
+        <td>{{ r.diasNovedad || (r.fechaInicioNovedad ? '…' : '—') }}</td>
+        <td>{{ r.naturaleza || '—' }}</td>
+        <td>{{ r.valor | number: '1.0-0' }}</td>
+        <td>
+          <button type="button" class="ghost sm" [disabled]="r.autoGenerada" (click)="editar(r)">Editar</button>
+          <button type="button" class="danger sm" [disabled]="r.autoGenerada" (click)="eliminar(r)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+    <article class="list-card" *ngFor="let r of rows()">
+      <header class="card-title"><h3>{{ r.empleadoNombre }}</h3></header>
+      <div class="card-body">
+        <div class="entity-badge-wrap">
+          <div class="entity-badge tone-amber">{{ r.codigoPila || r.tipoNovedad || 'NOV' }}</div>
+        </div>
+        <div class="card-main">
+          <div class="card-tags">
+            <span *ngIf="r.codigoPila" class="pila-tag">{{ r.codigoPila }}</span>
+            <span class="auto-tag" *ngIf="r.autoGenerada">auto</span>
+            <span class="cap cap-sm">{{ r.naturaleza || '—' }}</span>
+          </div>
+          <dl class="card-fields">
+            <div><dt>Período</dt><dd>{{ r.idPeriodo || '—' }}</dd></div>
+            <div><dt>Días</dt><dd>{{ r.diasNovedad || (r.fechaInicioNovedad ? '…' : '—') }}</dd></div>
+            <div><dt>Valor</dt><dd>{{ r.valor | number: '1.0-0' }}</dd></div>
+            <div *ngIf="r.descripcion" class="span-2"><dt>Descripción</dt><dd>{{ r.descripcion }}</dd></div>
+          </dl>
+        </div>
+      </div>
+      <footer class="card-foot">
+        <span class="card-hint">Novedad de nómina</span>
+        <div class="card-actions">
+          <button type="button" class="act open" [disabled]="r.autoGenerada" (click)="editar(r)">Editar</button>
+          <button type="button" class="act doc" [disabled]="r.autoGenerada" (click)="eliminar(r)">Eliminar</button>
+        </div>
+      </footer>
+    </article>
+    <div class="empty cards-empty" *ngIf="!rows().length">Sin novedades.</div>
+  </div>
+</section>

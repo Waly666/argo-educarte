@@ -1,0 +1,114 @@
+:host {
+  display: block;
+  font-family: var(--av-font-sans);
+  color: var(--av-ink);
+}
+
+.catalog-page {
+  min-height: 100%;
+}
+
+.catalog-page__head {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 75% 25%, var(--av-primary-a35), transparent 55%),
+    radial-gradient(ellipse at 15% 85%, var(--av-accent-a22), transparent 50%),
+    var(--av-page-hero-bg);
+  padding: var(--av-section-y) 0 1.25rem;
+  border-bottom: 1px solid var(--av-border, #dbe3f0);
+  color: var(--av-page-hero-text, #0f172a);
+}
+
+.catalog-page__grid-wrap {
+  background: var(--av-section-light-bg, #fff);
+  padding: var(--av-section-y) 0 3rem;
+}
+
+.page-head {
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--av-page-hero-text, #0f172a);
+  }
+}
+
+.page-lead {
+  margin: 0;
+  color: var(--av-page-hero-lead, #475569);
+  font-size: 0.95rem;
+}
+
+.filters {
+  margin-top: 1.25rem;
+}
+
+.search {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+
+  input {
+    flex: 1;
+    min-width: 200px;
+    border-radius: 8px;
+    border: 1px solid #dbe3f0;
+    background: #fff;
+    color: #0f172a;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+  }
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  overflow: visible;
+}
+
+.catalog-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--av-radius);
+}
+
+.cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip {
+  border: 1px solid #dbe3f0;
+  background: #fff;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  &.active,
+  &:hover {
+    border-color: #93c5fd;
+    color: var(--av-primary-dark);
+  }
+
+  &.active {
+    background: #eff6ff;
+    font-weight: 600;
+  }
+}

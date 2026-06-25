@@ -1,0 +1,225 @@
+.documentos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.msg {
+  padding: 10px 14px;
+  border-radius: var(--btn-radius);
+  font-size: 0.88rem;
+  &.ok {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #bbf7d0;
+  }
+  &.err {
+    background: rgba(248, 114, 114, 0.1);
+    border: 1px solid rgba(248, 114, 114, 0.35);
+    color: #ffd6d6;
+  }
+}
+
+.doc-head.form-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(139, 92, 246, 0.12));
+  border: 1px solid var(--line);
+  border-radius: var(--btn-radius);
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    max-width: 720px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+}
+
+.btn-actualizar {
+  background: linear-gradient(180deg, var(--btn-emerald), var(--btn-emerald-d)) !important;
+  min-width: 130px;
+}
+
+.loading {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-soft);
+}
+
+.cap-resumen {
+  padding: 12px 16px;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  li { margin-bottom: 4px; }
+}
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-dim);
+  p { margin: 0; }
+}
+
+.doc-card-head {
+  flex-wrap: wrap;
+
+  .badge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .badge.ok {
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+  }
+
+  .badge.warn {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fde68a;
+  }
+}
+
+.req-by {
+  margin-top: 4px !important;
+  font-size: 0.75rem !important;
+  color: var(--accent-2) !important;
+}
+
+.doc-card.tone-purple { border-left: 4px solid #8b5cf6; }
+.doc-card.tone-orange { border-left: 4px solid #f97316; }
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.doc-card {
+  border-radius: 10px;
+  border: 1px solid var(--line-soft);
+  background: rgba(6, 16, 41, 0.55);
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &.tone-blue { border-left: 4px solid #3b82f6; }
+  &.tone-teal { border-left: 4px solid #14b8a6; }
+}
+
+.doc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  p {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+  }
+}
+
+.doc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--btn-radius);
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ic-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.ic-teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+
+.doc-preview {
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  background: rgba(0, 0, 0, 0.2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+  }
+
+  &.empty span {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+}
+
+.doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.upload-btn span {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: var(--btn-radius);
+  background: linear-gradient(180deg, var(--btn-blue), var(--btn-blue-d));
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doc-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.ph {
+  text-align: center;
+  padding: 40px 20px;
+  h2 { margin-bottom: 6px; }
+  p { color: var(--text-dim); margin: 0; }
+}
+
+@media (max-width: 900px) {
+  .doc-grid {
+    grid-template-columns: 1fr;
+  }
+}

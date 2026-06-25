@@ -1,0 +1,16 @@
+@if (toast(); as t) {
+  <div
+    class="live-toast"
+    [class.live-toast-clase]="t.kind === 'clase'"
+    [class.live-toast-jornada]="t.kind === 'jornada'"
+    [class.live-toast-inicio]="t.kind === 'clase-inicio'"
+    [class.live-toast-fin]="t.kind === 'clase-fin'">
+    <span class="live-toast-icon" aria-hidden="true">{{
+      t.kind === 'jornada' ? '⛺' : t.kind === 'clase-inicio' ? '▶' : t.kind === 'clase-fin' ? '■' : '▣'
+    }}</span>
+    <span class="live-toast-text">
+      <strong>{{ t.titulo }}</strong>
+      <span class="live-toast-detail">{{ t.detalle }}</span>
+    </span>
+  </div>
+}

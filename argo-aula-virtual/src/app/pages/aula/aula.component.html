@@ -1,0 +1,1048 @@
+@if (!auth.isLoggedIn()) {
+  <section class="aula-gate">
+    <div class="aula-gate-card">
+      <h1>Mi aula virtual</h1>
+      <p>Debes iniciar sesión para acceder a tus cursos.</p>
+      <div class="aula-gate-actions">
+        <a routerLink="/login" class="dash-btn dash-btn-primary">Acceder</a>
+        <a routerLink="/registro" class="dash-btn dash-btn-outline">Registrarse</a>
+      </div>
+    </div>
+  </section>
+} @else {
+  <div
+    class="aula-dashboard"
+    [class.sidebar-collapsed]="sidebarCollapsed()"
+    [class.mobile-nav-open]="mobileNavOpen()"
+  >
+    @if (mobileNavOpen()) {
+      <button
+        type="button"
+        class="dash-mobile-backdrop"
+        aria-label="Cerrar menú"
+        (click)="cerrarMobileNav()"
+      ></button>
+    }
+
+    <header class="dash-mobile-topbar">
+      <button
+        type="button"
+        class="dash-mobile-menu-btn"
+        [attr.aria-expanded]="mobileNavOpen()"
+        aria-controls="aula-mobile-nav"
+        [attr.aria-label]="mobileNavOpen() ? 'Cerrar menú' : 'Abrir menú'"
+        (click)="toggleMobileNav()"
+      >
+        <span class="dash-mobile-menu-icon" aria-hidden="true"></span>
+      </button>
+      <div class="dash-mobile-topbar__copy">
+        <span class="dash-mobile-kicker">Mi aula virtual</span>
+        <strong class="dash-mobile-title">{{ tituloPanel() }}</strong>
+      </div>
+      <a routerLink="/" class="dash-mobile-site" (click)="cerrarMobileNav()">Inicio</a>
+    </header>
+
+    <aside class="dash-sidebar" id="aula-mobile-nav">
+      <div class="dash-sidebar-brand">
+        @if (portalLogo(); as logo) {
+          <img [src]="logo" [alt]="portalConfig()?.nombreCea || 'CEA'" class="dash-logo" />
+        } @else {
+          <span class="dash-logo-fallback">{{ (portalConfig()?.nombreCea || 'A')[0] }}</span>
+        }
+        @if (!sidebarCollapsed()) {
+          <span class="dash-brand-name">{{ portalConfig()?.nombreCea || 'Aula virtual' }}</span>
+        }
+      </div>
+
+      @if (!sidebarCollapsed()) {
+        <p class="dash-user-chip">{{ auth.user()?.nombreCompleto || auth.user()?.email }}</p>
+      }
+
+      <nav class="dash-nav">
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'tablero'" (click)="irPanel('tablero')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Tablero</span> }
+        </button>
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'cursos'" (click)="irPanel('cursos')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v16H6.5A2.5 2.5 0 0 0 4 22.5V6.5zM6.5 6H18v12H6.5a.5.5 0 0 0-.5.5v1A1.5 1.5 0 0 1 6.5 21H20V3H6.5A2.5 2.5 0 0 0 4 5.5V6h2.5z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Tus cursos</span> }
+        </button>
+        @if (tienePresenciales()) {
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'presenciales'" (click)="irPanel('presenciales')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Mis clases presenciales</span> }
+        </button>
+        }
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'puntajes'" (click)="irPanel('puntajes')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 9H8v-2h4V7l4 4-4 4v-2z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Mis puntajes</span> }
+        </button>
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'certificados'" (click)="irPanel('certificados')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.8 7.2 17l.9-5.4L4.2 7.7l5.4-.8L12 2z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Certificados</span> }
+        </button>
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'foro'" (click)="irPanel('foro')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Foro de cursos</span> }
+        </button>
+        <button type="button" class="dash-nav-item" [class.active]="panel() === 'perfil'" (click)="irPanel('perfil')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Perfil</span> }
+        </button>
+        <button type="button" class="dash-nav-item dash-nav-logout" (click)="logout()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5zm9 4H4V3h15v2H6v14h13v2z"/></svg>
+          @if (!sidebarCollapsed()) { <span>Cerrar sesión</span> }
+        </button>
+      </nav>
+
+      <a routerLink="/" class="dash-back">← Volver al sitio</a>
+
+      <button type="button" class="dash-sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'">
+        {{ sidebarCollapsed() ? '›' : '‹' }}
+      </button>
+    </aside>
+
+    <main class="dash-main">
+      @if (safePlayerUrl(); as url) {
+        <section class="dash-player">
+          <header class="dash-player-head">
+            <div>
+              <h2>{{ playerTitulo() }}</h2>
+              @if (cursoActivo()?.progreso; as p) {
+                <p class="dash-player-meta">
+                  Avance {{ p.pctCompletitud | number: '1.0-0' }}%
+                  @if (p.promedioClases != null) { · Promedio {{ p.promedioClases | number: '1.0-0' }}% }
+                </p>
+              }
+            </div>
+            <button type="button" class="dash-btn dash-btn-outline" (click)="cerrarPlayer()">Cerrar curso</button>
+          </header>
+          @if (avisoPlayer()) {
+            <p class="dash-player-aviso">{{ avisoPlayer() }}</p>
+          }
+          <iframe #playerFrame [src]="url" title="Curso virtual" class="dash-player-frame" (load)="onIframeLoad()"></iframe>
+        </section>
+
+        @if (playerForoId(); as pid) {
+          <section class="dash-player-foro">
+            <av-foro-chat
+              [idPrograma]="pid"
+              [nombreCurso]="playerForoNombre()" />
+          </section>
+        }
+      } @else {
+        @switch (panel()) {
+          @case ('tablero') {
+            <header class="dash-page-head dash-page-head--hero">
+              <div>
+                <p class="dash-kicker">Mi aula virtual</p>
+                <h1>Tablero</h1>
+                <p class="dash-welcome">Bienvenido de nuevo, <strong>{{ saludo() }}</strong></p>
+              </div>
+            </header>
+
+            @if (reciboError()) {
+              <p class="dash-error">{{ reciboError() }}</p>
+            }
+
+            <div class="dash-stats">
+              <article class="dash-stat-card">
+                <div class="dash-stat-icon dash-stat-icon-blue">
+                  <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v16H6.5A2.5 2.5 0 0 0 4 22.5V6.5z"/></svg>
+                </div>
+                <div>
+                  <strong>{{ totalInscritos() }}</strong>
+                  <span>Cursos inscritos</span>
+                </div>
+              </article>
+              <article class="dash-stat-card">
+                <div class="dash-stat-icon dash-stat-icon-indigo">
+                  <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+                </div>
+                <div>
+                  <strong>{{ totalEnProgreso() }}</strong>
+                  <span>Cursos en progreso</span>
+                </div>
+              </article>
+              <article class="dash-stat-card">
+                <div class="dash-stat-icon dash-stat-icon-green">
+                  <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V7l-8-5z"/></svg>
+                </div>
+                <div>
+                  <strong>{{ totalCompletados() }}</strong>
+                  <span>Cursos completados</span>
+                </div>
+              </article>
+              <button type="button" class="dash-stat-card dash-stat-card-click" (click)="irPanel('puntajes')">
+                <div class="dash-stat-icon dash-stat-icon-violet">
+                  <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 9H8v-2h4V7l4 4-4 4v-2z"/></svg>
+                </div>
+                <div>
+                  <strong>{{ cursosConPuntajes().length }}</strong>
+                  <span>Con puntajes</span>
+                </div>
+              </button>
+              <button type="button" class="dash-stat-card dash-stat-card-click" (click)="irPanel('certificados')">
+                <div class="dash-stat-icon dash-stat-icon-amber">
+                  <svg viewBox="0 0 24 24"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.8 7.2 17l.9-5.4L4.2 7.7l5.4-.8L12 2z"/></svg>
+                </div>
+                <div>
+                  <strong>{{ totalCertificados() }}</strong>
+                  <span>Certificados</span>
+                </div>
+              </button>
+            </div>
+
+            <section class="dash-section">
+              <header class="dash-section-head">
+                <h2>Continuar estudiando</h2>
+                @if (cursos().length > cursosContinuar().length) {
+                  <button type="button" class="dash-link" (click)="irPanel('cursos')">Ver todo ›</button>
+                }
+              </header>
+
+              @if (cursosContinuar().length) {
+                <div class="dash-course-list">
+                  @for (c of cursosContinuar(); track c.idPrograma) {
+                    <article class="dash-course-row">
+                      <div class="dash-course-thumb">
+                        @if (portada(c); as img) {
+                          <img [src]="img" [alt]="c.nombreProg" />
+                        } @else {
+                          <span class="dash-course-thumb-fallback">{{ c.nombreProg.charAt(0) }}</span>
+                        }
+                      </div>
+                      <div class="dash-course-info">
+                        <div class="dash-tags">
+                          @for (tag of etiquetas(c); track tag) {
+                            <span class="dash-tag">{{ tag }}</span>
+                          }
+                        </div>
+                        <h3>{{ c.nombreProg }}</h3>
+                        <p class="dash-course-date">Iniciado el {{ fechaInicio(c) }}</p>
+                        @if (mejorNota(c); as nota) {
+                          <span class="dash-score-pill" [class]="'dash-score-pill--' + notaTone(nota, notaMinima(c))">
+                            Mejor nota {{ nota | number: '1.0-0' }}%
+                          </span>
+                        }
+                        @if (c.progreso?.certificadoEmitido) {
+                          <span class="dash-badge-ok">Certificado emitido</span>
+                        } @else if (c.pago && !c.pago.pagado) {
+                          <span class="dash-badge-warn">Pago pendiente</span>
+                        }
+                        @if (reciboDeCurso(c); as recibo) {
+                          <button type="button" class="dash-link dash-link-inline" (click)="imprimirRecibo(recibo.idIngreso)">
+                            Recibo {{ recibo.numRecibo || 'de pago' }}
+                          </button>
+                        }
+                      </div>
+                      <div class="dash-course-progress">
+                        <span class="dash-pct">{{ pct(c) | number: '1.0-0' }}% completado</span>
+                        <div class="dash-progress-track">
+                          <div class="dash-progress-fill" [style.width.%]="pct(c)"></div>
+                        </div>
+                        @if (c.tienePaquete) {
+                          @if (puedeCursar(c)) {
+                            <button type="button" class="dash-btn dash-btn-primary dash-btn-block" (click)="abrir(c)">
+                              {{ pct(c) > 0 ? 'Continuar curso' : 'Iniciar curso' }}
+                            </button>
+                          } @else {
+                            <p class="dash-course-blocked">Pago pendiente. Acérquese al CEA para habilitar el acceso.</p>
+                          }
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              } @else {
+                <div class="dash-empty">
+                  <p>No tiene cursos activos. Explore el catálogo para matricularse.</p>
+                  <a routerLink="/cursos" class="dash-btn dash-btn-primary">Ver cursos</a>
+                </div>
+              }
+            </section>
+          }
+
+          @case ('cursos') {
+            <header class="dash-page-head dash-page-head--hero">
+              <div>
+                <p class="dash-kicker">Catálogo personal</p>
+                <h1>Tus cursos</h1>
+                <p class="dash-welcome">Todos sus cursos matriculados</p>
+              </div>
+            </header>
+
+            <div class="dash-course-list dash-course-list-full">
+              @for (c of cursos(); track c.idPrograma) {
+                <article class="dash-course-row">
+                  <div class="dash-course-thumb">
+                    @if (portada(c); as img) {
+                      <img [src]="img" [alt]="c.nombreProg" />
+                    } @else {
+                      <span class="dash-course-thumb-fallback">{{ c.nombreProg.charAt(0) }}</span>
+                    }
+                  </div>
+                  <div class="dash-course-info">
+                    <div class="dash-tags">
+                      @for (tag of etiquetas(c); track tag) {
+                        <span class="dash-tag">{{ tag }}</span>
+                      }
+                    </div>
+                    <h3>{{ c.nombreProg }}</h3>
+                    <p class="dash-course-date">Iniciado el {{ fechaInicio(c) }}</p>
+                    @if (mejorNota(c); as nota) {
+                      <span class="dash-score-pill" [class]="'dash-score-pill--' + notaTone(nota, notaMinima(c))">
+                        Mejor nota {{ nota | number: '1.0-0' }}%
+                      </span>
+                    }
+                    <p class="dash-course-detail">
+                      Avance <strong>{{ pct(c) | number: '1.0-0' }}%</strong>
+                      @if (c.progreso?.promedioClases != null) {
+                        · Promedio lecciones {{ c.progreso?.promedioClases | number: '1.0-0' }}%
+                      }
+                      @if (c.progreso?.clasesAprobadas != null && c.progreso?.totalClases) {
+                        · {{ c.progreso?.clasesAprobadas }}/{{ c.progreso?.totalClases }} lecciones
+                      }
+                      @if (c.progreso?.intentosEval) {
+                        · {{ c.progreso?.intentosEval }} intento(s) evaluación final
+                      }
+                    </p>
+                    @if (intentosDe(c).length) {
+                      <div class="dash-mini-scores">
+                        @for (it of intentosDe(c); track $index) {
+                          <span class="dash-mini-score" [class]="'dash-mini-score--' + notaTone(it.nota, notaMinima(c))">
+                            #{{ it.numero || $index + 1 }}: {{ it.nota | number: '1.0-0' }}%
+                          </span>
+                        }
+                      </div>
+                    }
+                    @if (c.progreso?.certificadoEmitido && certificadoDeCurso(c.idPrograma); as cert) {
+                      <div class="dash-inline-actions">
+                        <button type="button" class="dash-btn dash-btn-outline dash-btn-sm" (click)="verCertificado(cert)">Ver certificado</button>
+                        @if (idReciboCurso(c); as idRecibo) {
+                          <button type="button" class="dash-btn dash-btn-outline dash-btn-sm" (click)="imprimirRecibo(idRecibo)">Imprimir recibo</button>
+                        }
+                      </div>
+                    }
+                    @if (!c.progreso?.certificadoEmitido && reciboDeCurso(c); as reciboCurso) {
+                      <div class="dash-inline-actions">
+                        <button type="button" class="dash-btn dash-btn-outline dash-btn-sm" (click)="imprimirRecibo(reciboCurso.idIngreso)">
+                          Imprimir recibo@if (reciboCurso.numRecibo) { ({{ reciboCurso.numRecibo }})}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                  <div class="dash-course-progress">
+                    <span class="dash-pct">{{ pct(c) | number: '1.0-0' }}%</span>
+                    <div class="dash-progress-track">
+                      <div class="dash-progress-fill" [style.width.%]="pct(c)"></div>
+                    </div>
+                    @if (c.tienePaquete) {
+                      @if (puedeCursar(c)) {
+                        <button type="button" class="dash-btn dash-btn-primary dash-btn-block" (click)="abrir(c)">Entrar</button>
+                      } @else {
+                        <span class="dash-muted">Pago pendiente — acérquese al CEA</span>
+                      }
+                    } @else {
+                      <span class="dash-muted">Contenido en preparación</span>
+                    }
+                  </div>
+                </article>
+              } @empty {
+                <div class="dash-empty">
+                  <p>No hay cursos matriculados.</p>
+                  <a routerLink="/tienda" class="dash-btn dash-btn-primary">Ir a la tienda</a>
+                </div>
+              }
+            </div>
+          }
+
+          @case ('presenciales') {
+            <div class="dash-presenciales">
+              <header class="dash-page-head">
+                <div>
+                  <p class="dash-kicker">Formación grupal</p>
+                  <h1>Mis clases presenciales</h1>
+                  <p class="dash-sub">Calendario de clases, enlaces a sesiones en vivo, asistencia y avance por materia.</p>
+                </div>
+              </header>
+
+              @if (!cohortes().length) {
+                <div class="dash-empty"><p>No estás inscrito en ninguna cohorte presencial.</p></div>
+              } @else {
+                <p class="coh-tip">👉 Toca una tarjeta para ver el calendario de clases. Cuando una clase tenga videollamada, podrás entrar desde aquí y tu asistencia quedará registrada.</p>
+
+                @for (c of cohortes(); track c.idCohorte) {
+                  <article class="coh-card">
+                    <header class="coh-head" (click)="abrirCalendario(c)">
+                      <div>
+                        <h2>{{ c.cohorteNombre }}</h2>
+                        <p class="coh-meta">{{ c.nombreProg }} · Semestre {{ c.numSemestre }} · {{ c.anio }}-{{ c.periodo }}</p>
+                      </div>
+                      <div class="coh-prog">
+                        <div class="coh-prog-bar"><span [style.width.%]="c.pctAvance"></span></div>
+                        <span class="coh-prog-txt">{{ c.pctAvance }}% · {{ c.horasCubiertas }}/{{ c.horasTotal }} h</span>
+                      </div>
+                    </header>
+
+                    <div class="coh-materias">
+                      @for (m of c.materias; track m.idMateria) {
+                        <div class="coh-materia">
+                          <span class="coh-materia-nom">{{ m.nombre }}</span>
+                          <div class="coh-materia-bar"><span [style.width.%]="m.pct"></span></div>
+                          <span class="coh-materia-h">{{ m.horasCubiertas }}/{{ m.horas }} h</span>
+                        </div>
+                      }
+                    </div>
+
+                    @if (cohorteAbierta() === c.idCohorte) {
+                      <div class="coh-cal">
+                        @if (calendarioActivo()?.clases?.length) {
+                          <table class="coh-tabla">
+                            <thead><tr><th>Fecha</th><th>Hora</th><th>Materia</th><th>Asistencia</th><th></th></tr></thead>
+                            <tbody>
+                              @for (cl of calendarioActivo()!.clases; track cl.idClase) {
+                                <tr>
+                                  <td>{{ cl.fechaClase | date: 'dd/MM/yyyy' }}</td>
+                                  <td>{{ cl.horaDesde }}@if (cl.horaHasta) {–{{ cl.horaHasta }}}</td>
+                                  <td>{{ cl.materiaNombre }}</td>
+                                  <td>
+                                    <span class="coh-asis" [attr.data-estado]="cl.miAsistencia">{{ cl.miAsistencia }}</span>
+                                  </td>
+                                  <td>
+                                    @if (cl.urlMeet) {
+                                      <button type="button" class="dash-btn dash-btn-primary dash-btn-sm" (click)="entrarMeet(cl.idClase, cl.urlMeet)">Entrar a la clase</button>
+                                    } @else {
+                                      <span class="coh-presencial">Presencial</span>
+                                    }
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        } @else {
+                          <p class="dash-sub">Aún no hay clases programadas.</p>
+                        }
+
+                        <!-- Materiales -->
+                        @if (materialesCohorte().length) {
+                          <h3 class="coh-subt">📎 Materiales de apoyo</h3>
+                          <ul class="coh-materiales-list">
+                            @for (m of materialesCohorte(); track m._id) {
+                              <li>
+                                <span class="coh-mat-tipo">{{ m.tipo }}</span>
+                                <div class="coh-mat-info">
+                                  <strong>{{ m.titulo }}</strong>
+                                  <small>{{ m.materiaNombre }}</small>
+                                </div>
+                                @if (m.url) {
+                                  <a class="dash-btn dash-btn-sm" [href]="m.url" target="_blank" rel="noopener">Abrir</a>
+                                }
+                              </li>
+                            }
+                          </ul>
+                        }
+
+                        <!-- Evaluaciones -->
+                        @if (evaluacionesCohorte().length) {
+                          <h3 class="coh-subt">📝 Evaluaciones</h3>
+                          <ul class="coh-eval-list">
+                            @for (ev of evaluacionesCohorte(); track ev.idEvaluacion) {
+                              <li>
+                                <div class="coh-eval-info">
+                                  <strong>{{ ev.titulo }}</strong>
+                                  <small>
+                                    {{ ev.materiaNombre }} · {{ ev.numPreguntas }} preguntas · aprueba con {{ ev.notaAprobacion }}
+                                    · intentos {{ ev.intentosUsados }}/{{ ev.intentosPermitidos }}
+                                  </small>
+                                </div>
+                                @if (ev.miMejorNota !== null) {
+                                  <span class="coh-eval-nota" [class.ok]="ev.aprobado">{{ ev.miMejorNota }}</span>
+                                }
+                                @if (ev.puedeIniciar) {
+                                  <button type="button" class="dash-btn dash-btn-primary dash-btn-sm" (click)="iniciarEvaluacion(ev)">
+                                    {{ ev.intentosUsados > 0 ? 'Reintentar' : 'Presentar' }}
+                                  </button>
+                                } @else if (!ev.vigente) {
+                                  <span class="coh-presencial">No disponible</span>
+                                } @else if (ev.intentosUsados >= ev.intentosPermitidos) {
+                                  <span class="coh-presencial">Sin intentos</span>
+                                }
+                              </li>
+                            }
+                          </ul>
+                        }
+                      </div>
+                    } @else {
+                      <button type="button" class="dash-link" (click)="abrirCalendario(c)">Ver calendario ›</button>
+                    }
+                  </article>
+                }
+              }
+            </div>
+          }
+
+          @case ('puntajes') {
+            <div class="dash-puntajes">
+            <header class="dash-page-head dash-page-head--hero dash-page-head--puntajes">
+              <div>
+                <p class="dash-kicker dash-kicker--warm">Historial académico</p>
+                <h1>Mis puntajes</h1>
+                <p class="dash-welcome">Avance, notas por lección y evaluación final de cada programa matriculado</p>
+              </div>
+            </header>
+
+            @if (cursos().length) {
+              @if (resumenPuntajesGlobal(); as rg) {
+                <section class="dash-scores-overview" aria-label="Resumen general">
+                  <article class="dash-scores-kpi dash-scores-kpi--violet">
+                    <span class="dash-scores-kpi__icon" aria-hidden="true">📚</span>
+                    <div>
+                      <span class="dash-capsule dash-capsule--violet">{{ rg.cursos }}</span>
+                      <span class="dash-scores-kpi__label">Cursos matriculados</span>
+                    </div>
+                  </article>
+                  <article class="dash-scores-kpi dash-scores-kpi--cyan">
+                    <span class="dash-scores-kpi__icon" aria-hidden="true">📈</span>
+                    <div>
+                      <span class="dash-capsule dash-capsule--cyan">{{ rg.promedioAvance | number: '1.0-0' }}%</span>
+                      <span class="dash-scores-kpi__label">Promedio de avance</span>
+                    </div>
+                  </article>
+                  <article class="dash-scores-kpi dash-scores-kpi--green">
+                    <span class="dash-scores-kpi__icon" aria-hidden="true">✅</span>
+                    <div>
+                      <span class="dash-capsule dash-capsule--green">{{ rg.leccionesAprobadas }}/{{ rg.leccionesTotal }}</span>
+                      <span class="dash-scores-kpi__label">Lecciones aprobadas</span>
+                    </div>
+                  </article>
+                  <article class="dash-scores-kpi dash-scores-kpi--amber">
+                    <span class="dash-scores-kpi__icon" aria-hidden="true">🎯</span>
+                    <div>
+                      <span class="dash-capsule dash-capsule--amber">{{ rg.leccionesConNota }}</span>
+                      <span class="dash-scores-kpi__label">Lecciones con puntaje</span>
+                    </div>
+                  </article>
+                  <article class="dash-scores-kpi dash-scores-kpi--rose">
+                    <span class="dash-scores-kpi__icon" aria-hidden="true">🏁</span>
+                    <div>
+                      <span class="dash-capsule dash-capsule--rose">{{ rg.intentosEval }}</span>
+                      <span class="dash-scores-kpi__label">Intentos evaluación final</span>
+                    </div>
+                  </article>
+                </section>
+              }
+
+              <div class="dash-scores-grid">
+                @for (c of cursosParaPuntajes(); track c.idPrograma; let ci = $index) {
+                  <article class="dash-score-card" [class]="'dash-score-card--' + (ci % 4)">
+                    <header class="dash-score-card__head">
+                      <div class="dash-score-card__title-wrap">
+                        <span class="dash-score-card__emoji" aria-hidden="true">🎓</span>
+                        <div>
+                          <h3>{{ c.nombreProg }}</h3>
+                          <span class="dash-capsule dash-capsule--soft">Matriculado · {{ fechaInicio(c) }}</span>
+                        </div>
+                      </div>
+                      <div class="dash-score-card__badges">
+                        <span class="dash-capsule" [class]="'dash-capsule--' + tonoEstadoCurso(c)">{{ estadoCursoPuntajes(c) }}</span>
+                        @if (c.progreso?.aprobado) {
+                          <span class="dash-capsule dash-capsule--green">Aprobado</span>
+                        }
+                        @if (c.progreso?.certificadoEmitido) {
+                          <span class="dash-capsule dash-capsule--cyan">Certificado</span>
+                        }
+                      </div>
+                    </header>
+
+                    <section class="dash-score-summary">
+                      <div class="dash-score-summary__progress">
+                        <div class="dash-score-summary__progress-head">
+                          <span>Avance general del curso</span>
+                          <span class="dash-capsule dash-capsule--violet-lg">{{ pct(c) | number: '1.0-0' }}%</span>
+                        </div>
+                        <div class="dash-progress-track dash-progress-track--lg dash-progress-track--warm">
+                          <div class="dash-progress-fill dash-progress-fill--warm" [style.width.%]="pct(c)"></div>
+                        </div>
+                        <p class="dash-score-summary__hint">
+                          Mínimo exigido: {{ pctMinCompletitud(c) | number: '1.0-0' }}%
+                          @if (cumpleCompletitud(c)) {
+                            <span class="dash-capsule dash-capsule--green dash-capsule--inline">Cumple avance</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--amber dash-capsule--inline">Falta avance</span>
+                          }
+                        </p>
+                      </div>
+
+                      <div class="dash-score-metrics">
+                        <article class="dash-score-metric dash-score-metric--green">
+                          <span class="dash-score-metric__label">Lecciones aprobadas</span>
+                          <span class="dash-capsule dash-capsule--green">{{ c.progreso?.clasesAprobadas ?? 0 }}/{{ c.progreso?.totalClases ?? clasesDetalle(c).length }}</span>
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--cyan">
+                          <span class="dash-score-metric__label">Con puntaje</span>
+                          <span class="dash-capsule dash-capsule--cyan">{{ leccionesConNotaCount(c) }}</span>
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--violet">
+                          <span class="dash-score-metric__label">Promedio lecciones</span>
+                          @if (promedioLecciones(c); as prom) {
+                            <span class="dash-capsule dash-capsule--violet">{{ prom | number: '1.0-0' }}%</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--soft">—</span>
+                          }
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--amber">
+                          <span class="dash-score-metric__label">Suma lecciones</span>
+                          <span class="dash-capsule dash-capsule--amber">{{ sumaPuntajesLecciones(c) | number: '1.0-0' }} pts</span>
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--rose">
+                          <span class="dash-score-metric__label">Mejor evaluación</span>
+                          @if (mejorNota(c); as mn) {
+                            <span class="dash-capsule" [class]="'dash-capsule--' + notaTone(mn, notaMinima(c))">{{ mn | number: '1.0-0' }}%</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--soft">—</span>
+                          }
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--orange">
+                          <span class="dash-score-metric__label">Última evaluación</span>
+                          @if (ultimaNotaEval(c); as un) {
+                            <span class="dash-capsule" [class]="'dash-capsule--' + notaTone(un, notaMinima(c))">{{ un | number: '1.0-0' }}%</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--soft">—</span>
+                          }
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--indigo">
+                          <span class="dash-score-metric__label">Intentos evaluación</span>
+                          <span class="dash-capsule dash-capsule--indigo">{{ c.progreso?.intentosEval ?? intentosDe(c).length }}/{{ intentosMaxEval(c) }}</span>
+                        </article>
+                        <article class="dash-score-metric dash-score-metric--teal">
+                          <span class="dash-score-metric__label">Nota mínima</span>
+                          <span class="dash-capsule dash-capsule--teal">{{ notaMinima(c) | number: '1.0-0' }}%</span>
+                        </article>
+                      </div>
+                    </section>
+
+                    <section class="dash-score-block dash-score-block--warm">
+                      <h4>Requisitos para aprobar</h4>
+                      <ul class="dash-score-checklist">
+                        <li>
+                          <span class="dash-capsule dash-capsule--soft">Avance ≥ {{ pctMinCompletitud(c) | number: '1.0-0' }}%</span>
+                          @if (cumpleCompletitud(c)) {
+                            <span class="dash-capsule dash-capsule--green">✓ Cumple</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--amber">Actual {{ pct(c) | number: '1.0-0' }}%</span>
+                          }
+                        </li>
+                        <li>
+                          <span class="dash-capsule dash-capsule--soft">Evaluación ≥ {{ notaMinima(c) | number: '1.0-0' }}%</span>
+                          @if (cumpleNotaEval(c)) {
+                            <span class="dash-capsule dash-capsule--green">✓ Cumple</span>
+                          } @else if (mejorNota(c) != null) {
+                            <span class="dash-capsule dash-capsule--mid">Mejor {{ mejorNota(c)! | number: '1.0-0' }}%</span>
+                          } @else {
+                            <span class="dash-capsule dash-capsule--rose">Sin intentos</span>
+                          }
+                        </li>
+                        <li>
+                          <span class="dash-capsule dash-capsule--soft">Intentos restantes</span>
+                          <span class="dash-capsule dash-capsule--violet">{{ intentosRestantes(c) }}</span>
+                          @if (c.reglas?.puedeReintentar) {
+                            <span class="dash-capsule dash-capsule--cyan dash-capsule--inline">Puede reintentar</span>
+                          }
+                        </li>
+                      </ul>
+                    </section>
+
+                    <section class="dash-score-block dash-score-block--warm">
+                      <h4>Detalle por lección</h4>
+                      <div class="dash-table-wrap dash-table-wrap--warm">
+                        <table class="dash-table dash-table--lessons dash-table--warm">
+                          <thead>
+                            <tr>
+                              <th>Lección</th>
+                              <th>Puntaje</th>
+                              <th>Avance</th>
+                              <th>Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (cl of clasesDetalle(c); track cl.numero) {
+                              <tr [class.dash-table-row-muted]="cl.pct <= 0">
+                                <td><span class="dash-capsule dash-capsule--soft-sm">Lección {{ cl.numero }}</span></td>
+                                <td>
+                                  @if (cl.pct > 0) {
+                                    <span class="dash-capsule dash-capsule--sm" [class]="'dash-capsule--' + claseNotaTone(cl.pct)">
+                                      {{ cl.pct | number: '1.0-0' }}%
+                                    </span>
+                                  } @else {
+                                    <span class="dash-capsule dash-capsule--soft-sm">—</span>
+                                  }
+                                </td>
+                                <td>
+                                  <div class="dash-lesson-bar">
+                                    <div class="dash-lesson-bar__fill" [style.width.%]="cl.pct" [class]="'dash-lesson-bar__fill--' + claseNotaTone(cl.pct)"></div>
+                                  </div>
+                                </td>
+                                <td>
+                                  @if (cl.aprobada) {
+                                    <span class="dash-capsule dash-capsule--green dash-capsule--sm">Aprobada</span>
+                                  } @else if (cl.pct > 0) {
+                                    <span class="dash-capsule dash-capsule--amber dash-capsule--sm">En proceso</span>
+                                  } @else {
+                                    <span class="dash-capsule dash-capsule--soft-sm">Sin intentar</span>
+                                  }
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                          <tfoot>
+                            <tr class="dash-table-total">
+                              <td><span class="dash-capsule dash-capsule--violet">Total</span></td>
+                              <td>
+                                @if (promedioLecciones(c); as prom) {
+                                  <span class="dash-capsule dash-capsule--cyan">Prom. {{ prom | number: '1.0-0' }}%</span>
+                                } @else {
+                                  <span class="dash-capsule dash-capsule--soft-sm">—</span>
+                                }
+                              </td>
+                              <td colspan="2">
+                                <span class="dash-capsule dash-capsule--green dash-capsule--inline">{{ c.progreso?.clasesAprobadas ?? 0 }} aprobadas</span>
+                                <span class="dash-capsule dash-capsule--amber dash-capsule--inline">{{ leccionesConNotaCount(c) }} con nota</span>
+                                <span class="dash-capsule dash-capsule--rose dash-capsule--inline">{{ sumaPuntajesLecciones(c) | number: '1.0-0' }} pts</span>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </section>
+
+                    @if (intentosDe(c).length) {
+                      <section class="dash-score-block dash-score-block--warm">
+                        <h4>Evaluación final — historial de intentos</h4>
+                        <div class="dash-table-wrap dash-table-wrap--warm">
+                          <table class="dash-table dash-table--warm">
+                            <thead>
+                              <tr>
+                                <th>#</th>
+                                <th>Nota</th>
+                                <th>Avance al intento</th>
+                                <th>Resultado</th>
+                                <th>Fecha</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (it of intentosDe(c); track $index) {
+                                <tr>
+                                  <td><span class="dash-capsule dash-capsule--soft-sm">#{{ it.numero || $index + 1 }}</span></td>
+                                  <td>
+                                    <span class="dash-capsule dash-capsule--sm" [class]="'dash-capsule--' + notaTone(it.nota, notaMinima(c))">
+                                      {{ it.nota | number: '1.0-0' }}%
+                                    </span>
+                                  </td>
+                                  <td>
+                                    @if (it.pctCompletitud != null) {
+                                      <span class="dash-capsule dash-capsule--cyan dash-capsule--sm">{{ it.pctCompletitud | number: '1.0-0' }}%</span>
+                                    } @else {
+                                      <span class="dash-capsule dash-capsule--soft-sm">—</span>
+                                    }
+                                  </td>
+                                  <td>
+                                    @if (it.aprobado) {
+                                      <span class="dash-capsule dash-capsule--green dash-capsule--sm">Aprobó</span>
+                                    } @else {
+                                      <span class="dash-capsule dash-capsule--rose dash-capsule--sm">No aprobó</span>
+                                    }
+                                  </td>
+                                  <td><span class="dash-capsule dash-capsule--soft-sm">{{ fechaIntento(it.fecha) }}</span></td>
+                                </tr>
+                              }
+                            </tbody>
+                            <tfoot>
+                              <tr class="dash-table-total">
+                                <td colspan="5">
+                                  <span class="dash-capsule dash-capsule--violet dash-capsule--inline">Mejor {{ (mejorNota(c) ?? 0) | number: '1.0-0' }}%</span>
+                                  <span class="dash-capsule dash-capsule--amber dash-capsule--inline">Última {{ (ultimaNotaEval(c) ?? 0) | number: '1.0-0' }}%</span>
+                                  <span class="dash-capsule dash-capsule--cyan dash-capsule--inline">{{ c.progreso?.intentosEval ?? intentosDe(c).length }}/{{ intentosMaxEval(c) }} intentos</span>
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </section>
+                    } @else {
+                      <p class="dash-score-empty-eval">
+                        <span class="dash-capsule dash-capsule--amber">Sin evaluación final aún</span>
+                        @if (intentosRestantes(c) > 0) {
+                          <span class="dash-capsule dash-capsule--cyan dash-capsule--inline">{{ intentosRestantes(c) }} intento(s) disponible(s)</span>
+                        }
+                      </p>
+                    }
+
+                    @if (c.tienePaquete && puedeCursar(c)) {
+                      <button type="button" class="dash-btn dash-btn-primary dash-btn-sm dash-btn--warm" (click)="abrir(c)">Continuar curso →</button>
+                    }
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="dash-empty dash-empty--warm">
+                <p>Aún no hay cursos matriculados. Matricúlese para ver su avance y puntajes.</p>
+                <a routerLink="/tienda" class="dash-btn dash-btn-primary dash-btn--warm">Ir a la tienda</a>
+              </div>
+            }
+            </div>
+          }
+
+          @case ('certificados') {
+            <header class="dash-page-head">
+              <h1>Certificados</h1>
+              <p class="dash-welcome">Certificados emitidos en su ficha ARGO</p>
+            </header>
+
+            @if (certificadoError()) {
+              <p class="dash-error">{{ certificadoError() }}</p>
+            }
+            @if (reciboError()) {
+              <p class="dash-error">{{ reciboError() }}</p>
+            }
+
+            @if (certificadosLoading()) {
+              <p class="dash-muted">Cargando certificados…</p>
+            } @else if (certificados().length) {
+              <div class="dash-cert-grid">
+                @for (cert of certificados(); track cert._id) {
+                  <article class="dash-cert-card" [class.dash-cert-virtual]="cert.esCursoVirtual">
+                    <div class="dash-cert-icon">🎓</div>
+                    <h3>{{ tituloCert(cert) }}</h3>
+                    <p>Código <strong>{{ cert.codigoCert || '—' }}</strong></p>
+                    <p class="dash-muted">Emitido {{ fechaCert(cert.fechaEmision) }}</p>
+                    @if (cert.recibo?.numRecibo) {
+                      <p class="dash-muted">Recibo <strong>{{ cert.recibo?.numRecibo }}</strong></p>
+                    }
+                    <div class="dash-inline-actions">
+                      <button type="button" class="dash-btn dash-btn-outline dash-btn-sm" (click)="verCertificado(cert)">Ver certificado</button>
+                      <button type="button" class="dash-btn dash-btn-primary dash-btn-sm" (click)="imprimirCertificado(cert)">Imprimir certificado</button>
+                      @if (cert.recibo?.idIngreso) {
+                        <button type="button" class="dash-btn dash-btn-outline dash-btn-sm" (click)="imprimirReciboCert(cert)">Imprimir recibo</button>
+                      }
+                    </div>
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="dash-empty">
+                <p>Aún no tiene certificados. Complete el curso y el pago para obtenerlo.</p>
+              </div>
+            }
+          }
+
+          @case ('perfil') {
+            <header class="dash-page-head">
+              <h1>Perfil</h1>
+              <p class="dash-welcome">Datos de su cuenta en el portal</p>
+            </header>
+
+            <article class="dash-profile-card">
+              <div class="dash-profile-avatar">{{ saludo().charAt(0).toUpperCase() }}</div>
+              <dl>
+                <div>
+                  <dt>Nombre</dt>
+                  <dd>{{ auth.user()?.nombreCompleto || '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Correo</dt>
+                  <dd>{{ auth.user()?.email }}</dd>
+                </div>
+                <div>
+                  <dt>Documento</dt>
+                  <dd>{{ auth.user()?.numDoc }}</dd>
+                </div>
+              </dl>
+
+              <!-- Empresa -->
+              <div class="perfil-empresa-section">
+                <h3 class="perfil-empresa-title">🏢 Empresa / Organización</h3>
+                <p class="perfil-empresa-hint">
+                  Si trabaja para una empresa de transporte, vincúlela aquí.
+                  Esta información se guardará en sus certificados.
+                </p>
+
+                @if (auth.user()?.empresaNombre) {
+                  <div class="perfil-empresa-actual">
+                    <span class="empresa-chip-portal">🏢 {{ auth.user()?.empresaNombre }}</span>
+                    <button type="button" class="empresa-cambiar-btn" (click)="iniciarCambioEmpresa()">Cambiar</button>
+                    <button type="button" class="empresa-quitar-btn" (click)="quitarEmpresa()">Quitar</button>
+                  </div>
+                } @else {
+                  <button type="button" class="empresa-asignar-btn" (click)="iniciarCambioEmpresa()">
+                    + Vincular empresa
+                  </button>
+                }
+
+                @if (empresaEditando()) {
+                  <div class="empresa-edit-box">
+                    <div class="empresa-search-wrap">
+                      <input
+                        type="search"
+                        class="empresa-search-input"
+                        placeholder="Escriba el nombre de la empresa…"
+                        [value]="empresaBusqueda()"
+                        (input)="buscarEmpresaPerfil($any($event.target).value)"
+                        (blur)="onEmpresaBlurPerfil()"
+                        autocomplete="off" />
+                      @if (empresaCargando()) {
+                        <span class="empresa-loading">⏳</span>
+                      }
+                    </div>
+
+                    @if (empresaDropdownOpen() && empresaSugerencias().length > 0) {
+                      <ul class="empresa-dropdown-portal">
+                        @for (e of empresaSugerencias(); track e._id) {
+                          <li (mousedown)="seleccionarEmpresaPerfil(e)">
+                            <span class="emp-nombre">{{ e.nombre }}</span>
+                            <span class="emp-nit">{{ e.identificacion }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+
+                    @if (empresaMsgOk()) {
+                      <p class="empresa-msg empresa-msg-ok">✓ {{ empresaMsgOk() }}</p>
+                    }
+                    @if (empresaMsgErr()) {
+                      <p class="empresa-msg empresa-msg-err">⚠ {{ empresaMsgErr() }}</p>
+                    }
+
+                    <div class="empresa-edit-actions">
+                      <button type="button" class="empresa-cancelar-btn" (click)="cancelarCambioEmpresa()">Cancelar</button>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <button type="button" class="dash-btn dash-btn-outline" (click)="logout()">Cerrar sesión</button>
+            </article>
+          }
+
+          @case ('foro') {
+            <header class="dash-page-head">
+              <h1>Foro de cursos</h1>
+              <p class="dash-welcome">Selecciona un curso para ver su foro de preguntas y discusión</p>
+            </header>
+
+            @if (cursos().length === 0) {
+              <div class="dash-empty">
+                <p>No tienes cursos inscritos. El foro estará disponible cuando te inscribas.</p>
+              </div>
+            } @else {
+              <div class="foro-curso-selector">
+                @for (c of cursos(); track c.idPrograma) {
+                  <button
+                    type="button"
+                    class="foro-curso-btn"
+                    [class.active]="foroIdPrograma() === ('' + c.idPrograma)"
+                    (click)="seleccionarForoCurso(c)">
+                    <span class="foro-curso-nombre">{{ c.nombreProg }}</span>
+                  </button>
+                }
+              </div>
+
+              @if (foroIdPrograma()) {
+                <div class="foro-panel-wrap">
+                  <av-foro-chat
+                    [idPrograma]="foroIdPrograma()!"
+                    [nombreCurso]="foroNombreCurso()" />
+                </div>
+              } @else {
+                <div class="dash-empty" style="margin-top:1.5rem">
+                  <p>👆 Selecciona un curso para abrir su foro</p>
+                </div>
+              }
+            }
+          }
+        }
+      }
+    </main>
+  </div>
+
+  <!-- Modal: presentar evaluación -->
+  @if (intentoActivo(); as it) {
+    <div class="coh-modal-bg" (click)="cerrarIntento()">
+      <div class="coh-modal" (click)="$event.stopPropagation()">
+        <header class="coh-modal-head">
+          <div>
+            <h2>{{ it.titulo }}</h2>
+            <p class="dash-sub">{{ it.descripcion || 'Responde todas las preguntas y envía.' }}</p>
+          </div>
+          <button type="button" class="coh-modal-x" (click)="cerrarIntento()">✕</button>
+        </header>
+        <div class="coh-modal-body">
+          @for (p of it.preguntas; track p.idPregunta; let i = $index) {
+            <div class="coh-preg">
+              <p class="coh-preg-enun"><strong>{{ i + 1 }}.</strong> {{ p.enunciado }}
+                @if (p.tipo === 'MULTIPLE') { <span class="coh-preg-hint">(varias respuestas)</span> }
+              </p>
+              <div class="coh-preg-ops">
+                @for (o of p.opciones; track $index) {
+                  <button type="button" class="coh-op" [class.sel]="estaSeleccionada(p.idPregunta, $index)"
+                    (click)="toggleOpcion(p.idPregunta, $index, p.tipo)">
+                    <span class="coh-op-mark">{{ estaSeleccionada(p.idPregunta, $index) ? '✓' : '' }}</span>
+                    {{ o.texto }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <footer class="coh-modal-foot">
+          <button type="button" class="dash-btn dash-btn-outline" (click)="cerrarIntento()">Cancelar</button>
+          <button type="button" class="dash-btn dash-btn-primary" [disabled]="enviandoIntento()" (click)="enviarEvaluacion()">
+            {{ enviandoIntento() ? 'Enviando…' : 'Enviar respuestas' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: resultado evaluación -->
+  @if (resultadoIntento(); as r) {
+    <div class="coh-modal-bg" (click)="cerrarResultado()">
+      <div class="coh-modal" (click)="$event.stopPropagation()">
+        <header class="coh-modal-head">
+          <div>
+            <h2>Resultado</h2>
+            <p class="dash-sub">Obtuviste {{ r.puntajeObtenido }} de {{ r.puntajeTotal }} puntos.</p>
+          </div>
+          <button type="button" class="coh-modal-x" (click)="cerrarResultado()">✕</button>
+        </header>
+        <div class="coh-modal-body">
+          <div class="coh-result-nota" [class.ok]="r.aprobado">
+            <span class="coh-result-num">{{ r.nota }}</span>
+            <span class="coh-result-lbl">{{ r.aprobado ? '¡Aprobado!' : 'No aprobado' }}</span>
+          </div>
+          @if (r.mostrarResultados) {
+            @for (c of r.correccion; track c.idPregunta; let i = $index) {
+              <div class="coh-preg">
+                <p class="coh-preg-enun">
+                  <span class="coh-corr-icon" [class.ok]="c.correcta">{{ c.correcta ? '✓' : '✗' }}</span>
+                  <strong>{{ i + 1 }}.</strong> {{ c.enunciado }}
+                </p>
+                <div class="coh-preg-ops">
+                  @for (o of c.opciones; track $index) {
+                    <div class="coh-op-rev" [class.correcta]="o.correcta" [class.elegida-mal]="o.elegida && !o.correcta">
+                      <span class="coh-op-mark">{{ o.correcta ? '✓' : (o.elegida ? '✗' : '') }}</span>
+                      {{ o.texto }}
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+        <footer class="coh-modal-foot">
+          <button type="button" class="dash-btn dash-btn-primary" (click)="cerrarResultado()">Entendido</button>
+        </footer>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,57 @@
+@use './rrhh-shared' as *;
+
+.breadcrumb {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.catalog-page {  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  h1 { margin: 0 0 4px; }
+}
+.hint { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
+.row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-6 { grid-column: span 6; }
+.col-12 { grid-column: span 12; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+.toolbar {
+  display: flex;
+  gap: 8px;
+  input { flex: 1; min-width: 200px; }
+}
+.actions-cell { white-space: nowrap; display: flex; gap: 6px; }
+.empty { text-align: center; color: var(--text-dim); padding: 1rem; }
+textarea, input, select { width: 100%; }
+.row-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.auto-tag {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-left: 4px;
+}

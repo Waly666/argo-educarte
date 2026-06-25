@@ -1,0 +1,326 @@
+<section class="sys-page card">
+  <argo-backup-reset-restore-nav />
+
+  <header class="sys-head">
+    <div>
+      <h1>Migración de datos</h1>
+      <p>
+        Importe alumnos y certificados del sistema anterior (sin programas viejos). Después, en la ficha de
+        cada alumno — pestaña <strong>Migración histórica</strong> — matricule en un programa actual de ARGO
+        y registre los recibos del Access.
+      </p>
+    </div>
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="sys-msg" [class.sys-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <!-- Config movimientos históricos -->
+  <section class="sys-section sys-section--emerald">
+    <header class="sys-section-head">
+      <h2>Movimientos históricos (post-importación)</h2>
+      <p>Matrícula con fecha anterior y recibos de migración en la ficha del alumno.</p>
+    </header>
+    <div class="sys-section-body" *ngIf="configMigracion() as cfg">
+      <label class="sys-switch sys-switch--highlight">
+        <input type="checkbox" [(ngModel)]="cfg.movimientosHabilitados" />
+        Habilitar movimientos de migración (matrícula histórica + recibos)
+      </label>
+      <div class="sys-row" style="margin-top: 0.75rem">
+        <label>
+          Prefijo recibo (si no indican número del Access)
+          <input type="text" [(ngModel)]="cfg.prefijoRecibo" style="max-width: 8rem; margin-left: 0.5rem" />
+        </label>
+        <button type="button" class="primary" (click)="guardarConfigMigracion()" [disabled]="guardandoConfig()">
+          {{ guardandoConfig() ? 'Guardando…' : 'Guardar configuración' }}
+        </button>
+      </div>
+      <p class="sys-hint">
+        Asigne el permiso «Movimientos históricos de migración» en Configuración → Roles a quien operará la carga.
+        Mientras esté desactivado, nadie puede usar la pestaña aunque tenga permiso.
+      </p>
+    </div>
+  </section>
+
+  <!-- Pasos -->
+  <div class="sys-steps">
+    <div class="sys-step">
+      <span class="sys-step-num">1</span>
+      <h3>Elija qué migrar</h3>
+      <p>Cada cliente es distinto: solo certificados, alumnos con saldos, o todo.</p>
+    </div>
+    <div class="sys-step">
+      <span class="sys-step-num">2</span>
+      <h3>Descargue la plantilla</h3>
+      <p>Excel con solo las hojas que eligió, con ejemplos e instrucciones.</p>
+    </div>
+    <div class="sys-step">
+      <span class="sys-step-num">3</span>
+      <h3>Valide el archivo</h3>
+      <p>El sistema revisa fila por fila y le muestra los errores antes de tocar la base de datos.</p>
+    </div>
+    <div class="sys-step">
+      <span class="sys-step-num">4</span>
+      <h3>Importe</h3>
+      <p>Solo entran las filas válidas. Los duplicados se omiten y queda registro de cada lote.</p>
+    </div>
+  </div>
+
+  <!-- Paso 1: qué migrar -->
+  <section class="sys-section sys-section--sky">
+    <header class="sys-section-head">
+      <h2>Paso 1 · ¿Qué desea migrar?</h2>
+      <p>La plantilla, la validación y la importación se ajustan a esta selección.</p>
+    </header>
+    <div class="sys-section-body">
+      <div class="sys-row">
+        @for (op of opcionesHojas; track op.clave) {
+          <label class="sys-switch" [title]="op.detalle">
+            <input type="checkbox" [ngModel]="estaSeleccionada(op.clave)"
+                   (ngModelChange)="toggleHoja(op.clave, $event)" />
+            {{ op.etiqueta }}
+          </label>
+        }
+      </div>
+      @if (!haySeleccion()) {
+        <p class="sys-hint">Seleccione al menos un tipo de información para continuar.</p>
+      }
+      @if (haySeleccion() && estaSeleccionada('certificados')) {
+        <label class="sys-switch sys-switch--highlight">
+          <input type="checkbox" [(ngModel)]="certificadosHistoricos"
+                 (ngModelChange)="reporte.set(null); resultado.set(null)" />
+          Certificados históricos — sin exigir alumno ni programa en ARGO
+        </label>
+        <p class="sys-hint">
+          Recomendado al migrar del Access: marque Alumnos + Certificados (sin Programas).
+          Si el <strong>codigoPrograma</strong> del Excel no existe en ARGO, el certificado se importa
+          igual como histórico (nombreCurso / nombreTitular / codVerificacion).
+          Obligatorios en certificados: <strong>numDoc</strong> y <strong>fechaEmision</strong>.
+        </p>
+      }
+      @if (haySeleccion() && !estaSeleccionada('alumnos') && !certificadosHistoricos) {
+        <p class="sys-hint">
+          ⚠ Sin la hoja Alumnos, los documentos referenciados (matrículas, pagos o certificados)
+          deben pertenecer a alumnos que ya existan en ARGO; de lo contrario esas filas saldrán con error.
+        </p>
+      }
+      @if (haySeleccion() && !estaSeleccionada('programas') && (estaSeleccionada('matriculas') || (estaSeleccionada('certificados') && !certificadosHistoricos))) {
+        <p class="sys-hint">
+          ⚠ Sin la hoja Programas, los codigoPrograma de matrículas y certificados deben existir
+          ya en el catálogo de ARGO (Académico → Programas). Los saldos quedan ligados al programa
+          y a su servicio de matrícula.
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- Paso 2 -->
+  <section class="sys-section sys-section--sky">
+    <header class="sys-section-head">
+      <h2>Paso 2 · Plantilla estándar</h2>
+    </header>
+    <div class="sys-section-body">
+      <div class="sys-row">
+        <button type="button" class="primary" (click)="descargarPlantilla()" [disabled]="!haySeleccion()">
+          Descargar plantilla Excel
+        </button>
+        <p class="sys-hint">
+          @if (certificadosHistoricos && estaSeleccionada('certificados')) {
+            Certificados históricos: numDoc, fechaEmision (y nombreCurso o nombreTitular).
+          } @else {
+            Obligatorios: Programas (codigoPrograma, nombrePrograma, tipoCapacitacion, tarifa1) ·
+            Alumnos (numDoc, nombre1, apellido1) · Matriculas (numDoc, codigoPrograma) ·
+            Pagos (numDoc, valor) · Certificados (numDoc, codigoPrograma, fechaEmision).
+          }
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paso 3 -->
+  <section class="sys-section sys-section--violet">
+    <header class="sys-section-head">
+      <h2>Paso 3 · Subir y validar</h2>
+    </header>
+    <div class="sys-section-body">
+      <div class="sys-row">
+        <div class="sys-file">
+          <input type="file" accept=".xlsx,.xls" (change)="onArchivo($event)" />
+        </div>
+        <button type="button" class="primary" (click)="validar()"
+                [disabled]="!archivo() || validando() || !haySeleccion()">
+          {{ validando() ? 'Validando…' : 'Validar archivo' }}
+        </button>
+      </div>
+
+      @if (reporte(); as rep) {
+        <div class="sys-resumen">
+          @for (h of rep.hojas; track h) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ rep.validos[h] || 0 }} / {{ rep.totales[h] || 0 }}</div>
+              <div class="lbl">{{ etiquetaHoja(h) }} válidos</div>
+            </div>
+          }
+        </div>
+
+        @if (rep.ignoradas.length) {
+          <p class="sys-hint">
+            El archivo trae datos en {{ rep.ignoradas.join(', ') }}, pero no están seleccionados:
+            se ignorarán. Marque la casilla correspondiente en el Paso 1 si también desea migrarlos.
+          </p>
+        }
+
+        @if (rep.errores.length) {
+          <div style="overflow-x: auto; max-height: 18rem; overflow-y: auto">
+            <table class="sys-table">
+              <thead>
+                <tr><th>Hoja</th><th>Fila</th><th>Problema</th></tr>
+              </thead>
+              <tbody>
+                @for (e of rep.errores; track $index) {
+                  <tr>
+                    <td>{{ e.hoja }}</td>
+                    <td>{{ e.fila }}</td>
+                    <td>{{ e.mensaje }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Paso 4 -->
+  @if (reporte()) {
+    <section class="sys-section sys-section--emerald">
+      <header class="sys-section-head">
+        <h2>Paso 4 · Importar</h2>
+      </header>
+      <div class="sys-section-body">
+        @if (estaSeleccionada('alumnos')) {
+          <label class="sys-switch">
+            <input type="checkbox" [(ngModel)]="actualizarExistentes" />
+            Si un alumno ya existe en ARGO, actualizar sus datos con los del archivo
+          </label>
+        }
+        <div class="sys-row">
+          <button type="button" class="primary" (click)="importar()"
+                  [disabled]="importando() || !totalValidos()">
+            {{ importando() ? 'Importando… no cierre esta ventana' : 'Importar ' + totalValidos() + ' registros' }}
+          </button>
+        </div>
+        @if (importando() && progreso(); as p) {
+          <div class="sys-progress" role="status" aria-live="polite">
+            <div class="sys-progress__head">
+              <span>{{ p.fase || 'Importando…' }}</span>
+              @if (p.porcentaje != null) {
+                <span class="pct">{{ p.porcentaje }}%</span>
+              }
+            </div>
+            <div class="sys-progress__track">
+              @if (p.porcentaje != null) {
+                <div class="sys-progress__fill" [style.width.%]="p.porcentaje"></div>
+              } @else {
+                <div class="sys-progress__fill sys-progress__fill--indeterminada"></div>
+              }
+            </div>
+            @if (p.total > 0) {
+              <div class="sys-progress__meta">{{ p.hecho | number }} / {{ p.total | number }}</div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Resultado -->
+  @if (resultado(); as r) {
+    <section class="sys-section sys-section--emerald">
+      <header class="sys-section-head">
+        <h2>Resultado del lote {{ r.lote }}</h2>
+      </header>
+      <div class="sys-section-body">
+        <div class="sys-resumen">
+          @if (r.hojas.includes('programas')) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.programas.creados }}</div>
+              <div class="lbl">Programas creados</div>
+            </div>
+          }
+          @if (r.hojas.includes('alumnos')) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.alumnos.creados }}</div>
+              <div class="lbl">Alumnos creados</div>
+            </div>
+          }
+          @if (r.hojas.includes('matriculas')) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.matriculas.creadas }}</div>
+              <div class="lbl">Matrículas creadas</div>
+            </div>
+          }
+          @if (r.hojas.includes('pagos')) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.pagos.creados }}</div>
+              <div class="lbl">Pagos creados</div>
+            </div>
+          }
+          @if (r.hojas.includes('certificados')) {
+            <div class="sys-resumen-item">
+              <div class="num">{{ r.certificados.creados }}</div>
+              <div class="lbl">Certificados creados</div>
+            </div>
+          }
+        </div>
+        <p class="sys-hint">
+          Omitidos por duplicado: {{ r.programas.omitidos }} programas (ya existían),
+          {{ r.alumnos.omitidos }} alumnos, {{ r.matriculas.omitidas }} matrículas,
+          {{ r.pagos.omitidos }} pagos, {{ r.certificados.omitidos }} certificados.
+          @if (r.alumnos.actualizados) {
+            Actualizados: {{ r.alumnos.actualizados }} alumnos.
+          }
+          Los consecutivos de recibos y certificados quedaron sincronizados.
+        </p>
+      </div>
+    </section>
+  }
+
+  <!-- Historial -->
+  @if (lotes().length) {
+    <section class="sys-section sys-section--amber">
+      <header class="sys-section-head">
+        <h2>Importaciones anteriores</h2>
+      </header>
+      <div class="sys-section-body">
+        <div style="overflow-x: auto">
+          <table class="sys-table">
+            <thead>
+              <tr><th>Fecha</th><th>Lote</th><th>Archivo</th><th>Usuario</th><th>Resumen</th></tr>
+            </thead>
+            <tbody>
+              @for (l of lotes(); track l.lote) {
+                <tr>
+                  <td>{{ l.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ l.lote }}</td>
+                  <td>{{ l.archivo || '—' }}</td>
+                  <td>{{ l.usuario }}</td>
+                  <td>
+                    @if (l.resultado; as res) {
+                      {{ res.alumnos?.creados || 0 }} alumnos ·
+                      {{ res.matriculas?.creadas || 0 }} matrículas ·
+                      {{ res.pagos?.creados || 0 }} pagos ·
+                      {{ res.certificados?.creados || 0 }} certificados
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  }
+</section>

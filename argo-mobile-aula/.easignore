@@ -1,0 +1,8 @@
+node_modules/
+.expo/
+.expo-check-bundle/
+android/
+ios/
+*.zip
+.env
+build-info.json

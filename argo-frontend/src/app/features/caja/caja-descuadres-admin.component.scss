@@ -1,0 +1,129 @@
+@use './caja-listados-admin' as *;
+@use './caja-shared' as *;
+
+.caja-page {
+  max-width: none;
+  width: 100%;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+  }
+  .sub {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+}
+
+.link-btn {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.kpi {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(10, 26, 58, 0.5);
+
+  span {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  strong {
+    font-size: 1.2rem;
+  }
+
+  &.warn {
+    border-color: rgba(251, 113, 133, 0.45);
+    background: rgba(251, 113, 133, 0.08);
+  }
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.row-pendiente {
+  background: rgba(251, 189, 35, 0.06);
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+
+  &.pendiente {
+    background: rgba(251, 189, 35, 0.2);
+    color: #fbbf24;
+  }
+  &.resuelto {
+    background: rgba(54, 211, 153, 0.15);
+    color: var(--ok);
+  }
+}
+
+.warn-cell {
+  color: #fb7185;
+  font-weight: 600;
+}
+
+.neg {
+  color: #fb7185;
+}
+
+.num {
+  text-align: right;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 1rem;
+}
+
+.flash {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(78, 163, 255, 0.12);
+  color: var(--accent-2);
+  font-size: 0.9rem;
+}

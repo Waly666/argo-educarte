@@ -1,0 +1,15 @@
+<label class="argo-switch" [class.on]="checked" [class.disabled]="disabled">
+  <input
+    type="checkbox"
+    class="argo-switch-native"
+    [checked]="checked"
+    [disabled]="disabled"
+    (change)="onInput($event)"
+  />
+  <span class="argo-switch-track" aria-hidden="true">
+    <span class="argo-switch-thumb"></span>
+  </span>
+  @if (label) {
+    <span class="argo-switch-label">{{ label }}</span>
+  }
+</label>

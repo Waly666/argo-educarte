@@ -1,0 +1,37 @@
+@if (svc.state(); as s) {
+  <div class="sup-auth-backdrop" @backdropAnim (click)="svc.cancel()">
+    <div class="sup-auth-modal" @dialogAnim (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h3 class="sup-auth-title">{{ s.title }}</h3>
+      <p class="sup-auth-msg">{{ s.message }}</p>
+
+      <label class="sup-auth-field">
+        <span>Usuario administrador</span>
+        <input
+          type="text"
+          autocomplete="off"
+          [ngModel]="s.username"
+          (ngModelChange)="svc.setUsername($event)"
+          (keyup.enter)="svc.confirm()"
+        />
+      </label>
+
+      <label class="sup-auth-field">
+        <span>Contraseña</span>
+        <input
+          type="password"
+          autocomplete="new-password"
+          [ngModel]="s.password"
+          (ngModelChange)="svc.setPassword($event)"
+          (keyup.enter)="svc.confirm()"
+        />
+      </label>
+
+      <p class="sup-auth-error" *ngIf="s.error">{{ s.error }}</p>
+
+      <div class="sup-auth-actions">
+        <button type="button" class="ghost" (click)="svc.cancel()">Cancelar</button>
+        <button type="button" class="danger" (click)="svc.confirm()">{{ s.confirmLabel }}</button>
+      </div>
+    </div>
+  </div>
+}

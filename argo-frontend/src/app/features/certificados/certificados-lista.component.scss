@@ -1,0 +1,310 @@
+@use '../jornadas/jornada-live-estado.scss';
+
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.alert-hoy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #ecfdf5;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.9));
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  animation: cert-hoy-badge-blink 1.1s ease-in-out infinite;
+}
+
+.alert-hoy-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  animation: cert-hoy-dot-pulse 1.2s ease-out infinite;
+}
+
+@keyframes cert-hoy-badge-blink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  }
+  50% {
+    opacity: 0.88;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@keyframes cert-hoy-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(130px, 1fr));
+  gap: 10px 12px;
+}
+
+.filtro-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  input,
+  select {
+    width: 100%;
+  }
+}
+
+.filtros-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+}
+
+.link-name {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.encabezado-hoy-blink {
+  white-space: normal;
+  line-height: 1.35;
+  max-width: 320px;
+  text-align: left;
+}
+
+@keyframes estado-cert-vencido-blink {
+  0%,
+  100% {
+    opacity: 1;
+    border-color: rgba(254, 202, 202, 0.98);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.55), 0 0 28px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    opacity: 0.78;
+    border-color: rgba(248, 113, 113, 0.45);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.2);
+  }
+}
+
+.estado-cert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.estado-cert-vigente {
+  color: #dbeafe;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.55), rgba(29, 78, 216, 0.65));
+  border-color: rgba(96, 165, 250, 0.75);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+.estado-cert-vencido {
+  color: #fff1f2;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.72), rgba(127, 29, 29, 0.82));
+  border-color: rgba(252, 165, 165, 0.85);
+  animation: estado-cert-vencido-blink 0.85s ease-in-out infinite;
+}
+
+.estado-cert-anulado {
+  color: #e2e8f0;
+  background: rgba(100, 116, 139, 0.35);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.fecha-vence-vencida {
+  color: #fecaca;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-actions .count {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* ---- Filtro empresa en certificados ---- */
+.filtro-empresa-wrap {
+  position: relative;
+  min-width: 180px;
+}
+
+.empresa-combo-wrap {
+  position: relative;
+
+  .empresa-combo-input {
+    width: 100%;
+    padding: 0.45rem 2rem 0.45rem 0.65rem;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    background: rgba(251, 191, 36, 0.04);
+    color: var(--text);
+    font-size: 0.82rem;
+
+    &:focus { outline: none; border-color: rgba(251, 191, 36, 0.6); }
+    &::placeholder { color: var(--text-dim); opacity: 0.6; }
+  }
+
+  .empresa-combo-clear {
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    &:hover { color: #f87272; }
+  }
+
+  .empresa-combo-dropdown {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--surface-dark, #111827);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 7px;
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 6px 18px rgba(0,0,0,.4);
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+
+      &:hover { background: rgba(251, 191, 36, 0.07); }
+
+      .ec-nombre { flex: 1; color: var(--text); font-weight: 500; }
+      .ec-nit { font-family: monospace; font-size: 0.72rem; color: var(--text-dim); }
+    }
+  }
+}
+
+.empresa-active-chip {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Empresa en certificados ---- */
+.col-empresa-cert {
+  min-width: 130px;
+  max-width: 200px;
+}
+
+.emp-chip-cert {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-dim-cert {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* ---- Paginador ---- */
+.paginador {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.75rem 0.5rem 0.25rem;
+  flex-wrap: wrap;
+
+  .pag-ellipsis {
+    padding: 0 0.25rem;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .pag-info {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+}

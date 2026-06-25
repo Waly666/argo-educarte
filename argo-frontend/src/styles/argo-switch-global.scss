@@ -1,0 +1,107 @@
+/* Switch visual unificado para checkboxes nativos (excluye argo-switch y toggles custom ocultos). */
+
+html body input[type='checkbox']:not(.argo-switch-native):not([hidden]) {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(100, 116, 139, 0.45);
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.95);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.15s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  &:checked {
+    background: #14532d;
+    border-color: #166534;
+
+    &::after {
+      transform: translateX(20px);
+      background: #86efac;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+/* Toggles custom que ocultan el input nativo */
+.cb-switch input[type='checkbox'],
+.argo-switch input[type='checkbox'] {
+  appearance: none;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  opacity: 0 !important;
+  pointer-events: none;
+  position: absolute;
+
+  &::after {
+    content: none !important;
+  }
+}
+
+label:has(> input[type='checkbox']:not(.argo-switch-native):not([hidden])) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rec-toggle,
+.cert-check,
+.usr-toggle,
+.rol-toggle,
+.fac-check,
+.toggle-chip,
+.switch-row {
+  input[type='checkbox']:not(.argo-switch-native) {
+    align-self: flex-start;
+    margin-top: 0.05rem;
+  }
+}
+
+td input[type='checkbox']:not(.argo-switch-native),
+th input[type='checkbox']:not(.argo-switch-native) {
+  vertical-align: middle;
+}
+
+.cert-check-grid label,
+.rol-perm-grid label,
+.rol-alarm-grid label {
+  align-items: flex-start;
+}

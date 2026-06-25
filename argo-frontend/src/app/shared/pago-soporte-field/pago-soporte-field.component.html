@@ -1,0 +1,29 @@
+<div class="pago-soporte-field" [class.tiene-archivo]="nombreArchivo">
+  <div class="pago-soporte-field__header">
+    <span class="pago-soporte-field__title">
+      Soporte de pago (imagen)<span *ngIf="obligatorio"> *</span>
+    </span>
+    <p class="pago-soporte-field__hint">{{ hint }}</p>
+  </div>
+
+  <div class="pago-soporte-field__box">
+    <input #fileInput type="file" accept="image/*" hidden (change)="onFileChange($event)" />
+
+    <button type="button" class="pago-soporte-field__btn" (click)="fileInput.click()">
+      {{ nombreArchivo ? 'Cambiar imagen' : 'Seleccionar pantallazo' }}
+    </button>
+
+    <span class="pago-soporte-field__estado ok" *ngIf="nombreArchivo">{{ nombreArchivo }}</span>
+    <span class="pago-soporte-field__estado warn" *ngIf="!nombreArchivo && obligatorio">
+      Sin archivo — obligatorio para registrar
+    </span>
+    <span class="pago-soporte-field__estado dim" *ngIf="!nombreArchivo && !obligatorio">
+      Opcional
+    </span>
+  </div>
+
+  <div class="pago-soporte-field__preview" *ngIf="previewUrl">
+    <img [src]="previewUrl" alt="Vista previa del soporte de pago" />
+    <button type="button" class="ghost sm" (click)="onQuitar(fileInput)">Quitar imagen</button>
+  </div>
+</div>

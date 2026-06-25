@@ -1,0 +1,400 @@
+@if (editorHost) {
+  @if (modalOpen()) {
+    <div class="jornadas-page editor-host-root">
+      <ng-container *ngTemplateOutlet="modalClaseEditar" />
+    </div>
+  }
+} @else {
+  <div class="jornadas-page">
+    @if (modalOpen()) {
+      <ng-container *ngTemplateOutlet="modalClaseEditar" />
+    }
+  </div>
+}
+
+<ng-template #modalClaseEditar>
+  <argo-form-modal
+    [open]="true"
+    title="Editar clase"
+    [xwide]="true"
+    (closed)="cerrarModal()">
+    <section class="clase-modal-form argo-form-shell">
+      @if (claseActiva(); as cl) {
+        <div class="clase-estado-bar">
+          <span class="estado-label">Estado</span>
+          <span [ngClass]="estadoClaseLiveClass(cl.estado)">{{ cl.estado }}</span>
+          @if (claseModalEnProceso() && cl.horaInicio) {
+            <span class="clase-cronometro" aria-live="polite">{{ cronometroDisplay() }}</span>
+          }
+          @if (cl.estado === 'FINALIZADO' && cl.duracionSegundos != null) {
+            <span class="clase-cronometro final">⏳ {{ formatDuracion(cl.duracionSegundos) }}</span>
+          }
+          <span class="hint" *ngIf="cl.horaInicio">⏱ Inicio: <strong>{{ fmtHora(cl.horaInicio) }}</strong></span>
+          <span class="hint" *ngIf="cl.horaFin">⏹ Fin: <strong>{{ fmtHora(cl.horaFin) }}</strong></span>
+          @if (cl.estado === 'FINALIZADO' && cl.duracionSegundos != null) {
+            <span class="hint">Duración: <strong>{{ formatDuracion(cl.duracionSegundos) }}</strong></span>
+          }
+        </div>
+      }
+
+      @if (modalMsg(); as modalTexto) {
+        <div
+          class="jor-banner modal-inline-banner"
+          [class.jor-banner--ok]="modalMsgTipo() === 'ok'"
+          [class.jor-banner--error]="modalMsgTipo() === 'error'"
+          [class.jor-banner--warn]="modalMsgTipo() === 'warn'"
+          [class.jor-banner--info]="modalMsgTipo() === 'info'"
+          role="status">
+          <span class="jor-banner-icon" aria-hidden="true">{{ iconoJorMsg(modalMsgTipo()) }}</span>
+          <div class="jor-banner-body">
+            <strong class="jor-banner-title">{{ modalMsgTitulo() }}</strong>
+            <span>{{ modalTexto }}</span>
+          </div>
+          <button type="button" class="jor-banner-close" (click)="limpiarMsgModal()" aria-label="Cerrar">×</button>
+        </div>
+      }
+
+      @if (claseActiva(); as cl) {
+        @if (!claseEsHoy(cl) && cl.estado !== 'FINALIZADO' && !cl.horaInicio) {
+          <p class="hint hint-warn">
+            Esta clase es de otro día. Solo puede <strong>iniciarla el día programado</strong> (hoy).
+          </p>
+        } @else if (!jornadaClaseModalOperable() && cl.estado !== 'FINALIZADO' && !cl.horaInicio) {
+          <p class="hint hint-warn">
+            La jornada aún no está <strong>EN PROCESO</strong>. Podrá iniciar la clase el día programado de la jornada.
+          </p>
+        }
+      }
+
+      <h3 class="clase-modal-section">Datos de la clase</h3>
+      <div class="clase-modal-datos-grid">
+        <div class="cm-field cm-jornada">
+          <argo-catalogo-enum-buscar
+            label="Jornada"
+            placeholder="Seleccione jornada…"
+            [textoInicial]="textoJornadaModal()"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [disabled]="true"
+            [opcionesLocales]="opcionesJornadaModal()"
+          />
+        </div>
+        <div class="cm-field cm-fecha">
+          <label>Fecha</label>
+          <p class="fecha-clase-readonly" [ngClass]="capFechaJor(modalFechaClase())">
+            {{ modalFechaClase() ? fmtFecha(modalFechaClase()) : '—' }}
+          </p>
+        </div>
+        <div class="cm-field cm-ubicacion">
+          <argo-catalogo-enum-buscar
+            label="Ubicación"
+            placeholder="Seleccione ubicación…"
+            [textoInicial]="textoUbicacionClase()"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [opcionesLocales]="opcionesUbicacionClase()"
+            (seleccionado)="onUbicacionClasePick($event)"
+            (limpiado)="onUbicacionClaseLimpiar()"
+          />
+        </div>
+        <div class="cm-field cm-instructor">
+          @if (puedeAsignarInstructor()) {
+            <argo-catalogo-enum-buscar
+              label="Instructor"
+              placeholder="Seleccione instructor…"
+              [textoInicial]="textoInstructorModal()"
+              [modoCombo]="true"
+              [remoto]="false"
+              [minLength]="1"
+              [opcionesLocales]="opcionesInstructoresModal()"
+              (seleccionado)="onInstructorModalPick($event)"
+              (limpiado)="onInstructorModalLimpiar()"
+            />
+          } @else {
+            <label>Instructor</label>
+            <p class="instructor-readonly compact">
+              <span [ngClass]="capInstructor(instructorSesionNombre())">{{ instructorSesionNombre() }}</span>
+            </p>
+          }
+        </div>
+        <div class="cm-field cm-matriculados">
+          <label>Matriculados</label>
+          <span class="clase-matricula-contador block" aria-live="polite">
+            <strong class="contador-num">{{ totalAlumnosMatriculadosModal() }}</strong>
+            @if (inscritosConAsistencia() > 0) {
+              <span class="contador-sub">{{ inscritosConAsistencia() }} asist.</span>
+            }
+            @if (inscritosCertificadosContrato() > 0) {
+              <span class="contador-sub">{{ inscritosCertificadosContrato() }} cert.</span>
+            }
+            @if (inscritosSinAsistencia() > 0) {
+              <span class="contador-sub">{{ inscritosSinAsistencia() }} sin asist.</span>
+            }
+          </span>
+        </div>
+      </div>
+
+      <div class="cm-field cm-programa cm-programa-destacado">
+        <argo-catalogo-enum-buscar
+          label="Programa"
+          placeholder="Seleccione o escriba programa…"
+          [textoInicial]="textoProgramaModalCombo()"
+          [modoCombo]="true"
+          [remoto]="false"
+          [minLength]="1"
+          [opcionesLocales]="opcionesProgramasModal()"
+          (seleccionado)="onProgramaModalPick($event)"
+          (limpiado)="onProgramaModalLimpiar()"
+        />
+        @if (programasJornada().length === 0) {
+          <p class="hint hint-compact hint-warn">No se cargaron programas. Verifique permisos o recargue la página.</p>
+        }
+      </div>
+
+      <h3 class="clase-modal-section">Alumnos</h3>
+      <p class="hint">
+        Busque por <strong>nombre</strong> o <strong>número de cédula</strong> en la base de datos y agréguelos.
+        Un alumno <strong>ya certificado en el contrato</strong> no puede inscribirse en más clases del mismo contrato.
+        @if (claseActiva()?.estado === 'FINALIZADO' && puedeEliminarClase()) {
+          Puede agregar alumnos y registrar asistencia aunque la clase esté <strong>FINALIZADA</strong>.
+        } @else {
+          Se inscriben a esta clase y se matriculan al programa si aún no lo estaban. Marque la asistencia cuando la clase esté <strong>EN PROCESO</strong>.
+        }
+      </p>
+
+      <div class="clase-alumno-buscar">
+        <div class="buscar-wrap">
+          <span class="buscar-ic" aria-hidden="true">◎</span>
+          <input
+            type="text"
+            placeholder="Buscar alumno por nombre o cédula…"
+            [ngModel]="alumnoBusqueda()"
+            (ngModelChange)="onAlumnoBusquedaInput($event)"
+            (focus)="focusAlumnoBusqueda()"
+            autocomplete="off" />
+          <button type="button" class="ghost mini" (click)="nuevoAlumnoJornada()">+ Nuevo alumno</button>
+        </div>
+
+        @if (alumnoBusquedaOpen()) {
+          <div class="buscar-dropdown">
+            @if (alumnoBusquedaLoading()) {
+              <p class="buscar-msg">Buscando…</p>
+            } @else if (alumnoBusquedaResults().length === 0) {
+              <p class="buscar-msg">Sin resultados. Verifique el texto o cree un alumno nuevo.</p>
+            } @else {
+              <ul class="buscar-list">
+                @for (r of alumnoBusquedaResults(); track r._id) {
+                  <li>
+                    <div class="buscar-info">
+                      <span class="buscar-name">{{ nombreAlumnoItem(r) }}</span>
+                      <span class="buscar-meta">{{ r.tipoDoc || 'CC' }} {{ r.numDoc }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="mini primary"
+                      (click)="agregarAlumnoMatricula(r)"
+                      [disabled]="alumnoYaEnLista(r) || guardandoInscripcion()">
+                      {{ alumnoYaEnLista(r) ? 'Agregado' : guardandoInscripcion() ? '…' : 'Agregar' }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+
+      <table class="argo mini clase-matricula-list">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Asistencia</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of inscritos(); track a.numDoc) {
+            <tr>
+              <td><span [ngClass]="capDocAsis(a.numDoc)">{{ a.numDoc }}</span></td>
+              <td><span [ngClass]="capAlumnoNombre(a.nombreCompleto)">{{ a.nombreCompleto || '—' }}</span></td>
+              <td>
+                @if (a.yaCertificadoContrato && !a.tieneAsistencia) {
+                  <div class="asis-cell">
+                    <span class="cap cap-violet cap-sm cap-text" title="Certificado vigente en este contrato">
+                      ✓ Certificado{{ a.certificadoCodigo ? ' (' + a.certificadoCodigo + ')' : '' }}
+                    </span>
+                    <button type="button" class="mini ghost" (click)="imprimirCertificadoInscrito(a)">
+                      Imprimir certificado
+                    </button>
+                  </div>
+                } @else if (a.tieneAsistencia) {
+                  <div class="asis-cell">
+                    <span class="cap cap-emerald cap-sm cap-text">✓ Asistió {{ fmtHora(a.asistenciaAt || undefined) }}</span>
+                    @if (puedeBorrarAsistenciaDeClase()) {
+                      <button
+                        type="button"
+                        class="mini danger"
+                        [disabled]="guardandoAsistencia() === a.numDoc"
+                        (click)="borrarAsistenciaInscrito(a.numDoc, a.nombreCompleto)"
+                        title="Borrar solo la asistencia de este alumno (no se desmatricula)">
+                        {{ guardandoAsistencia() === a.numDoc ? '…' : '✕ Borrar asistencia' }}
+                      </button>
+                    }
+                  </div>
+                } @else if (puedeMarcarAsistenciaAlumno(a)) {
+                  <button
+                    type="button"
+                    class="mini primary"
+                    [disabled]="guardandoAsistencia() === a.numDoc"
+                    (click)="marcarAsistenciaInscrito(a.numDoc)">
+                    {{ guardandoAsistencia() === a.numDoc ? '…' : 'Marcar' }}
+                  </button>
+                } @else if (a.yaCertificadoContrato) {
+                  <div class="asis-cell">
+                    <span class="cap cap-violet cap-sm cap-text">Certificado en contrato</span>
+                    <button type="button" class="mini ghost" (click)="imprimirCertificadoInscrito(a)">
+                      Imprimir certificado
+                    </button>
+                  </div>
+                } @else {
+                  <span class="cap cap-slate cap-sm cap-text">Pendiente</span>
+                }
+              </td>
+              <td class="actions-cell">
+                @if (puedeQuitarInscritoDeClase()) {
+                  <button
+                    type="button"
+                    class="mini danger"
+                    [disabled]="guardandoAsistencia() === a.numDoc"
+                    (click)="quitarInscritoDeClase(a.numDoc, a.nombreCompleto, { tieneAsistencia: a.tieneAsistencia })"
+                    title="Quitar al alumno de esta clase (no se desmatricula del programa)">
+                    {{ guardandoAsistencia() === a.numDoc ? '…' : '✕ Quitar' }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+          @if (inscritos().length === 0) {
+            <tr>
+              <td colspan="4" class="empty jor-empty-mini">Ningún alumno inscrito aún.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (claseActiva()?.estado === 'FINALIZADO' && inscritosConAsistencia() > 0) {
+        <p class="hint">
+          Sesión finalizada con <strong>{{ inscritosConAsistencia() }}</strong> asistencia(s) registrada(s).
+          Las clases finalizadas no se pueden eliminar.
+        </p>
+      }
+
+      @if (claseActiva()?.estado === 'FINALIZADO' && inscritosSinAsistencia() > 0) {
+        <p class="hint hint-warn">
+          Hay <strong>{{ inscritosSinAsistencia() }}</strong> inscrito(s) pendiente(s) de asistencia.
+          El certificado automático cuenta <strong>asistencias</strong>, no solo inscripción o finalizar la clase.
+          Los alumnos <strong>ya certificados</strong> en el contrato no requieren asistencia en esta clase.
+        </p>
+        <button type="button" class="mini primary" (click)="sincronizarAsistenciasClaseModal()">
+          Registrar asistencia de todos los inscritos ({{ inscritosSinAsistencia() }})
+        </button>
+      }
+
+      @if (puedeEliminarClaseActiva() && inscritosConAsistencia() > 0) {
+        <p class="hint hint-warn">
+          Hay <strong>{{ inscritosConAsistencia() }}</strong> asistencia(s) registrada(s).
+          Si elimina la clase, también se borrarán esas asistencias e inscripciones.
+        </p>
+      }
+
+      @if (puedeAsignarInstructor() || claseSel()) {
+        <div class="clase-modal-extra-grid">
+          @if (puedeAsignarInstructor()) {
+            <div class="cm-panel cm-horario argo-form-section variant-horario">
+              <h3 class="clase-modal-section">Horario</h3>
+              <div class="clase-horario-admin horario-manual">
+                <div class="cm-field horario-manual-col">
+                  <label>Inicio</label>
+                  <argo-hora-12-input
+                    [minuteStep]="15"
+                    [value]="modalHoraInicio() || '08:00'"
+                    (valueChange)="modalHoraInicio.set($event)" />
+                </div>
+                <div class="cm-field horario-manual-col">
+                  <label>Fin</label>
+                  <argo-hora-12-input
+                    [minuteStep]="15"
+                    [value]="modalHoraFin() || '10:00'"
+                    (valueChange)="modalHoraFin.set($event)" />
+                </div>
+                <div class="cm-field horario-manual-col">
+                  <label>Duración</label>
+                  <p class="horario-readonly-val">{{ lapsoClaseEtiqueta() || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          }
+          @if (claseSel()) {
+            <div class="cm-panel cm-evidencia">
+              <h3 class="clase-modal-section">Evidencia fotográfica</h3>
+              <div class="evidencia-foto-panel compact">
+                @if (claseActiva()?.urlforo) {
+                  <img
+                    [src]="urlFotoEvidencia(claseActiva()!.urlforo)"
+                    alt="Evidencia de clase"
+                    class="evidencia-preview" />
+                } @else {
+                  <p class="hint hint-compact">Sin foto cargada.</p>
+                }
+                <label class="evidencia-upload">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    (change)="onFotoEvidenciaSelected($event)"
+                    [disabled]="subiendoFotoEvidencia()" />
+                  <span>{{ subiendoFotoEvidencia() ? 'Subiendo…' : '📷 Cargar foto' }}</span>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <div modal-actions>
+      <button type="button" class="ghost" (click)="cerrarModal()" [disabled]="guardandoClase()">
+        Cerrar
+      </button>
+      <button
+        type="button"
+        class="ghost"
+        (click)="guardarCambiosClaseModal()"
+        [disabled]="!nuevaClaseProg()"
+        title="Guardar cambios de programa, ubicación, instructor u horario">
+        💾 Guardar clase
+      </button>
+      @if (claseActiva()?.estado !== 'FINALIZADO') {
+        <button
+          type="button"
+          class="primary"
+          (click)="iniciarClaseModal()"
+          [disabled]="!claseModalIniciable()"
+          [title]="tituloBotonIniciarClase()">
+          ▶ Iniciar clase
+        </button>
+        <button
+          type="button"
+          class="danger"
+          (click)="finalizarClaseModal()"
+          [disabled]="!claseModalFinalizable()"
+          [title]="claseModalFinalizable() ? 'Finalizar clase y registrar hora de fin' : 'Solo se puede finalizar una clase EN PROCESO'">
+          ■ Finalizar clase
+        </button>
+      }
+    </div>
+  </argo-form-modal>
+</ng-template>

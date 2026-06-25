@@ -1,0 +1,10 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-caja"
+  icon="🔒"
+  title="Caja cerrada"
+  hint="Debe abrir la caja para registrar movimientos."
+  [items]="rows()"
+  (closed)="cerrar()"
+  (itemClick)="onItemClick($event)"
+/>

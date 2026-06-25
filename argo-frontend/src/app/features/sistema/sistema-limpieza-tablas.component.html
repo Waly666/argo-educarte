@@ -1,0 +1,190 @@
+<section class="sys-page card limpieza-page">
+  <argo-backup-reset-restore-nav />
+
+  <header class="sys-head">
+    <div>
+      <h1>Limpieza de tablas</h1>
+      <p>
+        Utilidad de soporte: liste las tablas de la base de datos, revise registros como en Excel y
+        elimine filas seleccionadas o vacíe una tabla completa. Solo administradores. Se recomienda
+        un backup antes de borrar.
+      </p>
+    </div>
+    <span class="sys-chip sys-chip--warn">Soporte · irreversible</span>
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="sys-msg" [class.sys-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <div class="limpieza-layout">
+    <aside class="limpieza-lista card">
+      <div class="limpieza-lista__head">
+        <h2>Tablas</h2>
+        <button type="button" class="sys-btn-sm" (click)="cargarTablas()" [disabled]="cargandoTablas()">
+          ↻
+        </button>
+      </div>
+      <input
+        type="search"
+        class="limpieza-search"
+        placeholder="Filtrar tabla…"
+        [ngModel]="filtroTablas()"
+        (ngModelChange)="filtroTablas.set($event)"
+      />
+      @if (cargandoTablas()) {
+        <p class="limpieza-hint">Cargando…</p>
+      } @else {
+        <ul class="limpieza-tablas">
+          @for (t of tablasFiltradas(); track t.nombre) {
+            <li>
+              <button
+                type="button"
+                class="limpieza-tabla-btn"
+                [class.active]="seleccionada() === t.nombre"
+                (click)="elegirTabla(t.nombre)"
+              >
+                <span class="nombre">{{ t.nombre }}</span>
+                <span class="meta">
+                  @if (t.critica) {
+                    <span class="critica" title="Tabla sensible">⚠</span>
+                  }
+                  {{ t.total | number }}
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </aside>
+
+    <main class="limpieza-detalle card">
+      @if (!seleccionada()) {
+        <p class="limpieza-hint">Seleccione una tabla de la lista para ver y borrar registros.</p>
+      } @else {
+        <div class="limpieza-toolbar">
+          <div>
+            <h2>{{ seleccionada() }}</h2>
+            @if (esCritica(seleccionada())) {
+              <p class="limpieza-alerta">Tabla sensible: tenga precaución al borrar.</p>
+            }
+          </div>
+          <div class="limpieza-toolbar__acciones">
+            <button
+              type="button"
+              class="sys-btn-sm sys-btn-sm--danger"
+              [disabled]="ejecutando() || !registros()?.total"
+              (click)="vaciarTabla()"
+            >
+              Vaciar tabla
+            </button>
+            <button
+              type="button"
+              class="sys-btn-sm sys-btn-sm--danger"
+              [disabled]="ejecutando() || seleccionadosCount() === 0"
+              (click)="borrarSeleccionados()"
+            >
+              Borrar seleccionados ({{ seleccionadosCount() }})
+            </button>
+          </div>
+        </div>
+
+        <div class="limpieza-buscar">
+          <input
+            type="search"
+            class="limpieza-search"
+            placeholder="Buscar por _id o texto en columnas…"
+            [(ngModel)]="buscarInput"
+            (keyup.enter)="aplicarBusqueda()"
+          />
+          <button type="button" class="sys-btn-sm" (click)="aplicarBusqueda()">Buscar</button>
+        </div>
+
+        @if (cargandoRegistros()) {
+          <p class="limpieza-hint">Cargando registros…</p>
+        } @else {
+          @if (registros(); as r) {
+          <div class="limpieza-grid-wrap">
+            <table class="limpieza-grid">
+              <thead>
+                <tr>
+                  <th class="col-check">
+                    <input
+                      type="checkbox"
+                      [checked]="r.filas.length > 0 && seleccionadosCount() === r.filas.length"
+                      (change)="togglePagina($any($event.target).checked)"
+                      aria-label="Seleccionar página"
+                    />
+                  </th>
+                  @for (col of r.columnas; track col) {
+                    <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of r.filas; track fila['_id']) {
+                  <tr>
+                    <td class="col-check">
+                      <input
+                        type="checkbox"
+                        [checked]="seleccionIds()[fila['_id']]"
+                        (change)="toggleFila(fila['_id'], $any($event.target).checked)"
+                      />
+                    </td>
+                    @for (col of r.columnas; track col) {
+                      <td [title]="fila[col]">{{ fila[col] }}</td>
+                    }
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td [attr.colspan]="r.columnas.length + 1" class="limpieza-vacio">Sin registros</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="limpieza-paginacion">
+            <span>{{ r.total | number }} registro(s) · página {{ r.pagina }} / {{ r.totalPaginas }}</span>
+            <div class="limpieza-paginacion__btns">
+              <button type="button" class="sys-btn-sm" [disabled]="r.pagina <= 1" (click)="irPagina(r.pagina - 1)">
+                ← Anterior
+              </button>
+              <button
+                type="button"
+                class="sys-btn-sm"
+                [disabled]="r.pagina >= r.totalPaginas"
+                (click)="irPagina(r.pagina + 1)"
+              >
+                Siguiente →
+              </button>
+            </div>
+          </div>
+          }
+        }
+
+        <section class="limpieza-credenciales">
+          <h3>Confirmación de administrador</h3>
+          <p class="limpieza-hint">
+            Para vaciar: escriba <strong>{{ meta()?.fraseVaciar }}</strong>. Para borrar filas:
+            <strong>{{ meta()?.fraseBorrar }}</strong>.
+          </p>
+          <div class="limpieza-credenciales__grid">
+            <label>
+              Contraseña
+              <input type="password" [(ngModel)]="password" autocomplete="current-password" />
+            </label>
+            <label>
+              Código MFA (si aplica)
+              <input type="text" [(ngModel)]="codigoMfa" autocomplete="one-time-code" />
+            </label>
+            <label class="span-2">
+              Frase de confirmación
+              <input type="text" [(ngModel)]="confirmacion" placeholder="VACIAR TABLA o BORRAR REGISTROS" />
+            </label>
+          </div>
+        </section>
+      }
+    </main>
+  </div>
+</section>

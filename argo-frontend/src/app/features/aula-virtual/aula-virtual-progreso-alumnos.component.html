@@ -1,0 +1,212 @@
+<div class="av-prog">
+  <div class="av-prog-head">
+    <div>
+      <h3>Seguimiento de alumnos</h3>
+      <p class="av-muted">
+        Avance del curso, evaluaciones, certificado y actividad en el portal.
+        «En línea» = actividad en los últimos 10 minutos.
+      </p>
+    </div>
+    <button type="button" class="av-btn av-btn--ghost" [disabled]="loading()" (click)="cargar()">
+      {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <div class="av-prog-toolbar">
+    <input
+      type="search"
+      class="av-prog-search"
+      placeholder="Buscar por nombre o documento…"
+      [(ngModel)]="buscar"
+      (keyup.enter)="buscarAlumnos()" />
+    <button type="button" class="av-btn av-btn--secondary" (click)="buscarAlumnos()">Buscar</button>
+    <div class="av-prog-filters">
+      <button type="button" class="av-filter" [class.active]="!filtro" (click)="cambiarFiltro('')">Todos</button>
+      <button type="button" class="av-filter" [class.active]="filtro === 'sin_iniciar'" (click)="cambiarFiltro('sin_iniciar')">
+        Sin iniciar
+      </button>
+      <button type="button" class="av-filter" [class.active]="filtro === 'aprobado'" (click)="cambiarFiltro('aprobado')">
+        Aprobados
+      </button>
+      <button type="button" class="av-filter" [class.active]="filtro === 'certificado'" (click)="cambiarFiltro('certificado')">
+        Certificados
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="av-banner av-banner--err">{{ error() }}</p>
+  }
+
+  @if (loading() && !items().length) {
+    <p class="av-muted">Cargando progreso…</p>
+  } @else if (!items().length) {
+    <p class="av-muted">No hay alumnos matriculados en este curso (o no coinciden con el filtro).</p>
+  } @else {
+    <div class="av-prog-table-wrap">
+      <table class="av-prog-table">
+        <thead>
+          <tr>
+            <th>Alumno</th>
+            <th>Estado</th>
+            <th>Avance</th>
+            <th>Evaluación</th>
+            <th>Certificado</th>
+            <th>Syncs</th>
+            <th>Última actividad</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of items(); track row.idMatricula) {
+            <tr [class.expanded]="estaExpandido(row)">
+              <td>
+                <strong>{{ row.nombreCompleto || '—' }}</strong>
+                <div class="av-prog-sub">CC {{ fmtDoc(row.numDoc) }}</div>
+                @if (row.emailPortal || row.correo) {
+                  <div class="av-prog-sub">{{ row.emailPortal || row.correo }}</div>
+                }
+              </td>
+              <td>
+                <span class="av-prog-conn" [ngClass]="claseConexion(row.conexion.codigo)">
+                  {{ row.conexion.label }}
+                </span>
+                @if (row.progreso.aprobado) {
+                  <span class="av-prog-badge av-prog-badge--ok">Aprobado</span>
+                } @else if (row.progreso.sinIniciar) {
+                  <span class="av-prog-badge">Sin iniciar</span>
+                }
+              </td>
+              <td>
+                <div class="av-prog-bar-wrap">
+                  <div class="av-prog-bar" [style.width.%]="row.progreso.pctCompletitud"></div>
+                </div>
+                <span class="av-prog-sub">{{ row.progreso.pctCompletitud }}%</span>
+                @if (row.progreso.totalClases) {
+                  <span class="av-prog-sub">
+                    · {{ row.progreso.clasesAprobadas }}/{{ row.progreso.totalClases }} lecciones
+                  </span>
+                }
+                @if (row.progreso.promedioClases != null) {
+                  <span class="av-prog-sub"> · Prom. lecciones {{ row.progreso.promedioClases }}%</span>
+                }
+              </td>
+              <td>
+                @if (row.progreso.mejorNotaEval != null) {
+                  <strong>{{ row.progreso.mejorNotaEval }}%</strong>
+                  <span class="av-prog-sub"> mejor nota</span>
+                } @else {
+                  <span class="av-prog-sub">Sin eval. final</span>
+                }
+                <div class="av-prog-sub">
+                  Intentos: {{ row.progreso.intentosEval }}
+                  @if (row.progreso.intentosRestantes > 0) {
+                    · quedan {{ row.progreso.intentosRestantes }}
+                  }
+                </div>
+              </td>
+              <td>
+                @if (row.progreso.certificadoEmitido) {
+                  <span class="av-prog-badge av-prog-badge--ok">Emitido</span>
+                  @if (row.certificado?.codigoCert) {
+                    <div class="av-prog-sub">{{ row.certificado!.codigoCert }}</div>
+                  }
+                } @else if (row.progreso.aprobado && !row.pago.pagado) {
+                  <span class="av-prog-badge av-prog-badge--warn">Pendiente pago</span>
+                } @else {
+                  <span class="av-prog-sub">—</span>
+                }
+              </td>
+              <td>{{ row.progreso.contadorSyncs }}</td>
+              <td>
+                <div>{{ fmtFecha(row.progreso.fechaUltimaActividad) }}</div>
+                @if (row.portal.ultimoAcceso) {
+                  <div class="av-prog-sub">Login: {{ fmtFecha(row.portal.ultimoAcceso) }}</div>
+                }
+              </td>
+              <td class="av-prog-actions">
+                <button type="button" class="av-link" (click)="toggleExpand(row)">
+                  {{ estaExpandido(row) ? 'Ocultar' : 'Detalle' }}
+                </button>
+                @if (fichaLink(row); as link) {
+                  <a [routerLink]="link" class="av-link">Ficha</a>
+                }
+              </td>
+            </tr>
+            @if (estaExpandido(row)) {
+              <tr class="av-prog-detail-row">
+                <td colspan="8">
+                  <div class="av-prog-detail">
+                    <div class="av-prog-detail-col">
+                      <h4>Lecciones</h4>
+                      @if (!row.progreso.clases.length) {
+                        <p class="av-muted">Sin datos de lecciones aún.</p>
+                      } @else {
+                        <ul class="av-prog-lessons">
+                          @for (c of row.progreso.clases; track c.numero) {
+                            <li [class.ok]="c.aprobada">
+                              Clase {{ c.numero }}: {{ c.pct }}%
+                              @if (c.aprobada) {
+                                <span>✓</span>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                    <div class="av-prog-detail-col">
+                      <h4>Evaluaciones finales</h4>
+                      @if (!row.progreso.intentos.length) {
+                        <p class="av-muted">Sin intentos registrados.</p>
+                      } @else {
+                        <ul class="av-prog-lessons">
+                          @for (it of row.progreso.intentos; track it.numero) {
+                            <li [class.ok]="it.aprobado">
+                              #{{ it.numero }} · Nota {{ it.nota }}% · {{ fmtFecha(it.fecha) }}
+                              @if (it.aprobado) {
+                                <span>· Aprobó</span>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                    <div class="av-prog-detail-col">
+                      <h4>Pago y portal</h4>
+                      <p>
+                        Pago:
+                        @if (row.pago.pagado) {
+                          <strong class="ok-text">Al día</strong>
+                        } @else {
+                          Saldo ${{ row.pago.saldo | number:'1.0-0' }}
+                        }
+                      </p>
+                      <p>Portal: {{ row.portal.activo ? 'Activo' : 'Inactivo' }}</p>
+                      <p>Conexiones (sync): {{ row.progreso.contadorSyncs }}</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="av-prog-pager">
+      <span>{{ total() }} alumno(s)</span>
+      <div>
+        <button type="button" class="av-btn av-btn--ghost" [disabled]="skip() === 0" (click)="paginaAnterior()">
+          Anterior
+        </button>
+        <button
+          type="button"
+          class="av-btn av-btn--ghost"
+          [disabled]="skip() + limit >= total()"
+          (click)="paginaSiguiente()">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  }
+</div>

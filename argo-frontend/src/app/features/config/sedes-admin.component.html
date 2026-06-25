@@ -1,0 +1,334 @@
+<section class="sedes-page admin-list-page card">
+  <header class="page-head">
+    <div>
+      <div class="title-row">
+        <h1>Sedes</h1>
+        <span class="cap cap-teal cap-sm">Multi-sede</span>
+      </div>
+      <p class="hint">
+        Ubicación georreferenciada y catálogo académico por sede. Asigne sedes a usuarios en
+        <strong>Configuración → Usuarios</strong>.
+      </p>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="primary" (click)="nuevo()">+ Nueva sede</button>
+    </div>
+  </header>
+
+  <p class="msg ok" *ngIf="msg()">{{ msg() }}</p>
+
+  <div class="loading" *ngIf="loading()">Cargando sedes…</div>
+
+  <div class="layout" *ngIf="!loading()">
+    <aside class="sedes-sidebar">
+      <div class="sidebar-head">
+        <span class="cap cap-indigo cap-sm">Sedes</span>
+        <span class="sidebar-count">{{ sedes().length }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="sede-item"
+        *ngFor="let s of sedes()"
+        [class.active]="editando()?.idSede === s.idSede && !mostrarNuevo()"
+        (click)="abrirEditor(s)">
+        <span class="sede-dot" [class.principal]="s.esPrincipal" [class.inactiva]="s.activa === false"></span>
+        <span class="sede-meta">
+          <span class="sede-nombre">{{ s.nombre }}</span>
+          <span class="sede-codigo mono">{{ s.codigo || s.idSede }}</span>
+          <span class="sede-sub">{{ ubicacionLabel(s) }}</span>
+          <span class="sede-tags">
+            <span class="cap cap-sm cap-slate" *ngIf="s.esPrincipal">Principal</span>
+            <span class="cap cap-sm" [ngClass]="s.activa !== false ? 'cap-emerald' : 'cap-red'">
+              {{ s.activa !== false ? 'Activa' : 'Inactiva' }}
+            </span>
+          </span>
+        </span>
+      </button>
+
+      <p class="sidebar-empty" *ngIf="sedes().length === 0">No hay sedes. Cree la primera.</p>
+    </aside>
+
+    <main class="sedes-main">
+      @if (editorVisible()) {
+        <div class="editor-panel">
+          <header class="editor-head">
+            <div class="editor-title">
+              <h2>{{ tituloEditor() }}</h2>
+              <div class="editor-caps">
+                @if (mostrarNuevo()) {
+                  <span class="cap cap-teal cap-sm">Nueva</span>
+                } @else {
+                  @if (editando(); as s) {
+                    <span class="cap cap-mono cap-sm">{{ s.codigo || s.idSede }}</span>
+                    <span class="cap cap-sm" [ngClass]="form().activa ? 'cap-emerald' : 'cap-red'">
+                      {{ form().activa ? 'Activa' : 'Inactiva' }}
+                    </span>
+                    @if (form().esPrincipal) {
+                      <span class="cap cap-amber cap-sm">Principal</span>
+                    }
+                  }
+                }
+                <span class="cap cap-blue cap-sm">{{ resumenProgramas() }}</span>
+                <span class="cap cap-violet cap-sm">{{ resumenServicios() }}</span>
+              </div>
+            </div>
+            <div class="editor-toggles">
+              <label class="toggle-chip">
+                <input type="checkbox" [ngModel]="form().activa" (ngModelChange)="patch('activa', $event)" />
+                Activa
+              </label>
+              <label class="toggle-chip">
+                <input type="checkbox" [ngModel]="form().esPrincipal" (ngModelChange)="patch('esPrincipal', $event)" />
+                Principal
+              </label>
+            </div>
+          </header>
+
+          <nav class="editor-tabs" role="tablist">
+            <button type="button" class="tab-btn" [class.active]="tabActiva() === 'general'" (click)="setTab('general')">
+              Datos generales
+            </button>
+            <button type="button" class="tab-btn" [class.active]="tabActiva() === 'ubicacion'" (click)="setTab('ubicacion')">
+              Ubicación
+            </button>
+            <button type="button" class="tab-btn" [class.active]="tabActiva() === 'catalogo'" (click)="setTab('catalogo')">
+              Catálogo académico
+            </button>
+          </nav>
+
+          <div class="editor-body argo-form-shell">
+            @if (tabActiva() === 'general') {
+              <section class="tab-panel">
+                <div class="fields-block">
+                  <div class="row">
+                    @if (mostrarNuevo()) {
+                      <div class="col-4 field">
+                        <label>Código *</label>
+                        <input type="text" [ngModel]="form().codigo" (ngModelChange)="patch('codigo', $event)" placeholder="PRIN, NORTE…" maxlength="12" />
+                        <span class="field-hint">Identificador corto. No se cambia después.</span>
+                      </div>
+                    } @else {
+                      <div class="col-4 field">
+                        <label>Código / ID</label>
+                        <input type="text" [value]="editando()!.idSede" disabled />
+                      </div>
+                    }
+                    <div class="col-4 field">
+                      <label>Nombre *</label>
+                      <input type="text" [ngModel]="form().nombre" (ngModelChange)="patch('nombre', $event)" />
+                    </div>
+                    <div class="col-4 field">
+                      <label>Teléfono</label>
+                      <input type="text" [ngModel]="form().telefono" (ngModelChange)="patch('telefono', $event)" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            }
+
+            @if (tabActiva() === 'ubicacion') {
+              <section class="tab-panel geo-panel">
+                <div class="geo-grid">
+                  <div class="geo-form">
+                    <div class="section-label">
+                      <span class="cap cap-slate cap-sm">Municipio y dirección</span>
+                    </div>
+                    <div class="field">
+                      <argo-municipio-buscar
+                        label="Municipio / ciudad"
+                        [textoInicial]="textoMunicipioInicial()"
+                        (seleccionado)="onMunicipio($event)" />
+                    </div>
+                    <div class="row">
+                      <div class="col-6 field">
+                        <label>Departamento</label>
+                        <input type="text" [ngModel]="form().departamento" readonly />
+                      </div>
+                      <div class="col-6 field">
+                        <label>Cód. Divipola</label>
+                        <input type="text" class="mono" [ngModel]="form().codMunicipio" readonly />
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>Dirección</label>
+                      <input type="text" [ngModel]="form().direccion" (ngModelChange)="patch('direccion', $event)" placeholder="Carrera 10 # 20-30" />
+                    </div>
+                    <div class="row">
+                      <div class="col-6 field">
+                        <label>Latitud</label>
+                        <input type="text" inputmode="decimal" class="mono" [ngModel]="form().lat" (ngModelChange)="patch('lat', $event); onCoordsManualChange()" />
+                      </div>
+                      <div class="col-6 field">
+                        <label>Longitud</label>
+                        <input type="text" inputmode="decimal" class="mono" [ngModel]="form().lng" (ngModelChange)="patch('lng', $event); onCoordsManualChange()" />
+                      </div>
+                    </div>
+                    <p class="geo-status">
+                      <span class="cap cap-sm" [ngClass]="capDeteGeorefe(form().deteGeorefe)">
+                        {{ etiquetaDeteGeorefe(form().deteGeorefe) }}
+                      </span>
+                      @if (geoResolviendo()) {
+                        <span class="geo-loading">Resolviendo municipio…</span>
+                      }
+                    </p>
+                  </div>
+                  <div class="geo-map">
+                    <div class="section-label">
+                      <span class="cap cap-slate cap-sm">Mapa</span>
+                      <span class="field-hint inline">Clic, arrastre o GPS — igual que jornadas</span>
+                    </div>
+                    <argo-jornada-mapa-picker [lat]="latNum()" [lng]="lngNum()" (coordsChange)="onMapaCoords($event)" />
+                  </div>
+                </div>
+              </section>
+            }
+
+            @if (tabActiva() === 'catalogo') {
+              <section class="tab-panel catalogo-panel">
+                @if (syncAviso()) {
+                  <p class="sync-aviso">{{ syncAviso() }}</p>
+                }
+                <div class="catalogo-grid">
+                  <article class="catalogo-block">
+                    <header class="block-head">
+                      <h3>Programas</h3>
+                      <span class="block-resumen">{{ resumenProgramas() }}</span>
+                    </header>
+                    <div class="modo-cards">
+                      @for (m of modosCatalogo; track m.id) {
+                        <button
+                          type="button"
+                          class="modo-card"
+                          [class.active]="form().programasMode === m.id"
+                          (click)="setModoProgramas(m.id)">
+                          <span class="modo-card-title">{{ m.titulo }}</span>
+                          <span class="modo-card-desc">{{ m.desc }}</span>
+                        </button>
+                      }
+                    </div>
+
+                    @if (form().programasMode === 'tipos') {
+                      <div class="pick-grid">
+                        @for (t of tiposCap(); track t.id) {
+                          <label class="pick-card" [class.selected]="form().programasTiposPermitidos.includes(t.id)">
+                            <input type="checkbox" [checked]="form().programasTiposPermitidos.includes(t.id)" (change)="toggleTipoPrograma(t.id, $any($event.target).checked)" />
+                            <span>{{ t.label }}</span>
+                          </label>
+                        }
+                      </div>
+                    }
+
+                    @if (form().programasMode === 'especificos') {
+                      <p class="block-note">
+                        Al marcar un programa, sus servicios vinculados (matrícula, horas, etc.) se incluyen en la sede.
+                      </p>
+                      <div class="list-toolbar">
+                        <input type="search" placeholder="Buscar programa…" [ngModel]="buscarProgramas()" (ngModelChange)="buscarProgramas.set($event)" />
+                        <button type="button" class="ghost mini" (click)="marcarProgramasVisibles(true)">Marcar visibles</button>
+                        <button type="button" class="ghost mini" (click)="marcarProgramasVisibles(false)">Quitar visibles</button>
+                      </div>
+                      <div class="pick-list">
+                        @for (p of programasFiltrados(); track p.idPrograma) {
+                          <label class="pick-row" [class.selected]="form().programasIdsPermitidos.includes(+p.idPrograma)">
+                            <input type="checkbox" [checked]="form().programasIdsPermitidos.includes(+p.idPrograma)" (change)="togglePrograma(+p.idPrograma, $any($event.target).checked)" />
+                            <span class="pick-code mono">{{ p.codigoProg || p.idPrograma }}</span>
+                            <span class="pick-name">{{ p.nombreProg }}</span>
+                            @if (cantidadServiciosPrograma(+p.idPrograma) > 0) {
+                              <span class="cap cap-sm cap-blue">{{ cantidadServiciosPrograma(+p.idPrograma) }} serv.</span>
+                            }
+                          </label>
+                        }
+                      </div>
+                    }
+                  </article>
+
+                  <article class="catalogo-block">
+                    <header class="block-head">
+                      <h3>Servicios</h3>
+                      <span class="block-resumen">{{ resumenServicios() }}</span>
+                    </header>
+                    <p class="block-note">
+                      @if (form().programasMode === 'especificos' && form().serviciosMode === 'todos') {
+                        Con programas específicos y servicios en «Todo el catálogo», los
+                        <strong>{{ serviciosVinculadosProgramas().length }}</strong> servicio(s) de esos programas quedan incluidos sin marcarlos uno a uno.
+                      } @else if (form().serviciosMode === 'especificos') {
+                        En lista específica, al marcar un programa se marcan automáticamente sus servicios vinculados.
+                      } @else {
+                        Los servicios ligados a un programa respetan también la regla de programas.
+                      }
+                    </p>
+                    <div class="modo-cards">
+                      @for (m of modosCatalogo; track m.id) {
+                        <button
+                          type="button"
+                          class="modo-card"
+                          [class.active]="form().serviciosMode === m.id"
+                          (click)="setModoServicios(m.id)">
+                          <span class="modo-card-title">{{ m.titulo }}</span>
+                          <span class="modo-card-desc">{{ m.desc }}</span>
+                        </button>
+                      }
+                    </div>
+
+                    @if (form().serviciosMode === 'tipos') {
+                      <div class="pick-grid compact">
+                        @for (t of tiposServ(); track t.codigo) {
+                          <label class="pick-card" [class.selected]="form().serviciosTiposPermitidos.includes(t.codigo)">
+                            <input type="checkbox" [checked]="form().serviciosTiposPermitidos.includes(t.codigo)" (change)="toggleTipoServicio(t.codigo, $any($event.target).checked)" />
+                            <span class="mono">{{ t.codigo }}</span>
+                            <span>{{ t.label }}</span>
+                          </label>
+                        }
+                      </div>
+                    }
+
+                    @if (form().serviciosMode === 'especificos') {
+                      <div class="list-toolbar">
+                        <input type="search" placeholder="Buscar servicio…" [ngModel]="buscarServicios()" (ngModelChange)="buscarServicios.set($event)" />
+                        <button type="button" class="ghost mini" (click)="marcarServiciosVisibles(true)">Marcar visibles</button>
+                        <button type="button" class="ghost mini" (click)="marcarServiciosVisibles(false)">Quitar visibles</button>
+                      </div>
+                      <div class="pick-list">
+                        @for (s of serviciosFiltrados(); track s.idServ) {
+                          <label
+                            class="pick-row"
+                            [class.selected]="form().serviciosIdsPermitidos.includes(+s.idServ!)"
+                            [class.vinculado]="servicioVinculadoPrograma(s)">
+                            <input type="checkbox" [checked]="form().serviciosIdsPermitidos.includes(+s.idServ!)" (change)="toggleServicio(+s.idServ!, $any($event.target).checked)" />
+                            <span class="pick-code mono">{{ s.idServ }}</span>
+                            <span class="pick-name">{{ s.descrServicio }}</span>
+                            @if (servicioVinculadoPrograma(s)) {
+                              <span class="cap cap-sm cap-teal" title="Vinculado a un programa seleccionado">Prog.</span>
+                            }
+                            @if (s.tipoServ) {
+                              <span class="cap cap-sm cap-slate">{{ s.tipoServ }}</span>
+                            }
+                          </label>
+                        }
+                      </div>
+                    }
+                  </article>
+                </div>
+              </section>
+            }
+          </div>
+
+          <footer class="editor-foot">
+            <button type="button" class="ghost" (click)="cerrarEditor()">Cancelar</button>
+            <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : 'Guardar sede' }}
+            </button>
+          </footer>
+        </div>
+      } @else {
+        <div class="empty-editor">
+          <div class="empty-icon">⌂</div>
+          <h2>Seleccione una sede</h2>
+          <p>Elija una sede del listado o cree una nueva para configurar ubicación y catálogo académico.</p>
+          <button type="button" class="primary" (click)="nuevo()">+ Nueva sede</button>
+        </div>
+      }
+    </main>
+  </div>
+</section>

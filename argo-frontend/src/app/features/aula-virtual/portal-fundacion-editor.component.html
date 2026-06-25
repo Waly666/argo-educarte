@@ -1,0 +1,189 @@
+<div class="pfe">
+  <div class="pfe-toolbar">
+    <p class="psb-muted">
+      Edite la página «Quiénes somos» / «Fundación» / «Empresa». Si deja el título del banner vacío, se usará el <strong>nombre de su empresa</strong>.
+    </p>
+    <button type="button" class="psb-link" (click)="restaurarDefaults()">Volver a textos originales</button>
+  </div>
+
+  <div class="pfe-nav">
+    @for (b of [
+      { id: 'hero', label: 'Encabezado' },
+      { id: 'quienes', label: 'Quiénes somos' },
+      { id: 'mision', label: 'Misión y visión' },
+      { id: 'compromiso', label: 'Nuestro compromiso' },
+      { id: 'lineas', label: 'Servicios' },
+      { id: 'cta', label: 'Invitar a inscribirse' },
+      { id: 'contacto', label: 'Datos de contacto' }
+    ]; track b.id) {
+      <button type="button" class="pfe-nav-btn" [class.active]="bloque() === b.id" (click)="toggleBloque(b.id)">
+        {{ b.label }}
+      </button>
+    }
+  </div>
+
+  @if (bloque() === 'hero') {
+    <div class="pfe-block">
+      <label class="psb-field psb-field--full">
+        <span>Etiqueta superior (kicker)</span>
+        <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.kicker" />
+      </label>
+      <label class="psb-field psb-field--full">
+        <span>Título (opcional)</span>
+        <input
+          type="text"
+          class="psb-input"
+          [(ngModel)]="fundacion.hero.titulo"
+          [placeholder]="nombreEmpresa || 'Usa el nombre de la empresa'"
+        />
+        <span class="psb-hint">Vacío = «{{ nombreEmpresa || 'Nombre de la empresa' }}»</span>
+      </label>
+      <label class="psb-field psb-field--full">
+        <span>Texto introductorio</span>
+        <textarea class="psb-input" rows="3" [(ngModel)]="fundacion.hero.lead"></textarea>
+      </label>
+      <div class="psb-grid2">
+        <label class="psb-field">
+          <span>Imagen (ruta o URL)</span>
+          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.imagenUrl" />
+        </label>
+        <label class="psb-field">
+          <span>Texto alternativo imagen</span>
+          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.imagenAlt" />
+        </label>
+        <label class="psb-field">
+          <span>Pie de foto</span>
+          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.imagenCaption" />
+        </label>
+        <label class="psb-field">
+          <span>Botón sitio externo — URL</span>
+          <input type="url" class="psb-input" [(ngModel)]="fundacion.hero.btnSitioUrl" placeholder="https://..." />
+        </label>
+        <label class="psb-field">
+          <span>Etiqueta botón sitio</span>
+          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.btnSitioLabel" />
+        </label>
+        <label class="psb-field">
+          <span>Etiqueta botón cursos</span>
+          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.btnCursosLabel" />
+        </label>
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'quienes') {
+    <div class="pfe-block">
+      <label class="psb-field"><span>Kicker</span><input class="psb-input" [(ngModel)]="fundacion.quienes.kicker" /></label>
+      <label class="psb-field"><span>Título sección</span><input class="psb-input" [(ngModel)]="fundacion.quienes.titulo" /></label>
+      <label class="psb-field psb-field--full">
+        <span>Texto principal</span>
+        <textarea class="psb-input" rows="3" [(ngModel)]="fundacion.quienes.lead"></textarea>
+      </label>
+      <h4 class="pfe-sub">Datos destacados</h4>
+      @for (d of fundacion.quienes.destacados; track $index; let i = $index) {
+        <div class="pfe-row">
+          <input class="psb-input pfe-icon" [(ngModel)]="d.icon" placeholder="Icono" />
+          <input class="psb-input" [(ngModel)]="d.label" placeholder="Etiqueta" />
+          <input class="psb-input" [(ngModel)]="d.text" placeholder="Texto" />
+          <button type="button" class="psb-icon-btn" (click)="removeDestacado(i)">×</button>
+        </div>
+      }
+      <button type="button" class="psb-link" (click)="addDestacado()">+ Añadir destacado</button>
+      <h4 class="pfe-sub">Bloques informativos</h4>
+      @for (b of fundacion.quienes.bloques; track $index; let i = $index) {
+        <div class="pfe-card">
+          <input class="psb-input pfe-icon" [(ngModel)]="b.icon" placeholder="Icono" />
+          <input class="psb-input" [(ngModel)]="b.titulo" placeholder="Título" />
+          <textarea class="psb-input" rows="2" [(ngModel)]="b.texto" placeholder="Texto"></textarea>
+          <button type="button" class="psb-link" (click)="removeBloque(i)">Eliminar bloque</button>
+        </div>
+      }
+      <button type="button" class="psb-link" (click)="addBloque()">+ Añadir bloque</button>
+      <div class="psb-grid2">
+        <label class="psb-field">
+          <span>Enlace externo URL</span>
+          <input type="url" class="psb-input" [(ngModel)]="fundacion.quienes.enlaceUrl" />
+        </label>
+        <label class="psb-field">
+          <span>Texto del enlace</span>
+          <input class="psb-input" [(ngModel)]="fundacion.quienes.enlaceLabel" />
+        </label>
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'mision') {
+    <div class="pfe-block">
+      <label class="psb-field psb-field--full">
+        <span>Misión</span>
+        <textarea class="psb-input" rows="6" [(ngModel)]="fundacion.mision"></textarea>
+      </label>
+      <label class="psb-field psb-field--full">
+        <span>Visión</span>
+        <textarea class="psb-input" rows="5" [(ngModel)]="fundacion.vision"></textarea>
+      </label>
+    </div>
+  }
+
+  @if (bloque() === 'compromiso') {
+    <div class="pfe-block">
+      <label class="psb-field"><span>Kicker</span><input class="psb-input" [(ngModel)]="fundacion.compromiso.kicker" /></label>
+      <label class="psb-field"><span>Título</span><input class="psb-input" [(ngModel)]="fundacion.compromiso.titulo" /></label>
+      <label class="psb-field psb-field--full">
+        <span>Texto</span>
+        <textarea class="psb-input" rows="5" [(ngModel)]="fundacion.compromiso.texto"></textarea>
+      </label>
+    </div>
+  }
+
+  @if (bloque() === 'lineas') {
+    <div class="pfe-block">
+      <label class="psb-field"><span>Kicker</span><input class="psb-input" [(ngModel)]="fundacion.lineas.kicker" /></label>
+      <label class="psb-field"><span>Título</span><input class="psb-input" [(ngModel)]="fundacion.lineas.titulo" /></label>
+      <label class="psb-field psb-field--full">
+        <span>Introducción</span>
+        <textarea class="psb-input" rows="2" [(ngModel)]="fundacion.lineas.lead"></textarea>
+      </label>
+      @for (s of fundacion.lineas.items; track $index; let i = $index) {
+        <div class="pfe-card">
+          <input class="psb-input pfe-icon" [(ngModel)]="s.icon" />
+          <input class="psb-input" [(ngModel)]="s.title" placeholder="Título" />
+          <textarea class="psb-input" rows="2" [(ngModel)]="s.text" placeholder="Descripción"></textarea>
+          <button type="button" class="psb-link" (click)="removeLinea(i)">Eliminar</button>
+        </div>
+      }
+      <button type="button" class="psb-link" (click)="addLinea()">+ Añadir línea de trabajo</button>
+    </div>
+  }
+
+  @if (bloque() === 'cta') {
+    <div class="pfe-block">
+      <label class="psb-field"><span>Kicker</span><input class="psb-input" [(ngModel)]="fundacion.cta.kicker" /></label>
+      <label class="psb-field"><span>Título</span><input class="psb-input" [(ngModel)]="fundacion.cta.titulo" /></label>
+      <label class="psb-field psb-field--full">
+        <span>Texto</span>
+        <textarea class="psb-input" rows="2" [(ngModel)]="fundacion.cta.texto"></textarea>
+      </label>
+      <div class="psb-grid2">
+        <label class="psb-field"><span>Botón registro</span><input class="psb-input" [(ngModel)]="fundacion.cta.btnRegistro" /></label>
+        <label class="psb-field"><span>Botón servicios</span><input class="psb-input" [(ngModel)]="fundacion.cta.btnServicios" /></label>
+      </div>
+    </div>
+  }
+
+  @if (bloque() === 'contacto') {
+    <div class="pfe-block">
+      <label class="psb-field"><span>Kicker</span><input class="psb-input" [(ngModel)]="fundacion.contacto.kicker" /></label>
+      <label class="psb-field"><span>Título</span><input class="psb-input" [(ngModel)]="fundacion.contacto.titulo" /></label>
+      <label class="psb-field psb-field--full">
+        <span>Introducción</span>
+        <textarea class="psb-input" rows="2" [(ngModel)]="fundacion.contacto.lead"></textarea>
+      </label>
+      <label class="psb-field psb-field--full">
+        <span>Nota de sede (bajo la dirección)</span>
+        <input class="psb-input" [(ngModel)]="fundacion.contacto.sedeNota" />
+      </label>
+      <p class="psb-hint">Teléfono, correo y dirección se toman de <strong>Empresa y contacto</strong> en este constructor.</p>
+    </div>
+  }
+</div>

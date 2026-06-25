@@ -1,0 +1,205 @@
+<section class="combos-page">
+  <header class="combos-head">
+    <div>
+      <h1>Combos de cursos</h1>
+      <p class="combos-lead">
+        Agrupe programas presenciales en paquetes con precio especial (Tarifa 2).
+        Al aplicar un combo a un alumno se crean todas las matrículas en un solo paso.
+      </p>
+    </div>
+    @if (modo() === 'lista') {
+      <button type="button" class="cb-btn cb-btn--primary" (click)="nuevoCombo()">
+        <span class="cb-btn__icon">+</span> Nuevo combo
+      </button>
+    }
+  </header>
+
+  @if (msg()) {
+    <div class="combos-msg" [class.combos-msg--err]="esError()">
+      <span class="combos-msg__icon">{{ esError() ? '✕' : '✓' }}</span>
+      {{ msg() }}
+    </div>
+  }
+
+  <!-- ===================== LISTA ===================== -->
+  @if (modo() === 'lista') {
+    @if (loading()) {
+      <div class="cb-loading">
+        <div class="cb-spinner"></div>
+        <span>Cargando combos…</span>
+      </div>
+    } @else if (!combos().length) {
+      <div class="combos-empty">
+        <div class="combos-empty__icon">⊞</div>
+        <p>No hay combos configurados aún.</p>
+        <p class="combos-empty__sub">Cree su primer combo con el botón <strong>+ Nuevo combo</strong>.</p>
+      </div>
+    } @else {
+      <div class="combos-grid">
+        @for (c of combos(); track c.id) {
+          <div class="combo-card" [class.combo-card--inactivo]="!c.activo">
+            <div class="combo-card__header">
+              <div class="combo-card__info">
+                <h3 class="combo-card__nombre">{{ c.nombre }}</h3>
+                @if (c.descripcion) {
+                  <p class="combo-card__desc">{{ c.descripcion }}</p>
+                }
+              </div>
+              <span class="combo-pill" [class.combo-pill--ok]="c.activo" [class.combo-pill--off]="!c.activo">
+                {{ c.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+
+            <div class="combo-card__meta">
+              <span class="combo-meta-tag">Tarifa 2</span>
+              <span class="combo-meta-sep">·</span>
+              <span class="combo-meta-count">{{ c.programas.length }} programa{{ c.programas.length !== 1 ? 's' : '' }}</span>
+            </div>
+
+            <ul class="combo-progs-lista">
+              @for (idProg of c.programas; track idProg) {
+                <li class="combo-progs-item">
+                  <span class="combo-progs-bullet"></span>
+                  {{ nombreProg(idProg) }}
+                </li>
+              }
+            </ul>
+
+            <div class="combo-card__actions">
+              <button type="button" class="cb-link" (click)="editarCombo(c)">✎ Editar</button>
+              <button type="button" class="cb-link cb-link--muted" (click)="toggleActivo(c)">
+                {{ c.activo ? '⊗ Desactivar' : '⊕ Activar' }}
+              </button>
+              <button type="button" class="cb-link cb-link--danger" (click)="eliminarCombo(c)">✕ Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ===================== FORMULARIO ===================== -->
+  @if (modo() === 'form') {
+    <div class="combo-form-layout">
+
+      <!-- Columna izquierda: datos básicos + programas -->
+      <div class="combo-form-main">
+        <div class="cb-card">
+          <h2 class="cb-card__title">{{ editandoId ? 'Editar combo' : 'Nuevo combo' }}</h2>
+
+          <div class="cb-field">
+            <label class="cb-label">Nombre del combo <span class="cb-req">*</span></label>
+            <input type="text" class="cb-input" [(ngModel)]="form.nombre"
+              placeholder="Ej. Paquete 5 cursos básicos" />
+          </div>
+
+          <div class="cb-field">
+            <label class="cb-label">Descripción <span class="cb-opt">(opcional)</span></label>
+            <input type="text" class="cb-input" [(ngModel)]="form.descripcion"
+              placeholder="Descripción breve para identificar el combo" />
+          </div>
+
+          <div class="cb-field-inline">
+            <label class="cb-switch">
+              <input type="checkbox" [(ngModel)]="form.activo" />
+              <span class="cb-switch__track"></span>
+              <span class="cb-switch__label">Combo activo</span>
+            </label>
+            <span class="cb-hint">Los combos inactivos no aparecen al matricular.</span>
+          </div>
+        </div>
+
+        <!-- Selector de programas con checkboxes -->
+        <div class="cb-card cb-card--progs">
+          <div class="cb-progs-header">
+            <div>
+              <h3 class="cb-card__title">Seleccionar programas</h3>
+              <p class="cb-hint">Solo presenciales. El precio de cada uno se tomará de su <strong>Tarifa 2</strong>.</p>
+            </div>
+            @if (totalSeleccionados() > 0) {
+              <button type="button" class="cb-link cb-link--muted cb-link--sm" (click)="deseleccionarTodos()">
+                Deseleccionar todo
+              </button>
+            }
+          </div>
+
+          <div class="cb-search-wrap">
+            <span class="cb-search-icon">⌕</span>
+            <input
+              type="text"
+              class="cb-search"
+              [ngModel]="busquedaProg()"
+              (ngModelChange)="busquedaProg.set($event)"
+              placeholder="Buscar programa por nombre o código…"
+            />
+            @if (busquedaProg()) {
+              <button type="button" class="cb-search-clear" (click)="busquedaProg.set('')">✕</button>
+            }
+          </div>
+
+          @if (!progFiltrados().length) {
+            <p class="cb-no-res">Sin resultados para "{{ busquedaProg() }}".</p>
+          } @else {
+            <div class="cb-prog-list">
+              @for (p of progFiltrados(); track p.id) {
+                <label class="cb-prog-row" [class.cb-prog-row--sel]="estaSeleccionado(p.id)" (click)="togglePrograma(p.id)">
+                  <span class="cb-checkbox" [class.cb-checkbox--on]="estaSeleccionado(p.id)">
+                    @if (estaSeleccionado(p.id)) { <span class="cb-check-mark">✓</span> }
+                  </span>
+                  <span class="cb-prog-texto">
+                    <span class="cb-prog-nombre">{{ p.nombre }}</span>
+                    @if (p.codigo) {
+                      <span class="cb-prog-codigo">{{ p.codigo }}</span>
+                    }
+                  </span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="cb-form-actions">
+          <button type="button" class="cb-btn cb-btn--primary" [disabled]="guardando()" (click)="guardar()">
+            {{ guardando() ? 'Guardando…' : (editandoId ? 'Guardar cambios' : 'Crear combo') }}
+          </button>
+          <button type="button" class="cb-btn cb-btn--ghost" (click)="cancelar()">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Columna derecha: resumen de seleccionados -->
+      <aside class="combo-form-aside">
+        <div class="cb-card cb-seleccionados">
+          <div class="cb-seleccionados__head">
+            <h3 class="cb-card__title">Cursos en el combo</h3>
+            <span class="cb-badge" [class.cb-badge--ok]="totalSeleccionados() >= 2"
+                                   [class.cb-badge--warn]="totalSeleccionados() < 2">
+              {{ totalSeleccionados() }}
+            </span>
+          </div>
+
+          @if (totalSeleccionados() < 2) {
+            <p class="cb-sel-empty">
+              Seleccione <strong>al menos 2</strong> programas de la lista.
+            </p>
+          } @else {
+            <ul class="cb-sel-list">
+              @for (p of seleccionados(); track p.id) {
+                <li class="cb-sel-item">
+                  <span class="cb-sel-nombre">{{ p.nombre }}</span>
+                  @if (p.codigo) { <span class="cb-sel-cod">{{ p.codigo }}</span> }
+                  <button type="button" class="cb-sel-quitar" title="Quitar" (click)="togglePrograma(p.id)">✕</button>
+                </li>
+              }
+            </ul>
+
+            <div class="cb-sel-footer">
+              <span class="cb-meta-tag">Tarifa 2</span>
+              <span class="cb-sel-total">{{ totalSeleccionados() }} curso{{ totalSeleccionados() !== 1 ? 's' : '' }}</span>
+            </div>
+          }
+        </div>
+      </aside>
+
+    </div>
+  }
+</section>

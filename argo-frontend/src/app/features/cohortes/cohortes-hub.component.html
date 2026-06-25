@@ -1,0 +1,489 @@
+<section class="coh-page">
+  <!-- Encabezado amable -->
+  <header class="coh-hero">
+    <div class="coh-hero-icon">🎓</div>
+    <div class="coh-hero-text">
+      <p class="coh-crumb"><a routerLink="/app">Inicio</a> · Cohortes académicas</p>
+      <h1>Cohortes académicas</h1>
+      <p class="coh-lead">
+        Organiza cursos en grupos por semestre: catálogo de materias, plan curricular, esquema de notas,
+        grupos del año y banco de preguntas. Sigue los pasos de abajo.
+      </p>
+    </div>
+  </header>
+
+  <!-- Pasos / pestañas grandes -->
+  <div class="coh-steps">
+    <button type="button" class="coh-step" [class.active]="tab() === 'catalogo'" (click)="setTab('catalogo')">
+      <span class="coh-step-num">1</span>
+      <span class="coh-step-body">
+        <strong>Catálogo de materias</strong>
+        <small>Banco reutilizable de temas</small>
+      </span>
+    </button>
+    <div class="coh-step-line"></div>
+    <button type="button" class="coh-step" [class.active]="tab() === 'plan'" (click)="setTab('plan')">
+      <span class="coh-step-num">2</span>
+      <span class="coh-step-body">
+        <strong>Plan del programa</strong>
+        <small>Materias y horas por semestre</small>
+      </span>
+    </button>
+    <div class="coh-step-line"></div>
+    <button type="button" class="coh-step" [class.active]="tab() === 'esquema'" (click)="setTab('esquema')">
+      <span class="coh-step-num">3</span>
+      <span class="coh-step-body">
+        <strong>Esquema de notas</strong>
+        <small>Criterios y pesos del programa</small>
+      </span>
+    </button>
+    <div class="coh-step-line"></div>
+    <button type="button" class="coh-step" [class.active]="tab() === 'cohortes'" (click)="setTab('cohortes')">
+      <span class="coh-step-num">4</span>
+      <span class="coh-step-body">
+        <strong>Grupos del año</strong>
+        <small>Crear cohortes e inscribir</small>
+      </span>
+    </button>
+    <div class="coh-step-line"></div>
+    <button type="button" class="coh-step" [class.active]="tab() === 'banco'" (click)="setTab('banco')">
+      <span class="coh-step-num">5</span>
+      <span class="coh-step-body">
+        <strong>Banco de preguntas</strong>
+        <small>Para las evaluaciones</small>
+      </span>
+    </button>
+  </div>
+
+  <!-- Avisos -->
+  <p class="coh-toast ok" *ngIf="msg()">✓ {{ msg() }}</p>
+  <p class="coh-toast err" *ngIf="msgError()">⚠ {{ msgError() }}</p>
+
+  <!-- ===================== PASO 1: CATÁLOGO DE MATERIAS ===================== -->
+  <div class="coh-panel" *ngIf="tab() === 'catalogo'">
+    <div class="coh-card-form" *ngIf="puedeGestionar()">
+      <div class="coh-card-form-head">
+        <span class="coh-card-form-icon">📘</span>
+        <div>
+          <h3>Agregar materia al catálogo</h3>
+          <p>Defínela una sola vez y reutilízala en cualquier programa y semestre. Las horas se asignan después, en el plan de cada programa.</p>
+        </div>
+      </div>
+      <div class="coh-form-grid">
+        <div class="coh-field wide">
+          <label>Nombre de la materia o tema</label>
+          <input type="text" [ngModel]="nuevaMateriaCat().nombre" (ngModelChange)="patchNuevaMateriaCat('nombre', $event)" placeholder="Ej. Legislación laboral" />
+        </div>
+        <div class="coh-field">
+          <label>Área <small>(opcional)</small></label>
+          <input type="text" [ngModel]="nuevaMateriaCat().area" (ngModelChange)="patchNuevaMateriaCat('area', $event)" placeholder="Ej. Normativa" />
+        </div>
+        <div class="coh-field wide">
+          <label>Descripción <small>(opcional)</small></label>
+          <input type="text" [ngModel]="nuevaMateriaCat().descripcion" (ngModelChange)="patchNuevaMateriaCat('descripcion', $event)" placeholder="Breve descripción" />
+        </div>
+      </div>
+      <button type="button" class="coh-btn primary lg" (click)="crearMateriaCatalogo()">Agregar al catálogo</button>
+    </div>
+
+    <h3 class="coh-section-title">Materias del catálogo ({{ catalogoMaterias().length }})</h3>
+    <div class="coh-empty small" *ngIf="!catalogoMaterias().length">
+      <div class="coh-empty-icon">📘</div>
+      <p>El catálogo está vacío. Agrega tu primera materia con el formulario de arriba.</p>
+    </div>
+    <ul class="coh-banco-list" *ngIf="catalogoMaterias().length">
+      <li *ngFor="let m of catalogoMaterias()">
+        <div class="coh-banco-q">
+          <strong>{{ m.nombre }}</strong>
+          <small *ngIf="m.area">{{ m.area }}</small>
+          <small *ngIf="m.descripcion">{{ m.descripcion }}</small>
+        </div>
+        <button type="button" class="coh-icon-btn danger" *ngIf="puedeGestionar()" (click)="eliminarMateriaCatalogo(m)" title="Eliminar">✕</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ===================== PASO 2: PLAN ===================== -->
+  <div class="coh-panel" *ngIf="tab() === 'plan'">
+    <div class="coh-field-block">
+      <label class="coh-label">¿Qué programa vas a configurar?</label>
+      <select class="coh-select-lg" [ngModel]="idProgSel()" (ngModelChange)="onProgramaChange($event)" *ngIf="programas().length">
+        <option value="" disabled>Elige un programa…</option>
+        <option *ngFor="let p of programas()" [value]="p.idProg">{{ p.nombreProg }} ({{ p.codigoProg }})</option>
+      </select>
+    </div>
+
+    <div class="coh-empty" *ngIf="!programas().length">
+      <div class="coh-empty-icon">📚</div>
+      <h3>Todavía no hay programas con cohortes</h3>
+      <p>Para empezar, abre un programa en <strong>Programas</strong> y activa la casilla
+        «Usa cohortes académicas». Luego vuelve aquí.</p>
+      <a routerLink="/app/programas" class="coh-btn primary">Ir a Programas</a>
+    </div>
+
+    <ng-container *ngIf="plan() as p">
+      <div class="coh-info-cards">
+        <div class="coh-info"><span class="coh-info-num">{{ p.horasTotal }}</span><span>horas totales</span></div>
+        <div class="coh-info"><span class="coh-info-num">{{ p.totalSemestres }}</span><span>semestre(s)</span></div>
+        <div class="coh-info"><span class="coh-info-num">{{ totalMaterias() }}</span><span>materias creadas</span></div>
+        <div class="coh-info hint">💡 Sugerido: <strong>{{ p.horasSugeridasPorSemestre }} h</strong> por semestre</div>
+      </div>
+
+      <div class="coh-sem" *ngFor="let sem of p.semestres" [attr.data-estado]="estadoHoras(sem)">
+        <div class="coh-sem-top">
+          <h3>Semestre {{ sem.numSemestre }}</h3>
+          <div class="coh-sem-horas">
+            <label>Horas del semestre</label>
+            <input type="number" min="0" [(ngModel)]="sem.horas" [disabled]="!puedeGestionar()" />
+          </div>
+        </div>
+
+        <!-- Medidor visual de horas -->
+        <div class="coh-gauge">
+          <div class="coh-gauge-bar">
+            <span [style.width.%]="pctSemestre(sem)"></span>
+          </div>
+          <div class="coh-gauge-msg" [attr.data-estado]="estadoHoras(sem)">
+            <ng-container [ngSwitch]="estadoHoras(sem)">
+              <span *ngSwitchCase="'exacto'">✓ ¡Perfecto! Las materias suman exactamente {{ sem.horas }} h.</span>
+              <span *ngSwitchCase="'faltan'">Faltan <strong>{{ diferenciaHoras(sem) }} h</strong> por asignar ({{ sumaMaterias(sem) }} de {{ sem.horas }} h).</span>
+              <span *ngSwitchCase="'sobran'">Te pasaste por <strong>{{ -diferenciaHoras(sem) }} h</strong> ({{ sumaMaterias(sem) }} de {{ sem.horas }} h).</span>
+              <span *ngSwitchDefault>Agrega las materias de este semestre.</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Lista de materias -->
+        <div class="coh-materias-list">
+          <div class="coh-materia-row" *ngFor="let m of sem.materias; let i = index">
+            <span class="coh-materia-idx">{{ i + 1 }}</span>
+            <div class="coh-materia-nom">
+              <argo-catalogo-enum-buscar
+                placeholder="Elige una materia del catálogo…"
+                [textoInicial]="m.nombre || ''"
+                [modoCombo]="true"
+                [remoto]="false"
+                [minLength]="1"
+                [disabled]="!puedeGestionar()"
+                [opcionesLocales]="opcionesMateriaCatalogo()"
+                (seleccionado)="onMateriaPlanPick(m, $event)"
+                (limpiado)="onMateriaPlanLimpiar(m)"
+              />
+            </div>
+            <div class="coh-materia-h">
+              <input type="number" min="0" [(ngModel)]="m.horas" [disabled]="!puedeGestionar()" />
+              <span>h</span>
+            </div>
+            <button type="button" class="coh-icon-btn danger" *ngIf="puedeGestionar()" (click)="quitarMateria(sem, i)" title="Quitar materia">✕</button>
+          </div>
+          <p class="coh-materia-empty" *ngIf="!sem.materias.length">Aún no hay materias en este semestre.</p>
+        </div>
+
+        <button type="button" class="coh-btn ghost block" *ngIf="puedeGestionar() && catalogoMaterias().length" (click)="agregarMateria(sem)">
+          ＋ Agregar materia
+        </button>
+        <p class="coh-materia-empty" *ngIf="puedeGestionar() && !catalogoMaterias().length">
+          Primero agrega materias en el <button type="button" class="coh-link-btn" (click)="setTab('catalogo')">Catálogo de materias</button>.
+        </p>
+      </div>
+
+      <div class="coh-save-bar" *ngIf="puedeGestionar()">
+        <span class="coh-save-status" [class.bad]="!planValido()">
+          <ng-container *ngIf="planValido()">✓ Todo cuadra, puedes guardar.</ng-container>
+          <ng-container *ngIf="!planValido()">⚠ Revisa las horas: cada semestre debe quedar exacto.</ng-container>
+        </span>
+        <button type="button" class="coh-btn primary lg" [disabled]="savingPlan() || !planValido()" (click)="guardarPlan()">
+          {{ savingPlan() ? 'Guardando…' : '💾 Guardar plan' }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ===================== PASO 3: ESQUEMA DE NOTAS ===================== -->
+  <div class="coh-panel" *ngIf="tab() === 'esquema'">
+    <div class="coh-toolbar">
+      <label class="coh-field">
+        Programa
+        <select [ngModel]="idProgSel()" (ngModelChange)="onProgramaChange($event)">
+          <option value="" disabled>Elige…</option>
+          <option *ngFor="let p of programas()" [value]="p.idProg">{{ p.nombreProg }}</option>
+        </select>
+      </label>
+    </div>
+
+    <ng-container *ngIf="esquema() as es">
+      <div class="coh-card-form">
+        <div class="coh-card-form-head">
+          <span class="coh-card-form-icon">📊</span>
+          <div>
+            <h3>Criterios de la nota final</h3>
+            <p>Define cómo se compone la nota de cada materia. Los criterios deben sumar exactamente 100%.</p>
+          </div>
+        </div>
+
+        <table class="coh-table compact" *ngIf="es.criterios.length">
+          <thead>
+            <tr>
+              <th>Criterio</th>
+              <th>Peso %</th>
+              <th>Tipo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of es.criterios; let i = index">
+              <td>
+                <input type="text" [ngModel]="c.nombre" (ngModelChange)="patchCriterioEsquema(i, 'nombre', $event)" [disabled]="!puedeGestionar()" placeholder="Nombre del criterio" />
+              </td>
+              <td>
+                <input type="number" min="0" max="100" class="mini" [ngModel]="c.pesoPct" (ngModelChange)="patchCriterioEsquema(i, 'pesoPct', +$event)" [disabled]="!puedeGestionar()" />
+              </td>
+              <td>
+                <select [ngModel]="c.tipo" (ngModelChange)="patchCriterioEsquema(i, 'tipo', $event)" [disabled]="!puedeGestionar()">
+                  <option value="MANUAL">Manual (instructor)</option>
+                  <option value="EVALUACIONES">Evaluaciones</option>
+                  <option value="ASISTENCIA">Asistencia</option>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="coh-icon-btn danger" *ngIf="puedeGestionar() && es.criterios.length > 1" (click)="eliminarCriterioEsquema(i)" title="Quitar">✕</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="coh-meter" [class.ok]="sumaCriterios() === 100" [class.warn]="sumaCriterios() !== 100">
+          Suma de criterios: <strong>{{ sumaCriterios() }}%</strong>
+          <ng-container *ngIf="sumaCriterios() !== 100"> — debe ser 100%</ng-container>
+        </p>
+
+        <button type="button" class="coh-btn ghost" *ngIf="puedeGestionar()" (click)="agregarCriterioEsquema()">＋ Agregar criterio</button>
+      </div>
+
+      <div class="coh-card-form">
+        <div class="coh-card-form-head">
+          <span class="coh-card-form-icon">📝</span>
+          <div>
+            <h3>Evaluaciones (parcial vs final)</h3>
+            <p>Dentro del criterio «Evaluaciones», cómo se ponderan parciales y la final de cada materia.</p>
+          </div>
+        </div>
+        <div class="coh-form-grid">
+          <div class="coh-field">
+            <label>Peso parciales (%)</label>
+            <input type="number" min="0" max="100" [ngModel]="es.configEvaluaciones.pesoParcialesPct" (ngModelChange)="patchConfigEval('pesoParcialesPct', +$event)" [disabled]="!puedeGestionar()" />
+          </div>
+          <div class="coh-field">
+            <label>Peso final (%)</label>
+            <input type="number" min="0" max="100" [ngModel]="es.configEvaluaciones.pesoFinalPct" (ngModelChange)="patchConfigEval('pesoFinalPct', +$event)" [disabled]="!puedeGestionar()" />
+          </div>
+          <div class="coh-field">
+            <label>Máx. parciales por materia</label>
+            <input type="number" min="0" [ngModel]="es.configEvaluaciones.maxParcialesPorMateria" (ngModelChange)="patchConfigEval('maxParcialesPorMateria', +$event)" [disabled]="!puedeGestionar()" />
+          </div>
+          <div class="coh-field">
+            <label class="coh-check">
+              <input type="checkbox" [ngModel]="es.configEvaluaciones.requiereFinalPorMateria" (ngModelChange)="patchConfigEval('requiereFinalPorMateria', $event)" [disabled]="!puedeGestionar()" />
+              Exigir evaluación final por materia
+            </label>
+          </div>
+          <div class="coh-field">
+            <label>Nota mínima para aprobar materia</label>
+            <input type="number" min="0" max="100" [ngModel]="es.notaMinimaAprobacion" (ngModelChange)="patchEsquema({ notaMinimaAprobacion: +$event })" [disabled]="!puedeGestionar()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="coh-panel-foot" *ngIf="puedeGestionar()">
+        <button type="button" class="coh-btn primary lg" [disabled]="savingEsquema() || !esquemaValido()" (click)="guardarEsquema()">
+          {{ savingEsquema() ? 'Guardando…' : '💾 Guardar esquema de notas' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <div class="coh-empty small" *ngIf="!esquema() && !loading()">
+      <p>Elige un programa para configurar su esquema de notas.</p>
+    </div>
+  </div>
+
+  <!-- ===================== PASO 4: COHORTES ===================== -->
+  <div class="coh-panel" *ngIf="tab() === 'cohortes'">
+    <div class="coh-card-form" *ngIf="puedeGestionar()">
+      <div class="coh-card-form-head">
+        <span class="coh-card-form-icon">➕</span>
+        <div>
+          <h3>Crear un grupo nuevo</h3>
+          <p>Un grupo es un semestre del programa que se dicta en un periodo (año).</p>
+        </div>
+      </div>
+
+      <div class="coh-form-grid">
+        <div class="coh-field wide">
+          <label>Programa</label>
+          <select [ngModel]="nuevaCohorte().idProg" (ngModelChange)="patchNueva('idProg', $event)">
+            <option value="" disabled>Elige…</option>
+            <option *ngFor="let p of programas()" [value]="p.idProg">{{ p.nombreProg }}</option>
+          </select>
+        </div>
+        <div class="coh-field">
+          <label>Semestre</label>
+          <select [ngModel]="nuevaCohorte().numSemestre" (ngModelChange)="patchNueva('numSemestre', +$event)">
+            <option *ngFor="let s of semestresDisponibles()" [value]="s">Semestre {{ s }}</option>
+          </select>
+        </div>
+        <div class="coh-field">
+          <label>Año</label>
+          <input type="number" [ngModel]="nuevaCohorte().anio" (ngModelChange)="patchNueva('anio', +$event)" />
+        </div>
+        <div class="coh-field">
+          <label>Periodo</label>
+          <input type="number" min="1" [ngModel]="nuevaCohorte().periodo" (ngModelChange)="patchNueva('periodo', +$event)" />
+        </div>
+        <div class="coh-field wide">
+          <label>Nombre del grupo <small>(cómo lo verán)</small></label>
+          <input type="text" [ngModel]="nuevaCohorte().nombre" (ngModelChange)="patchNueva('nombre', $event)" placeholder="Ej. Diplomado RR. HH. — jornada mañana" />
+        </div>
+        <div class="coh-field">
+          <label>Cupo <small>(opcional)</small></label>
+          <input type="number" min="0" [ngModel]="nuevaCohorte().cupoMaximo" (ngModelChange)="patchNueva('cupoMaximo', $event)" placeholder="Sin límite" />
+        </div>
+        <div class="coh-field">
+          <label>Las horas se cuentan…</label>
+          <select [ngModel]="nuevaCohorte().modoConsumoHoras" (ngModelChange)="patchNueva('modoConsumoHoras', $event)">
+            <option value="AL_ASISTIR">Cuando el alumno asiste</option>
+            <option value="AL_DICTAR">Cuando se dicta la clase</option>
+          </select>
+        </div>
+        <div class="coh-field wide">
+          <label>Instructor del grupo <small>(opcional)</small></label>
+          <select [ngModel]="nuevaCohorte().idEmpleadoInstructor" (ngModelChange)="patchNueva('idEmpleadoInstructor', $event ? +$event : null)">
+            <option [ngValue]="null">Sin asignar por ahora</option>
+            <option *ngFor="let i of instructores()" [ngValue]="i.idEmpleado">{{ i.nombreCompleto }}</option>
+          </select>
+          <small class="coh-field-hint" *ngIf="!instructores().length">No hay empleados con cargo «instructor». Puedes asignarlo luego en cada clase.</small>
+        </div>
+      </div>
+      <button type="button" class="coh-btn primary lg" (click)="crearCohorte()">Crear grupo</button>
+    </div>
+
+    <h3 class="coh-section-title">Grupos creados</h3>
+
+    <div class="coh-empty small" *ngIf="!cohortes().length">
+      <div class="coh-empty-icon">👥</div>
+      <p>Aún no hay grupos. Crea el primero con el formulario de arriba.</p>
+    </div>
+
+    <div class="coh-grid-cards" *ngIf="cohortes().length">
+      <article class="coh-grupo-card" *ngFor="let c of cohortes()" (click)="abrirCohorte(c)">
+        <div class="coh-grupo-top">
+          <span class="coh-pill" [attr.data-estado]="c.estado">{{ c.estado }}</span>
+          <span class="coh-grupo-code">{{ c.codigo }}</span>
+        </div>
+        <h4>{{ c.nombre || c.nombreProg }}</h4>
+        <p class="coh-grupo-prog">{{ c.nombreProg }}</p>
+        <div class="coh-grupo-meta">
+          <span>📅 {{ c.anio }}-{{ c.periodo }}</span>
+          <span>🎓 Semestre {{ c.numSemestre }}</span>
+          <span>👤 {{ c.inscritos || 0 }}<ng-container *ngIf="c.cupoMaximo">/{{ c.cupoMaximo }}</ng-container></span>
+        </div>
+        <p class="coh-grupo-instr" *ngIf="c.instructorNombre">👨‍🏫 {{ c.instructorNombre }}</p>
+        <span class="coh-grupo-open">Abrir grupo →</span>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===================== PASO 5: BANCO DE PREGUNTAS ===================== -->
+  <div class="coh-panel" *ngIf="tab() === 'banco'">
+    <div class="coh-field-block">
+      <label class="coh-label">Materia del catálogo</label>
+      <select class="coh-select-lg" [ngModel]="bancoMateriaCat()" (ngModelChange)="bancoMateriaCat.set($event); cancelarEdicionPregunta(); onBancoFiltroChange()" *ngIf="catalogoMaterias().length">
+        <option value="" disabled>Elige una materia…</option>
+        <option *ngFor="let m of catalogoMaterias()" [value]="m._id">{{ m.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="coh-empty" *ngIf="!catalogoMaterias().length">
+      <div class="coh-empty-icon">📘</div>
+      <h3>No hay materias en el catálogo</h3>
+      <p>Agrega materias en el <button type="button" class="coh-link-btn" (click)="setTab('catalogo')">Catálogo de materias</button> para poder crear su banco de preguntas.</p>
+    </div>
+
+    <ng-container *ngIf="bancoMateriaCat()">
+      <!-- Form nueva / editar pregunta -->
+      <div class="coh-card-form" *ngIf="puedeGestionar()" [class.coh-card-form-edit]="preguntaEditandoId()">
+        <div class="coh-card-form-head">
+          <span class="coh-card-form-icon">{{ preguntaEditandoId() ? '✏️' : '❓' }}</span>
+          <div>
+            <h3>{{ preguntaEditandoId() ? 'Editar pregunta' : 'Nueva pregunta' }}</h3>
+            <p>{{ preguntaEditandoId() ? 'Modifica el enunciado, tipo u opciones y guarda los cambios.' : 'Se guarda en el banco de la materia seleccionada y sirve para todos los programas que la usen.' }}</p>
+          </div>
+        </div>
+
+        <div class="coh-field">
+          <label>Enunciado</label>
+          <input type="text" [ngModel]="nuevaPregunta().enunciado" (ngModelChange)="patchPregunta('enunciado', $event)" placeholder="Escribe la pregunta…" />
+        </div>
+
+        <div class="coh-form-grid">
+          <div class="coh-field">
+            <label>Tipo</label>
+            <select [ngModel]="nuevaPregunta().tipo" (ngModelChange)="patchPregunta('tipo', $event)">
+              <option value="UNICA">Única respuesta</option>
+              <option value="MULTIPLE">Varias respuestas</option>
+              <option value="VF">Verdadero / Falso</option>
+            </select>
+          </div>
+          <div class="coh-field">
+            <label>Dificultad</label>
+            <select [ngModel]="nuevaPregunta().dificultad" (ngModelChange)="patchPregunta('dificultad', +$event)">
+              <option [value]="1">Fácil</option>
+              <option [value]="2">Media</option>
+              <option [value]="3">Difícil</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="coh-banco-opciones">
+          <p class="coh-label">Opciones <small>(marca la(s) correcta(s))</small></p>
+          <div class="coh-opcion-row" *ngFor="let o of nuevaPregunta().opciones; let i = index">
+            <button type="button" class="coh-opcion-check" [class.on]="o.correcta" (click)="marcarCorrecta(i)" [title]="o.correcta ? 'Correcta' : 'Marcar correcta'">
+              {{ o.correcta ? '✓' : '○' }}
+            </button>
+            <input type="text" [(ngModel)]="o.texto" placeholder="Texto de la opción" />
+            <button type="button" class="coh-icon-btn danger" (click)="quitarOpcion(i)" *ngIf="nuevaPregunta().opciones.length > 2" title="Quitar">✕</button>
+          </div>
+          <button type="button" class="coh-btn ghost" (click)="agregarOpcion()">＋ Agregar opción</button>
+        </div>
+
+        <div class="coh-form-actions">
+          <button type="button" class="coh-btn primary lg" (click)="guardarPregunta()">
+            {{ preguntaEditandoId() ? 'Guardar cambios' : 'Guardar pregunta' }}
+          </button>
+          <button type="button" class="coh-btn ghost" *ngIf="preguntaEditandoId()" (click)="cancelarEdicionPregunta()">Cancelar edición</button>
+        </div>
+      </div>
+
+      <!-- Lista del banco -->
+      <h3 class="coh-section-title">Preguntas del banco ({{ banco().length }})</h3>
+      <div class="coh-empty small" *ngIf="!banco().length">
+        <div class="coh-empty-icon">❓</div>
+        <p>Aún no hay preguntas para esta materia.</p>
+      </div>
+      <ul class="coh-banco-list" *ngIf="banco().length">
+        <li *ngFor="let q of banco()" [class.coh-banco-q-editando]="preguntaEditandoId() === q._id">
+          <div class="coh-banco-q">
+            <strong>{{ q.enunciado }}</strong>
+            <small>{{ q.tipo }} · {{ q.opciones.length }} opciones</small>
+            <div class="coh-banco-ops">
+              <span *ngFor="let o of q.opciones" class="coh-banco-op" [class.ok]="o.correcta">{{ o.texto }}</span>
+            </div>
+          </div>
+          <div class="coh-banco-actions" *ngIf="puedeGestionar()">
+            <button type="button" class="coh-icon-btn" (click)="editarPregunta(q)" title="Editar">✏️</button>
+            <button type="button" class="coh-icon-btn danger" (click)="eliminarPregunta(q)" title="Eliminar">✕</button>
+          </div>
+        </li>
+      </ul>
+    </ng-container>
+  </div>
+</section>

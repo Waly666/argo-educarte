@@ -1,0 +1,129 @@
+<section class="av-page card blog-admin">
+  <header class="av-head">
+    <div class="av-head-main">
+      <p class="av-eyebrow">Portal público</p>
+      <h1>Blog</h1>
+      <p>Publique artículos en el portal. Solo se muestran los marcados como <strong>publicados</strong>.</p>
+    </div>
+    <div class="av-head-actions">
+      <a class="av-btn av-btn--ghost" routerLink="/app/aula-virtual">← Aula virtual</a>
+      @if (modo() === 'lista') {
+        <button type="button" class="av-btn av-btn--primary" (click)="nuevo()">Nuevo artículo</button>
+      }
+    </div>
+  </header>
+
+  @if (msg()) {
+    <p class="av-banner" [class.av-banner--err]="err()">{{ msg() }}</p>
+  }
+
+  @if (modo() === 'lista') {
+    @if (loading()) {
+      <p class="av-muted av-loading">Cargando artículos…</p>
+    } @else {
+      <div class="blog-toolbar">
+        <input
+          type="search"
+          placeholder="Buscar por título, autor o slug…"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)" />
+      </div>
+
+      @if (!postsFiltrados().length) {
+        <p class="av-muted av-empty-msg">No hay artículos. Cree el primero con «Nuevo artículo».</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="argo data-table">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th class="th-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of postsFiltrados(); track p._id) {
+                <tr>
+                  <td>
+                    <strong>{{ p.titulo }}</strong>
+                    <span class="blog-slug">/{{ p.slug }}</span>
+                  </td>
+                  <td>{{ p.autorNombre }}</td>
+                  <td>
+                    @if (p.publicado) {
+                      <span class="cap cap-green cap-sm">Publicado</span>
+                    } @else {
+                      <span class="cap cap-muted cap-sm">Borrador</span>
+                    }
+                  </td>
+                  <td>{{ fecha(p) }}</td>
+                  <td class="td-actions">
+                    <button type="button" class="av-btn av-btn--ghost av-btn--sm" (click)="editar(p)">Editar</button>
+                    <button type="button" class="av-btn av-btn--ghost av-btn--sm av-btn--danger" (click)="confirmarEliminar(p)">
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  } @else {
+    <form class="blog-form" (ngSubmit)="guardar()">
+      <div class="av-grid2">
+        <div class="av-field">
+          <label>Título *</label>
+          <input type="text" [(ngModel)]="form.titulo" name="titulo" required />
+        </div>
+        <div class="av-field">
+          <label>Slug (opcional)</label>
+          <input type="text" [(ngModel)]="form.slug" name="slug" placeholder="se-genera-del-titulo" />
+        </div>
+      </div>
+
+      <div class="av-field">
+        <label>Contenido</label>
+        <textarea rows="12" [(ngModel)]="form.contenido" name="contenido" placeholder="Escriba el artículo…"></textarea>
+      </div>
+
+      <div class="blog-imagenes">
+        <div class="blog-imagenes-head">
+          <h3>Imágenes</h3>
+          <label class="av-btn av-btn--ghost av-btn--sm">
+            {{ uploading() ? 'Subiendo…' : '+ Subir imagen' }}
+            <input type="file" accept="image/png,image/jpeg,image/webp" hidden (change)="onImagenSelected($event)" [disabled]="uploading()" />
+          </label>
+        </div>
+        @if (!form.imagenes.length) {
+          <p class="av-muted">Sin imágenes. Las que quite al guardar se borran del servidor.</p>
+        }
+        @for (img of form.imagenes; track img.url; let i = $index) {
+          <div class="blog-img-card">
+            <img [src]="imagenUrl(img.url)" [alt]="img.leyenda || 'Imagen del artículo'" />
+            <div class="av-field">
+              <label>Leyenda</label>
+              <input type="text" [(ngModel)]="img.leyenda" [name]="'leyenda' + i" />
+            </div>
+            <button type="button" class="av-btn av-btn--ghost av-btn--sm av-btn--danger" (click)="quitarImagen(i)">Quitar</button>
+          </div>
+        }
+      </div>
+
+      <label class="av-check">
+        <input type="checkbox" [(ngModel)]="form.publicado" name="publicado" />
+        Publicar en el portal
+      </label>
+
+      <div class="blog-form-actions">
+        <button type="button" class="av-btn av-btn--ghost" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+        <button type="submit" class="av-btn av-btn--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar artículo' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

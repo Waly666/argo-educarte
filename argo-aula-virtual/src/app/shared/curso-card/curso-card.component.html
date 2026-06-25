@@ -1,0 +1,67 @@
+@let c = curso();
+<article class="catalog-card card-lift">
+  <a [routerLink]="['/cursos', c.idPrograma]" class="catalog-card__cover-link">
+    <div class="catalog-card__cover">
+      @if (portadaUrl(c); as img) {
+        <img [src]="img" [alt]="c.nombreProg" />
+      } @else {
+        <div class="catalog-card__cover-ph"></div>
+      }
+      @if (c.horas) {
+        <span class="catalog-card__duration">Duración: {{ c.horas }} horas</span>
+      }
+    </div>
+  </a>
+
+  <div class="catalog-card__body">
+    @if (c.categoriaNombres?.length) {
+      <div class="catalog-card__tags">
+        @for (nom of c.categoriaNombres; track nom) {
+          <span class="catalog-card__tag">{{ nom }}</span>
+        }
+      </div>
+    }
+
+    <h3 class="catalog-card__title">
+      <a [routerLink]="['/cursos', c.idPrograma]">{{ c.nombreProg }}</a>
+    </h3>
+
+    @if (c.autor) {
+      <div class="catalog-card__author">
+        @if (logoUrl(); as logo) {
+          <img [src]="logo" alt="" class="catalog-card__author-img" />
+        } @else {
+          <span class="catalog-card__author-initial">{{ inicialAutor(c.autor) }}</span>
+        }
+        <span class="catalog-card__author-name">{{ c.autor }}</span>
+      </div>
+    }
+
+    @if (excerpt(c.descripcionVirtual || c.descripcion); as desc) {
+      <p class="catalog-card__desc">
+        <span class="catalog-card__desc-icon" aria-hidden="true">🖥</span>
+        <span>{{ desc }}</span>
+      </p>
+    }
+
+    <div class="catalog-card__meta">
+      @if (c.nivel) {
+        <span class="catalog-card__stat" title="Nivel">
+          <span aria-hidden="true">📚</span> {{ labelNivel(c.nivel) }}
+        </span>
+      }
+      @if (c.horas) {
+        <span class="catalog-card__stat" title="Duración">
+          <span aria-hidden="true">⏱</span> {{ c.horas }} h
+        </span>
+      }
+    </div>
+
+    <footer class="catalog-card__foot">
+      <p class="catalog-card__price">{{ fmtPrecio(c.tarifaVirtual) }}</p>
+      <a [routerLink]="['/cursos', c.idPrograma]" class="catalog-card__btn">
+        {{ btnLabel() }}
+      </a>
+    </footer>
+  </div>
+</article>

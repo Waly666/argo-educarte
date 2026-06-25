@@ -1,0 +1,112 @@
+<section class="instructor-portal argo-cal">
+  <header class="inst-head">
+    <div class="inst-head-text">
+      <span class="inst-badge">Portal instructor</span>
+      <h1>Mi espacio de trabajo</h1>
+      <p class="hint">Consulte sus clases, actualice contacto y complete la inspección del vehículo cuando corresponda.</p>
+    </div>
+    <div class="inst-head-actions">
+      <button type="button" class="ghost sm" (click)="cargarTodo(); cargarAlertas()">Actualizar</button>
+    </div>
+  </header>
+
+  @if (msg(); as t) {
+    <div class="inst-banner inst-banner-ok" role="status">{{ t }}</div>
+  }
+
+  @if (bannerInspeccion()) {
+    <div class="inst-banner inst-banner-inspeccion" role="alert">
+      <div>
+        <strong>Inspección preoperacional requerida</strong>
+        <p>{{ inspeccionInfo()?.mensaje }}</p>
+      </div>
+      @if (puedeInspeccion() && (inspeccionInfo()?.vehiculo?._id || inspeccionInfo()?.vehiculo?.placa)) {
+        <button type="button" class="inst-btn inst-btn-light" (click)="abrirInspeccion()">Ir a ficha del vehículo</button>
+      } @else {
+        <span class="hint sm">Solicite permiso de inspección a administración.</span>
+      }
+    </div>
+  }
+
+  @if (bannerProxima()) {
+    <div class="inst-banner inst-banner-proxima" role="alert">
+      <div>
+        <strong>Clase en {{ alertas()?.minutosVentana ?? 20 }} minutos o menos</strong>
+        @for (c of proximas(); track c._id) {
+          <p>{{ labelTipo(c.tipoClase) }} · {{ c.horaDesde }} · {{ c.programaLabel || c.temaNombre }}</p>
+        }
+      </div>
+      <div class="inst-banner-actions">
+        @if (proximas()[0]; as c) {
+          <button type="button" class="inst-btn inst-btn-light" (click)="irOperarClase(c)">Ir a la clase</button>
+        }
+        <button type="button" class="ghost sm inst-dismiss" (click)="cerrarBannerProxima()">Ocultar</button>
+      </div>
+    </div>
+  }
+
+  @if (bannerAsignadas()) {
+    <div class="inst-banner inst-banner-asignada" role="alert">
+      <div>
+        <strong>Nueva(s) clase(s) asignada(s)</strong>
+        @for (c of asignadasNuevas(); track c._id) {
+          <p>{{ labelOrigen(c.origen) }} · {{ labelTipo(c.tipoClase) }} · {{ c.fechaClase | date:'dd/MM' }} {{ c.horaDesde }}</p>
+        }
+      </div>
+      <button type="button" class="ghost sm inst-dismiss" (click)="cerrarBannerAsignadas()">Entendido</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="hint">Cargando perfil…</p>
+  } @else if (error()) {
+    <div class="inst-banner inst-banner-error" role="alert">{{ error() }}</div>
+  } @else if (perfil()) {
+    <section class="inst-perfil-card">
+      <div class="inst-perfil-foto" aria-hidden="true">
+        @if (fotoUrl(perfil()!.urlFoto); as f) {
+          <img [src]="f" alt="" />
+        } @else {
+          <span>{{ iniciales(perfil()) }}</span>
+        }
+      </div>
+      <div class="inst-perfil-body">
+        <h2>{{ perfil()!.nombreCompleto }}</h2>
+        <p class="inst-doc mono">{{ perfil()!.tipoDocumento }} {{ perfil()!.numeroDocumento }}</p>
+        <div class="inst-perfil-meta">
+          <span><strong>Cargo</strong> {{ perfil()!.cargoNombre || 'Instructor' }}</span>
+          <span><strong>Contacto</strong> {{ contacto(perfil()!) }}</span>
+          <span><strong>Usuario</strong> {{ usuarioLogin() }}</span>
+        </div>
+      </div>
+      <button type="button" class="inst-btn inst-btn-edit" (click)="abrirEditar()">Editar datos</button>
+    </section>
+
+    <argo-instructor-portal-mis-clases />
+  }
+
+</section>
+
+@if (modalEditar()) {
+  <argo-form-modal
+    title="Editar mis datos de contacto"
+    [open]="modalEditar()"
+    (closed)="cerrarEditar()">
+    <div class="inst-form-grid">
+      <label>Correo personal<input type="email" [(ngModel)]="formPerfil.correoPersonal" name="correoPersonal" /></label>
+      <label>Correo corporativo<input type="email" [(ngModel)]="formPerfil.correoCorporativo" name="correoCorporativo" /></label>
+      <label>Teléfono<input [(ngModel)]="formPerfil.telefono" name="telefono" /></label>
+      <label>Celular<input [(ngModel)]="formPerfil.celular" name="celular" /></label>
+      <label class="full">Dirección<input [(ngModel)]="formPerfil.direccion" name="direccion" /></label>
+      <label>Ciudad<input [(ngModel)]="formPerfil.ciudad" name="ciudad" /></label>
+      <label>Departamento<input [(ngModel)]="formPerfil.departamento" name="departamento" /></label>
+      <p class="hint full">Solo puede editar datos de contacto. Cargo, documento y nómina los administra RRHH.</p>
+    </div>
+    <div modal-actions>
+      <button type="button" class="ghost" (click)="cerrarEditar()">Cancelar</button>
+      <button type="button" class="inst-btn" [disabled]="savingPerfil()" (click)="guardarPerfil()">
+        {{ savingPerfil() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </argo-form-modal>
+}

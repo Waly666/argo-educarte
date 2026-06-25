@@ -1,0 +1,486 @@
+<section class="servicios-page admin-list-page card">
+
+  <header #pageHead class="srv-head page-head">
+
+    <div class="srv-head-main">
+
+      <p class="breadcrumb"><a routerLink="/app">Inicio</a> / Servicios</p>
+
+      <h1 #titleAnchor>Servicios (catálogo)</h1>
+
+      <p class="hint">
+
+        Catálogo de cobros: trámites, asesorías y servicios de programas. Tarifas, IVA y vínculo con programas educativos.
+
+      </p>
+
+    </div>
+
+    <div class="srv-badges head-actions">
+
+      @if (!loading()) {
+
+        <span class="srv-chip srv-chip--cyan">{{ servicios().length }} servicio{{ servicios().length === 1 ? '' : 's' }}</span>
+
+      }
+
+      <button type="button" class="primary" (click)="nuevo()">Nuevo servicio</button>
+
+    </div>
+
+  </header>
+
+  @if (msg()) {
+
+    <p class="srv-msg" [class.srv-msg--err]="msgError()">{{ msg() }}</p>
+
+  }
+
+
+
+  <div class="toolbar">
+
+    <input
+
+      type="search"
+
+      placeholder="Buscar servicio…"
+
+      [ngModel]="busqueda()"
+
+      (ngModelChange)="busqueda.set($event)"
+
+      (keyup.enter)="cargar()" />
+
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+
+    <div class="filter-pills">
+
+      <button type="button" class="filter-pill tone-blue" [class.active]="filtro() === 'todos'" (click)="setFiltro('todos')">
+
+        Todos
+
+      </button>
+
+      <button
+
+        type="button"
+
+        class="filter-pill tone-teal"
+
+        [class.active]="filtro() === 'sinPrograma'"
+
+        (click)="setFiltro('sinPrograma')">
+
+        Sin programa
+
+      </button>
+
+      <button
+
+        type="button"
+
+        class="filter-pill tone-purple"
+
+        [class.active]="filtro() === 'conPrograma'"
+
+        (click)="setFiltro('conPrograma')">
+
+        De programas
+
+      </button>
+
+    </div>
+
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')" title="Vista tabla">☰ Lista</button>
+
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')" title="Vista tarjetas">▦ Cards</button>
+
+    </div>
+
+  </div>
+
+  <argo-form-modal
+
+    [open]="modalAbierto()"
+
+    [anchorTopPx]="modalTop()"
+
+    [title]="modalTitulo()"
+
+    [wide]="true"
+
+    (closed)="cerrarModal()">
+
+    <div class="modal-form argo-form-shell">
+
+      <h3 class="sec">1. Identificación</h3>
+
+      <div class="row" *ngIf="esEdicion()">
+
+        <div class="col-3">
+
+          <label>ID servicio (idServ)</label>
+
+          <input type="text" [value]="editando()!.idServ" readonly class="readonly" />
+
+        </div>
+
+        <div class="col-3">
+
+          <label>Programa (idProg)</label>
+
+          <input
+
+            type="text"
+
+            [value]="editando()!.idProg != null && editando()!.idProg !== '' ? editando()!.idProg : '— Sin programa'"
+
+            readonly
+
+            class="readonly" />
+
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="col-6">
+
+          <label>Descripción (descrServicio) *</label>
+
+          <input
+
+            type="text"
+
+            [ngModel]="form().descrServicio"
+
+            (ngModelChange)="patchForm({ descrServicio: $event })" />
+
+        </div>
+
+        <div class="col-3">
+
+          <argo-catalogo-enum-buscar
+
+            label="Tipo servicio (tipoServ) *"
+
+            placeholder="Seleccione o escriba tipo…"
+
+            [textoInicial]="textoTipoServ()"
+
+            [modoCombo]="true"
+
+            [remoto]="false"
+
+            [minLength]="1"
+
+            [opcionesLocales]="opcionesTipoServForm()"
+
+            (seleccionado)="onTipoServPick($event)"
+
+            (limpiado)="onTipoServLimpiar()"
+
+          />
+
+        </div>
+
+        <div class="col-3">
+
+          <argo-catalogo-enum-buscar
+
+            label="Facturar"
+
+            placeholder="Seleccione…"
+
+            [textoInicial]="textoFacturar()"
+
+            [modoCombo]="true"
+
+            [remoto]="false"
+
+            [minLength]="1"
+
+            [opcionesLocales]="opcionesFacturar"
+
+            (seleccionado)="onFacturarPick($event)"
+
+            (limpiado)="onFacturarLimpiar()"
+
+          />
+
+        </div>
+
+      </div>
+
+      <h3 class="sec">2. Tarifas e IVA</h3>
+
+      <div class="row">
+
+        <div class="col-3">
+
+          <label>Tarifa 1</label>
+
+          <input type="number" min="0" [ngModel]="form().tarifa1" (ngModelChange)="patchForm({ tarifa1: $event })" />
+
+          <p class="hint-inline">Deje <strong>0</strong> si el valor se define al liquidar (asesoría, trámites, etc.).</p>
+
+        </div>
+
+        <div class="col-3">
+
+          <label>Tarifa 2</label>
+
+          <input type="number" min="0" [ngModel]="form().tarifa2" (ngModelChange)="patchForm({ tarifa2: $event })" />
+
+        </div>
+
+        <div class="col-3">
+
+          <label>Tarifa 3</label>
+
+          <input type="number" min="0" [ngModel]="form().tarifa3" (ngModelChange)="patchForm({ tarifa3: $event })" />
+
+        </div>
+
+        <div class="col-3">
+
+          <label>Tarifa virtual</label>
+
+          <input type="number" min="0" [ngModel]="form().tarifaVirtual" (ngModelChange)="patchForm({ tarifaVirtual: $event })" />
+
+          <p class="hint-inline">Portal de educación virtual (matrícula tarifa 4). Curso virtual si &gt; 0.</p>
+
+        </div>
+
+        <div class="col-3">
+
+          <label>IVA %</label>
+
+          <input type="number" min="0" [ngModel]="form().iva" (ngModelChange)="patchForm({ iva: $event })" />
+
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="col-6">
+
+          <label>Condición de IVA (facturación electrónica)</label>
+
+          <select [ngModel]="form().condicionIva" (ngModelChange)="patchForm({ condicionIva: $event })">
+
+            <option *ngFor="let o of opcionesCondicionIva" [value]="o.value">{{ o.label }}</option>
+
+          </select>
+
+          <p class="hint-inline">
+
+            <strong>Gravado</strong>: desglosa el IVA del valor. <strong>Exento/Excluido</strong>: no cobra IVA.
+
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="audit-grid" *ngIf="audit() as a">
+
+        <h4>Auditoría</h4>
+
+        <div><span>Creado</span><strong>{{ a.fechaAudi }}</strong></div>
+
+        <div><span>Usuario alta</span><strong>{{ a.userAddReg }}</strong></div>
+
+        <div><span>Modificado</span><strong>{{ a.fechaMod }}</strong></div>
+
+        <div><span>Usuario cambio</span><strong>{{ a.userChangeRecord }}</strong></div>
+
+      </div>
+
+    </div>
+
+    <div modal-actions>
+
+      <button type="button" class="ghost" (click)="cerrarModal()">Cancelar</button>
+
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+
+      </button>
+
+    </div>
+
+  </argo-form-modal>
+
+
+
+  <div class="table-wrap" *ngIf="!loading() && vista() === 'lista'">
+
+    <table class="argo data-table">
+
+      <thead>
+
+        <tr>
+
+          <th>ID</th>
+
+          <th>Tipo</th>
+
+          <th>Descripción</th>
+
+          <th>Vínculo</th>
+
+          <th>T1</th>
+
+          <th>T2</th>
+
+          <th>T3</th>
+
+          <th>T.V.</th>
+
+          <th class="th-actions">Acciones</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let s of servicios()" [class.row-general]="!esServicioPrograma(s)">
+
+          <td><span [ngClass]="capId(s.idServ)">#{{ s.idServ }}</span></td>
+
+          <td><span [ngClass]="capTipoServ(s.tipoServ)">{{ s.tipoServ || '—' }}</span></td>
+
+          <td>{{ s.descrServicio || '—' }}</td>
+
+          <td>
+
+            <span [ngClass]="capVinculo(esServicioPrograma(s))">{{ labelPrograma(s) }}</span>
+
+          </td>
+
+          <td><span [ngClass]="[capMoneda(s.tarifa1), 'cap-money']">${{ num(s.tarifa1) | number }}</span></td>
+
+          <td><span class="cap cap-cyan cap-money">${{ num(s.tarifa2) | number }}</span></td>
+
+          <td><span class="cap cap-slate cap-money">${{ num(s.tarifa3) | number }}</span></td>
+
+          <td><span class="cap cap-violet cap-money">${{ num(s.tarifaVirtual) | number }}</span></td>
+
+          <td class="acciones actions-cell">
+
+            <button type="button" class="ghost mini" (click)="editar(s)">Editar</button>
+
+            <button
+
+              type="button"
+
+              class="danger mini"
+
+              *ngIf="!esServicioPrograma(s)"
+
+              (click)="eliminar(s)">
+
+              Eliminar
+
+            </button>
+
+          </td>
+
+        </tr>
+
+        <tr *ngIf="!servicios().length">
+
+          <td colspan="8" class="empty">No hay servicios. Use «Nuevo servicio» para agregar trámites u otros cobros.</td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+
+    <article class="list-card" *ngFor="let s of servicios()" [class.row-general]="!esServicioPrograma(s)">
+
+      <header class="card-title"><h3>{{ s.descrServicio || '—' }}</h3></header>
+
+      <div class="card-body">
+
+        <div class="entity-badge-wrap">
+
+          <div class="entity-badge" [class.tone-teal]="esServicioPrograma(s)" [class.tone-amber]="!esServicioPrograma(s)">
+
+            {{ s.tipoServ || '—' }}
+
+          </div>
+
+        </div>
+
+        <div class="card-main">
+
+          <div class="card-tags">
+
+            <span [ngClass]="capId(s.idServ)">#{{ s.idServ }}</span>
+
+            <span [ngClass]="capVinculo(esServicioPrograma(s))">{{ labelPrograma(s) }}</span>
+
+          </div>
+
+          <dl class="card-fields">
+
+            <div><dt>Tarifa 1</dt><dd [ngClass]="[capMoneda(s.tarifa1), 'cap-money']">${{ num(s.tarifa1) | number }}</dd></div>
+
+            <div><dt>Tarifa 2</dt><dd class="cap cap-cyan cap-money">${{ num(s.tarifa2) | number }}</dd></div>
+
+            <div><dt>Tarifa 3</dt><dd class="cap cap-slate cap-money">${{ num(s.tarifa3) | number }}</dd></div>
+
+            <div><dt>Tarifa virtual</dt><dd class="cap cap-violet cap-money">${{ num(s.tarifaVirtual) | number }}</dd></div>
+
+          </dl>
+
+        </div>
+
+      </div>
+
+      <footer class="card-foot">
+
+        <span class="card-hint">{{ esServicioPrograma(s) ? 'Servicio de programa' : 'Servicio general' }}</span>
+
+        <div class="card-actions">
+
+          <button type="button" class="act open" (click)="editar(s)">Editar</button>
+
+          <button type="button" class="act doc" *ngIf="!esServicioPrograma(s)" (click)="eliminar(s)">Eliminar</button>
+
+        </div>
+
+      </footer>
+
+    </article>
+
+    <div class="empty cards-empty" *ngIf="!servicios().length">
+
+      No hay servicios. Use «Nuevo servicio» para agregar trámites u otros cobros.
+
+    </div>
+
+  </div>
+
+
+
+  <p class="loading" *ngIf="loading()">Cargando…</p>
+
+</section>
+

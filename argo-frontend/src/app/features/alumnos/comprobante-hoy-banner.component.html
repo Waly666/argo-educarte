@@ -1,0 +1,12 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-comp"
+  icon="🧾"
+  [title]="'Comprobantes de hoy (' + rows().length + ')'"
+  hint="Pulse una fila para imprimir o ver el comprobante."
+  [items]="rows()"
+  [itemDismissible]="true"
+  (closed)="cerrar()"
+  (itemClick)="onItemClick($event)"
+  (itemDismiss)="onItemDismiss($event)"
+/>

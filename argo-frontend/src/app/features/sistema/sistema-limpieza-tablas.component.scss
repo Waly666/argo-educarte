@@ -1,0 +1,253 @@
+@import './sistema-shared.scss';
+
+.limpieza-page {
+  max-width: 1280px;
+}
+
+.limpieza-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.limpieza-lista {
+  padding: 0.75rem;
+  max-height: calc(100vh - 220px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.limpieza-lista__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+.limpieza-search {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.limpieza-tablas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.limpieza-tabla-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.82rem;
+
+  &:hover {
+    background: rgba(148, 163, 184, 0.12);
+  }
+
+  &.active {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+  }
+
+  .nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .meta {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    color: var(--text-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .critica {
+    color: #fbbf24;
+  }
+}
+
+.limpieza-detalle {
+  padding: 0.85rem 1rem 1rem;
+  min-height: 420px;
+}
+
+.limpieza-hint {
+  margin: 0.5rem 0;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.limpieza-alerta {
+  margin: 0.2rem 0 0;
+  color: #fbbf24;
+  font-size: 0.8rem;
+}
+
+.limpieza-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+.limpieza-toolbar__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.limpieza-buscar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  .limpieza-search {
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.limpieza-grid-wrap {
+  overflow: auto;
+  max-height: 52vh;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.limpieza-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+
+  th,
+  td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 1;
+    font-weight: 700;
+  }
+
+  tbody tr:hover {
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .col-check {
+    width: 2rem;
+    max-width: 2rem;
+  }
+}
+
+.limpieza-vacio {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 1.5rem !important;
+}
+
+.limpieza-paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+.limpieza-paginacion__btns {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.limpieza-credenciales {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+
+  h3 {
+    margin: 0 0 0.35rem;
+    font-size: 0.92rem;
+  }
+}
+
+.limpieza-credenciales__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+  }
+
+  input {
+    padding: 0.45rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-alt);
+    color: var(--text);
+  }
+
+  .span-2 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .limpieza-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .limpieza-lista {
+    max-height: 240px;
+  }
+}

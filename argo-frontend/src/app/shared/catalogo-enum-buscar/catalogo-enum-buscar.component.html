@@ -1,0 +1,49 @@
+<div class="enum-buscar-host" [class.disabled]="disabled">
+  <label *ngIf="label">{{ label }}</label>
+  <div class="input-wrap" [class.combo]="modoCombo">
+    <input
+      type="text"
+      [placeholder]="placeholder"
+      [ngModel]="query()"
+      (ngModelChange)="onInput($event)"
+      (focus)="focus()"
+      [disabled]="disabled"
+      autocomplete="off"
+    />
+    <button
+      *ngIf="modoCombo"
+      type="button"
+      class="combo-toggle"
+      tabindex="-1"
+      [disabled]="disabled"
+      [attr.aria-expanded]="open()"
+      (mousedown)="$event.preventDefault()"
+      (click)="toggleOpen()">
+      ▾
+    </button>
+    <span class="hint" *ngIf="loading() && !modoCombo">Buscando…</span>
+  </div>
+
+  @if (open()) {
+    @if (loading() && modoCombo) {
+      <div class="dropdown empty">Cargando opciones…</div>
+    } @else if (resultados().length > 0) {
+      <ul class="dropdown">
+        @for (o of resultados(); track o.value) {
+          <li (mousedown)="pick(o)">
+            <strong>{{ o.label }}</strong>
+            @if (o.hint) {
+              <span>{{ o.hint }}</span>
+            }
+          </li>
+        }
+      </ul>
+    } @else if (!modoCombo && query().trim().length > 0 && query().trim().length < minLength) {
+      <div class="dropdown empty">Escriba al menos {{ minLength }} caracteres…</div>
+    } @else if (modoCombo ? filtrandoActivo() : query().trim().length >= minLength) {
+      <div class="dropdown empty">
+        {{ query().trim() ? 'No hay coincidencias.' : 'No hay opciones disponibles.' }}
+      </div>
+    }
+  }
+</div>

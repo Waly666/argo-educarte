@@ -1,0 +1,108 @@
+<section class="instructores-page card">
+  <header class="page-head">
+    <div>
+      <h1>Instructores</h1>
+      <p class="hint">
+        Personal con cargo de instructor en RRHH. Solo se listan empleados cuyo cargo contiene la palabra
+        <strong>instructor</strong>.
+      </p>
+    </div>
+    @if (puedeGestionarRrhh()) {
+      <a routerLink="/app/rrhh/empleados" class="ghost link-btn">Administrar empleados</a>
+    }
+  </header>
+
+  @if (msg(); as t) {
+    <div class="msg error">{{ t }}</div>
+  }
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Buscar nombre o documento…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+      (keyup.enter)="cargar()"
+    />
+    <button type="button" class="ghost" (click)="cargar()">Buscar</button>
+    <label class="filtro-activos">
+      <input type="checkbox" [ngModel]="soloActivos()" (ngModelChange)="soloActivos.set($event); cargar()" />
+      Solo activos
+    </label>
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+    </div>
+    <span class="count">{{ instructores().length }} instructor(es)</span>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando…</div>
+
+  <table class="argo" *ngIf="!loading() && vista() === 'lista'">
+    <thead>
+      <tr>
+        <th class="th-foto"></th>
+        <th>Documento</th>
+        <th>Nombre</th>
+        <th>Cargo</th>
+        <th>Usuario / acceso</th>
+        <th>Contacto</th>
+        <th>Depto.</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of instructores()" class="row-click" (click)="irDetalle(e)">
+        <td class="td-foto">
+          <div class="list-foto" aria-hidden="true">
+            <img *ngIf="fotoUrl(e.urlFoto) as f" [src]="f" alt="" />
+            <span *ngIf="!e.urlFoto">{{ iniciales(e) }}</span>
+          </div>
+        </td>
+        <td class="mono">{{ e.tipoDocumento }} {{ e.numeroDocumento }}</td>
+        <td>{{ e.nombreCompleto }}</td>
+        <td>{{ e.cargoNombre || '—' }}</td>
+        <td>
+          <span class="mono sm" [class.sin-acceso]="!tieneUsuario(e)">{{ labelAcceso(e) }}</span>
+          @if (!tieneUsuario(e)) {
+            <span class="chip-warn">Sin login</span>
+          }
+        </td>
+        <td>{{ contacto(e) }}</td>
+        <td>{{ e.departamentoNombre || '—' }}</td>
+        <td>{{ e.estado || 'activo' }}</td>
+        <td class="acciones-cell">
+          <button type="button" class="primary mini" (click)="irDetalle(e, $event)">Ver ficha</button>
+        </td>
+      </tr>
+      <tr *ngIf="instructores().length === 0">
+        <td colspan="9" class="empty">No hay instructores registrados con ese criterio.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+    <article class="list-card card-click" *ngFor="let e of instructores()" (click)="irDetalle(e)">
+      <header class="card-title"><h3>{{ e.nombreCompleto }}</h3></header>
+      <div class="card-body">
+        <div class="id-photo-wrap">
+          <div class="id-photo" aria-hidden="true">
+            <span class="id-photo-label">FOTO</span>
+            <img *ngIf="fotoUrl(e.urlFoto) as f" [src]="f" alt="" />
+            <span class="id-photo-iniciales" *ngIf="!e.urlFoto">{{ iniciales(e) }}</span>
+          </div>
+        </div>
+        <div class="card-main">
+          <div class="card-doc mono">{{ e.tipoDocumento }} {{ e.numeroDocumento }}</div>
+          <div class="card-meta"><span>Cargo</span> {{ e.cargoNombre || '—' }}</div>
+          <div class="card-meta"><span>Acceso</span> {{ labelAcceso(e) }}</div>
+          <div class="card-meta"><span>Contacto</span> {{ contacto(e) }}</div>
+          <div class="card-meta"><span>Estado</span> {{ e.estado || 'activo' }}</div>
+          <button type="button" class="primary mini card-ver-btn" (click)="irDetalle(e, $event)">Ver ficha</button>
+        </div>
+      </div>
+    </article>
+    <p class="empty cards-empty" *ngIf="instructores().length === 0">No hay instructores registrados.</p>
+  </div>
+</section>

@@ -1,0 +1,79 @@
+{
+  "_comentario": "Copie a access-migracion.mapping.json y ajuste nombres de tablas/columnas según access-inspect.py",
+  "alumnos": {
+    "tabla": "Alumnos",
+    "columnas": {
+      "numDoc": "Documento",
+      "tipoDoc": "TipoDoc",
+      "nombre1": "Nombre1",
+      "nombre2": "Nombre2",
+      "apellido1": "Apellido1",
+      "apellido2": "Apellido2",
+      "fechaNacimiento": "FechaNac",
+      "genero": "Genero",
+      "celular": "Celular",
+      "correo": "Email",
+      "direccion": "Direccion",
+      "municipio": "Ciudad",
+      "observaciones": "Observaciones"
+    }
+  },
+  "programas": {
+    "tabla": "Programas",
+    "columnas": {
+      "codigoPrograma": "CodPrograma",
+      "nombrePrograma": "Nombre",
+      "tipoCapacitacion": "TipoCap",
+      "modalidad": "Modalidad",
+      "horas": "Horas",
+      "semestres": "Semestres",
+      "diasVencimiento": "DiasVenc",
+      "tarifa1": "Tarifa1",
+      "tarifa2": "Tarifa2",
+      "tarifa3": "Tarifa3",
+      "tarifaVirtual": "TarifaVirtual"
+    }
+  },
+  "matriculas": {
+    "tabla": "Matriculas",
+    "columnas": {
+      "numDoc": "Documento",
+      "codigoPrograma": "CodPrograma",
+      "fechaMatricula": "FechaMat",
+      "valorTotal": "ValorTotal",
+      "valorPagado": "ValorPagado",
+      "estado": "Estado",
+      "observaciones": "Observaciones"
+    }
+  },
+  "pagos": {
+    "tabla": "Pagos",
+    "columnas": {
+      "numDoc": "Documento",
+      "numeroRecibo": "NumRecibo",
+      "fecha": "Fecha",
+      "valor": "Valor",
+      "formaPago": "FormaPago",
+      "concepto": "Concepto",
+      "observaciones": "Observaciones"
+    }
+  },
+  "certificados": {
+    "tabla": "Certificados",
+    "columnas": {
+      "numDoc": "Documento",
+      "nombreTitular": "NombreTitular",
+      "codVerificacion": "CodVerificacion",
+      "codigoPrograma": "CodPrograma",
+      "codigoCertificado": "CodCertificado",
+      "nombreCurso": "NombreCurso",
+      "horas": "Horas",
+      "fechaEmision": "FechaEmision",
+      "fechaVencimiento": "FechaVenc",
+      "numActa": "Acta",
+      "numFolio": "Folio",
+      "numRunt": "Runt",
+      "estado": "Estado"
+    }
+  }
+}

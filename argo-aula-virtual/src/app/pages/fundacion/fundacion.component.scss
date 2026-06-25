@@ -1,0 +1,697 @@
+:host {
+  display: block;
+  font-family: var(--av-font-sans);
+  background: #fff;
+  color: var(--av-ink);
+}
+
+.fund-page {
+  --fund-ink: #1e293b;
+  --fund-blue: var(--av-primary);
+  --fund-cyan: var(--av-accent);
+  --fund-orange: #ea580c;
+  --fund-red: #dc2626;
+  --fund-warm: #fff7ed;
+  --fund-sky: #ecfeff;
+  --fund-border: #e2e8f0;
+}
+
+/* —— Hero (mismo fondo que el home) —— */
+.fund-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 6vw, 4.2rem) 0 clamp(2.5rem, 5vw, 3.6rem);
+  background:
+    radial-gradient(ellipse at 70% 50%, var(--av-primary-a42), transparent 55%),
+    var(--av-page-hero-bg);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: auto -8% -35% auto;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--av-page-hero-glow), transparent 70%);
+    pointer-events: none;
+  }
+
+  .fund-kicker {
+    color: var(--av-page-hero-kicker-text);
+    background: var(--av-page-hero-kicker-bg);
+    border-color: var(--av-page-hero-kicker-border);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    text-shadow: 0 0 28px var(--av-title-glow);
+  }
+
+  .fund-hero__lead {
+    margin: 1rem 0 0;
+    max-width: 34rem;
+    font-size: clamp(1rem, 2vw, 1.1rem);
+    line-height: 1.65;
+    color: var(--av-page-hero-lead, var(--av-dim));
+  }
+
+  .fund-btn-outline {
+    border-color: var(--av-border);
+    color: var(--av-text);
+    background: transparent;
+
+    &:hover {
+      border-color: var(--av-accent);
+      background: var(--av-accent-a08);
+      color: #fff;
+    }
+  }
+
+  .fund-hero__caption {
+    color: #94a3b8;
+  }
+}
+
+.fund-hero__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 1.05fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+
+.fund-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--av-link-primary);
+  background: linear-gradient(135deg, #dbeafe, #cffafe);
+  border: 1px solid #93c5fd;
+
+  &--dark {
+    color: #c2410c;
+    background: linear-gradient(135deg, #ffedd5, #fef3c7);
+    border-color: #fdba74;
+  }
+}
+
+.fund-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.35rem;
+}
+
+.fund-btn-outline {
+  border: 1px solid var(--av-border);
+  color: var(--av-text);
+  background: transparent;
+  font-weight: 600;
+
+  &:hover {
+    border-color: var(--av-accent);
+    background: var(--av-accent-a08);
+  }
+}
+
+.fund-hero__visual {
+  margin: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  img {
+    width: min(100%, 540px);
+    border-radius: 16px;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow:
+      0 24px 48px rgba(0, 0, 0, 0.45),
+      0 0 0 1px var(--av-accent-a08);
+  }
+}
+
+.fund-hero__caption {
+  margin-top: 0.85rem;
+  width: 100%;
+  text-align: right;
+  font-size: 0.86rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* —— Secciones —— */
+.fund-section {
+  padding: var(--av-section-y) 0;
+
+  &--white {
+    background: #fff;
+  }
+
+  &--soft {
+    background: linear-gradient(180deg, #f0f9ff 0%, #fff 100%);
+  }
+
+  &--warm {
+    background: linear-gradient(180deg, #fff7ed 0%, #fffbeb 100%);
+  }
+
+  &--cta {
+    background: var(--av-fundacion-cta-bg);
+    color: #fff;
+
+    .fund-kicker {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    h2,
+    .fund-section__head h2 {
+      color: #fff;
+    }
+
+    p,
+    .fund-section__lead {
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .fund-btn-outline {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.65);
+      background: rgba(255, 255, 255, 0.12);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22);
+        border-color: #fff;
+      }
+    }
+  }
+}
+
+.fund-section__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+
+  &--center {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+    font-weight: 800;
+    color: var(--fund-ink);
+  }
+}
+
+.fund-section__lead {
+  margin: 0.5rem 0 0;
+  max-width: 36rem;
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 1.02rem;
+}
+
+.fund-logo {
+  max-width: 140px;
+  max-height: 80px;
+  object-fit: contain;
+}
+
+/* —— Quiénes somos —— */
+.fund-section--about {
+  background: linear-gradient(180deg, #fff 0%, #f0f9ff 100%);
+  border-bottom: 1px solid #e0f2fe;
+}
+
+.fund-about__head {
+  max-width: 40rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    color: var(--fund-ink);
+  }
+}
+
+.fund-about__lead {
+  margin: 0;
+  font-size: 1.12rem;
+  line-height: 1.65;
+  color: #475569;
+  font-weight: 500;
+}
+
+.fund-about__layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: start;
+}
+
+.fund-about__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.fund-about__logo-wrap {
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 2px solid #bae6fd;
+  box-shadow: 0 8px 24px var(--av-primary-a08);
+}
+
+.fund-about__stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.fund-about__stat {
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+
+  strong {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  span:not(.fund-about__stat-icon) {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--fund-ink);
+  }
+}
+
+.fund-about__stat-icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #eff6ff, #ecfeff);
+}
+
+.fund-about__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--av-link-primary);
+  background: #fff;
+  border: 2px solid #93c5fd;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+  }
+}
+
+.fund-about__bloques {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fund-about__bloque {
+  position: relative;
+  overflow: visible;
+  display: flex;
+  gap: 1rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #3b82f6;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+  transition: box-shadow 0.2s;
+
+  &:nth-child(2) {
+    border-left-color: var(--av-accent);
+  }
+
+  &:nth-child(3) {
+    border-left-color: #f97316;
+  }
+
+  &.card-wave-host:hover {
+    box-shadow: 0 10px 28px var(--av-primary-a12);
+  }
+
+  h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--fund-ink);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #475569;
+  }
+}
+
+.fund-about__bloque-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  background: #f8fafc;
+}
+
+/* —— Misión / Visión —— */
+.fund-mv {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.15rem;
+  overflow: visible;
+}
+
+.fund-card {
+  position: relative;
+  overflow: visible;
+  border-radius: 18px;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 2px solid transparent;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+
+  &:first-child {
+    background: linear-gradient(145deg, #eff6ff, #fff);
+    border-color: #93c5fd;
+
+    .fund-card__label {
+      color: var(--av-link-primary);
+      background: #dbeafe;
+    }
+  }
+
+  &:last-child {
+    background: linear-gradient(145deg, #fff7ed, #fff);
+    border-color: #fdba74;
+
+    .fund-card__label {
+      color: #c2410c;
+      background: #ffedd5;
+    }
+  }
+
+  &__label {
+    display: inline-block;
+    margin-bottom: 0.55rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0 0 0.65rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--fund-ink);
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.68;
+    color: #475569;
+    white-space: pre-line;
+  }
+}
+
+/* —— Compromiso —— */
+.fund-commit {
+  max-width: 48rem;
+  margin-inline: auto;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #e0f2fe 100%);
+  border: 2px solid #fde68a;
+
+  h2 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+    font-weight: 800;
+    color: #9a3412;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 1.03rem;
+    line-height: 1.72;
+    color: #44403c;
+    white-space: pre-line;
+  }
+}
+
+/* —— Servicios —— */
+.fund-servicios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+  overflow: visible;
+}
+
+.fund-servicio {
+  position: relative;
+  overflow: visible;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1.15rem;
+  border: 2px solid #e2e8f0;
+  border-top-width: 4px;
+  transition: box-shadow 0.2s;
+
+  &:nth-child(4n + 1) {
+    border-top-color: #3b82f6;
+  }
+
+  &:nth-child(4n + 2) {
+    border-top-color: var(--av-accent);
+  }
+
+  &:nth-child(4n + 3) {
+    border-top-color: #f97316;
+  }
+
+  &:nth-child(4n + 4) {
+    border-top-color: #8b5cf6;
+  }
+
+  &.card-wave-host:hover {
+    box-shadow: 0 14px 32px var(--av-primary-a12);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    font-size: 1.35rem;
+    background: #f0f9ff;
+  }
+
+  h3 {
+    margin: 0.75rem 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--fund-ink);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #64748b;
+  }
+}
+
+/* —— CTA —— */
+.fund-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.45rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    max-width: 32rem;
+    line-height: 1.6;
+    font-size: 1.02rem;
+  }
+}
+
+.fund-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+/* —— Contacto —— */
+.fund-contacto {
+  max-width: var(--av-prose);
+  margin-inline: auto;
+  text-align: center;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0 0 1.35rem;
+    text-align: left;
+  }
+
+  &__item {
+    position: relative;
+    overflow: visible;
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f0f9ff, #fff);
+    border: 1px solid #bae6fd;
+
+    dt {
+      margin: 0 0 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0284c7;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.98rem;
+      color: var(--fund-ink);
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    a {
+      color: var(--av-primary);
+      text-decoration: none;
+
+      &:hover {
+        color: #ea580c;
+      }
+    }
+  }
+}
+
+.fund-muted {
+  margin-top: 0.25rem !important;
+  font-size: 0.86rem !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+@media (max-width: 960px) {
+  .fund-hero__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-hero__visual {
+    order: -1;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+
+  .fund-about__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-about__aside {
+    position: static;
+  }
+
+  .fund-about__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fund-mv {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .fund-about__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-contacto__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

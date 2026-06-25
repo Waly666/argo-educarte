@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-emp-docs-venc"
+  icon="📋"
+  [title]="titulo()"
+  hint="Documentos vencidos o por vencer. Pulse para abrir la ficha del empleado."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

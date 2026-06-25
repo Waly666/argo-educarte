@@ -1,0 +1,155 @@
+@use './jornada-live-estado.scss';
+@use './jornadas-shared' as *;
+
+.jornadas-proceso-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+
+    .title h1 {
+      margin: 0 0 4px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.45;
+      max-width: 52rem;
+    }
+  }
+
+  .jor-live-badge {
+    align-self: center;
+  }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 0.9rem;
+
+    &.error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.32);
+      color: #fecaca;
+    }
+
+    .close {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line-soft);
+    background: rgba(6, 16, 41, 0.5);
+
+    .search-box {
+      flex: 1 1 280px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 16, 41, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px 10px;
+
+      .ic {
+        color: var(--accent-2);
+      }
+
+      input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 8px 4px;
+      }
+    }
+
+    .count {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+    }
+  }
+
+  .content-wrap {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .loading,
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-soft);
+  }
+
+  .direccion-cell {
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .col-actions {
+    width: 1%;
+    min-width: 11.5rem;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .actions-cell {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.35rem;
+    justify-content: flex-end;
+
+    .btn-gestionar,
+    .btn-clases {
+      flex: 0 0 auto;
+    }
+
+    .btn-gestionar {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.9));
+      border: 1px solid rgba(96, 165, 250, 0.6);
+      color: #eff6ff;
+
+      &:hover {
+        background: linear-gradient(180deg, rgba(96, 165, 250, 1), rgba(59, 130, 246, 0.95));
+      }
+    }
+
+    .btn-clases {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.9));
+      border: 1px solid rgba(52, 211, 153, 0.55);
+      color: #ecfdf5;
+
+      &:hover {
+        background: linear-gradient(180deg, rgba(52, 211, 153, 1), rgba(16, 185, 129, 0.95));
+      }
+    }
+  }
+}

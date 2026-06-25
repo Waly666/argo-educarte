@@ -1,0 +1,28 @@
+# EAS Build: monorepo ARGO
+argo-backend/
+argo-frontend/
+argo-sitio/
+argo-aula-virtual/
+argo-mobile-aula/
+excel/
+backup/
+backup-argo/
+data/
+deploy/
+.cursor/
+/assets/
+*.zip
+*.md
+docker-compose.yml
+logoargo.png
+convert_md_to_pdf.py
+
+# Pesado / innecesario para APK móvil
+**/node_modules
+**/.expo
+**/.expo-check-bundle
+**/android
+**/ios
+**/.angular
+**/dist
+argo-backend/uploads/

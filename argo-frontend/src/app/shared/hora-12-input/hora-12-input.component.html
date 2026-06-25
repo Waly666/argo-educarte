@@ -1,0 +1,42 @@
+<div class="hora-12-input" role="group" aria-label="Seleccionar hora">
+  <div class="hora-12-controls">
+    <select
+      class="hora-12-select hora-12-h"
+      [ngModel]="hour12"
+      (ngModelChange)="onHourChange($event)"
+      aria-label="Hora">
+      @for (h of horas12; track h) {
+        <option [ngValue]="h">{{ h }}</option>
+      }
+    </select>
+    <span class="hora-12-sep" aria-hidden="true">:</span>
+    <select
+      class="hora-12-select hora-12-m"
+      [ngModel]="minute"
+      (ngModelChange)="onMinuteChange($event)"
+      aria-label="Minutos">
+      @for (m of minutosOptions; track m) {
+        <option [ngValue]="m">{{ fmtMin(m) }}</option>
+      }
+    </select>
+    <div class="hora-12-ampm" role="group" aria-label="a. m. o p. m.">
+      <button
+        type="button"
+        class="hora-12-ampm-btn"
+        [class.active]="ampm === 'AM'"
+        (click)="setAmPm('AM')">
+        AM
+      </button>
+      <button
+        type="button"
+        class="hora-12-ampm-btn"
+        [class.active]="ampm === 'PM'"
+        (click)="setAmPm('PM')">
+        PM
+      </button>
+    </div>
+  </div>
+  @if (showPreview && value) {
+    <span class="hora-12-preview">{{ previewLabel }}</span>
+  }
+</div>

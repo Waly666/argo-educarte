@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-cea-creado"
+  icon="🪪"
+  [title]="titulo()"
+  hint="Clases de licencia creadas pendientes de programar. Pulse para ir al alumno."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

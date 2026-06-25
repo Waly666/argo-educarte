@@ -1,0 +1,97 @@
+<section class="fe-page card">
+  <header class="fe-header">
+    <div>
+      <h1>Facturación electrónica</h1>
+      <p>
+        Consulta de facturas DIAN vía <strong>Factus</strong>. La emisión se hace desde la
+        <strong>pestaña Pagos</strong> del alumno. En desarrollo se usa <strong>modo stub</strong> (sin envío DIAN).
+      </p>
+    </div>
+    @if (permisoSvc.tiene(['config.facturacion', 'facturacion'])) {
+      <a class="btn ghost" routerLink="/app/configuracion/facturacion">Configuración Factus</a>
+    }
+  </header>
+
+  @if (resumen()) {
+    <div class="kpi-row">
+      <div class="kpi">
+        <span class="kpi-label">Emitidas</span>
+        <span class="kpi-value">{{ resumen()!.emitidas }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Validadas DIAN</span>
+        <span class="kpi-value">{{ resumen()!.validadas }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Rechazadas</span>
+        <span class="kpi-value">{{ resumen()!.rechazadas }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Modo desarrollo</span>
+        <span class="kpi-value">{{ resumen()!.modoDesarrollo }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Proveedor</span>
+        <span class="kpi-value kpi-text">{{ resumen()!.proveedor === 'factus' ? 'Factus' : 'Desarrollo' }}</span>
+      </div>
+    </div>
+  }
+
+  @if (msg()) {
+    <p class="msg err">{{ msg() }}</p>
+  }
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Buscar número, CUFE, documento, cliente…"
+      [ngModel]="filtro()"
+      (ngModelChange)="filtro.set($event)"
+      (keyup.enter)="buscar()" />
+    <button type="button" class="ghost" (click)="buscar()">Buscar</button>
+  </div>
+
+  @if (loading()) {
+    <p class="hint center">Cargando…</p>
+  } @else if (!emitidas().length) {
+    <p class="hint center">Aún no hay facturas emitidas.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Adquirente</th>
+            <th>Estado</th>
+            <th class="num">Total</th>
+            <th>CUFE</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of emitidas(); track f._id) {
+            <tr>
+              <td>{{ f.numeroFactura || f.referenceCode }}</td>
+              <td>{{ f.adquirente?.nombre || f.numDoc }}</td>
+              <td><span [ngClass]="capEstado(f)">{{ labelEstado(f) }}</span></td>
+              <td class="num">{{ fmt(f.valorTotal) }}</td>
+              <td class="mono truncate" [title]="f.cufe || ''">{{ f.cufe || '—' }}</td>
+              <td>{{ f.emitidaAt || f.createdAt | date: 'short' }}</td>
+              <td class="actions">
+                <button type="button" class="primary mini" (click)="verDocumento(f)" title="Ver e imprimir">Ver / PDF</button>
+                @if (puedeAnular(f)) {
+                  <button type="button" class="ghost mini" (click)="abrirNota(f)">Nota crédito</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (facturaNota(); as f) {
+    <argo-nota-credito-modal [factura]="f" (cerrar)="cerrarNota()" (emitida)="onNotaEmitida()" />
+  }
+</section>

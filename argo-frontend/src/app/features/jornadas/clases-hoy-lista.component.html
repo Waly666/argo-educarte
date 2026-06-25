@@ -1,0 +1,198 @@
+<section class="clases-hoy-page card admin-list-page">
+  <header class="jor-head page-head">
+    <div class="jor-head-main title">
+      <p class="breadcrumb"><a routerLink="/app/jornadas">Jornadas</a> / Clases de hoy</p>
+      <h1>Clases de hoy</h1>
+      @if (esInstructorSolo()) {
+        <p class="hint">
+          Sus clases asignadas del día <strong>{{ hoyLabel() }}</strong>
+          (<strong>PROGRAMADA</strong>, <strong>EN PROCESO</strong> y <strong>FINALIZADO</strong>).
+        </p>
+      } @else {
+        <p class="hint">
+          Todas las clases del día <strong>{{ hoyLabel() }}</strong>
+          (<strong>PROGRAMADA</strong>, <strong>EN PROCESO</strong> y <strong>FINALIZADO</strong>)
+          de contratos en ejecución.
+        </p>
+      }
+    </div>
+    <div class="jor-badges head-badges">
+      <span class="jor-chip jor-chip--sky">{{ total() }} clase{{ total() === 1 ? '' : 's' }}</span>
+      @if (puedeOperar()) {
+        <button
+          type="button"
+          class="primary sm btn-nueva-clase"
+          (click)="abrirModalCrearClase()"
+          title="Crear una clase en una jornada EN PROCESO de hoy">
+          + Nueva clase
+        </button>
+      }
+      @if (enProcesoCount() > 0) {
+        <span class="live-badge estado-clase-live estado-clase-proceso">{{ enProcesoCount() }} en proceso</span>
+      }
+      @if (programadasCount() > 0) {
+        <span class="live-badge estado-clase-live estado-clase-programada">{{ programadasCount() }} programada(s)</span>
+      }
+      @if (finalizadasCount() > 0) {
+        <span class="live-badge cap cap-slate cap-sm cap-text">{{ finalizadasCount() }} finalizada(s)</span>
+      }
+    </div>
+  </header>
+
+  @if (msg(); as t) {
+    <div class="banner error" role="alert">
+      <span>{{ t }}</span>
+      <button type="button" class="close" (click)="cerrarMsg()" aria-label="Cerrar">×</button>
+    </div>
+  }
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar contrato, programa, instructor, municipio…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        autocomplete="off" />
+    </div>
+    <button type="button" class="ghost mini" (click)="cargar()">Actualizar</button>
+    <span class="count">{{ filtradas().length }} de {{ total() }} clase(s)</span>
+  </div>
+
+  <div class="content-wrap">
+    <p class="loading" *ngIf="loading()">Cargando clases de hoy…</p>
+
+    <table class="argo data-table" *ngIf="!loading()">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Contrato</th>
+          <th>Programa</th>
+          <th>Ubicación</th>
+          <th>Municipio</th>
+          <th>Instructor</th>
+          <th>Carpa #</th>
+          <th>Estado</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filtradas()" [ngClass]="rowClaseClass(c.estado)">
+          <td class="hora-cell">{{ fmtHora(c.horaInicio) }}</td>
+          <td><span [ngClass]="capCodContrato(c.codContrato)">{{ c.codContrato || '—' }}</span></td>
+          <td>{{ c.programaNombre || c.idPrograma || '—' }}</td>
+          <td><span [ngClass]="capUbicacionClase(c.ubicacion)">{{ c.ubicacion || '—' }}</span></td>
+          <td><span [ngClass]="capMunicipioJor(c.municipioJornada)">{{ c.municipioJornada || '—' }}</span></td>
+          <td>
+            <span [ngClass]="capInstructor(labelInstructorClase(c), c.idEmpleadoInstructor)">
+              {{ labelInstructorClase(c) }}
+            </span>
+          </td>
+          <td>#{{ c.indiceEnDia || 1 }}</td>
+          <td>
+            <span [ngClass]="estadoClaseLiveClass(c.estado)">{{ c.estado || '—' }}</span>
+          </td>
+          <td class="col-actions">
+            <div class="actions-cell">
+              @if (puedeGestionar()) {
+                <button type="button" class="mini btn-gestionar" (click)="gestionarJornada(c)">Jornada</button>
+              }
+              @if (puedeOperar()) {
+                <button type="button" class="mini btn-editar" (click)="editarClase(c)">Editar</button>
+                @if (c.estado === 'PROGRAMADA') {
+                  <button type="button" class="mini btn-operar" (click)="iniciarYOperar(c)">Iniciar</button>
+                } @else {
+                  <button type="button" class="mini btn-operar" (click)="operarClase(c)">Operar</button>
+                }
+              }
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filtradas().length === 0">
+          <td colspan="9" class="empty">
+            @if (total() === 0) {
+              @if (esInstructorSolo()) {
+                <p>No tiene clases asignadas para hoy.</p>
+              } @else {
+                <p>No hay clases programadas, en proceso ni finalizadas para hoy.</p>
+              }
+            } @else {
+              <p>No hay resultados para la búsqueda.</p>
+            }
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (modalCrearOpen()) {
+  <argo-form-modal
+    [open]="true"
+    title="Nueva clase"
+    [wide]="true"
+    (closed)="cerrarModalCrearClase()">
+    <section class="clase-crear-form">
+      @if (jornadasOperablesHoy().length === 0) {
+        <p class="hint hint-warn">
+          No hay jornadas <strong>EN PROCESO</strong> para hoy. Solo entonces puede crear clases nuevas.
+        </p>
+      } @else {
+        <p class="hint">
+          La clase quedará asignada a su usuario de instructor. Elija la jornada activa del día, el programa y la ubicación.
+        </p>
+        <div class="crear-grid">
+          <div class="crear-field">
+            <label for="jornada-crear">Jornada (EN PROCESO)</label>
+            <select
+              id="jornada-crear"
+              [ngModel]="jornadaCrearSel()"
+              (ngModelChange)="jornadaCrearSel.set($event)">
+              <option value="">Seleccione jornada…</option>
+              @for (j of jornadasOperablesHoy(); track j._id) {
+                <option [value]="j._id">{{ labelJornadaCrear(j) }}</option>
+              }
+            </select>
+          </div>
+          <div class="crear-field">
+            <argo-catalogo-enum-buscar
+              label="Programa"
+              placeholder="Seleccione programa…"
+              [textoInicial]="textoProgramaCrear()"
+              [modoCombo]="true"
+              [remoto]="false"
+              [minLength]="1"
+              [opcionesLocales]="opcionesProgramasCrear()"
+              (seleccionado)="onProgramaCrearPick($event)"
+              (limpiado)="onProgramaCrearLimpiar()" />
+          </div>
+          <div class="crear-field">
+            <argo-catalogo-enum-buscar
+              label="Ubicación"
+              placeholder="Seleccione ubicación…"
+              [textoInicial]="textoUbicacionCrear()"
+              [modoCombo]="true"
+              [remoto]="false"
+              [minLength]="1"
+              [opcionesLocales]="opcionesUbicacionCrear()"
+              (seleccionado)="onUbicacionCrearPick($event)"
+              (limpiado)="onUbicacionCrearLimpiar()" />
+          </div>
+        </div>
+      }
+    </section>
+    <div modal-actions>
+      <button type="button" class="ghost" (click)="cerrarModalCrearClase()" [disabled]="guardandoClase()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="primary"
+        (click)="crearClaseHoy()"
+        [disabled]="guardandoClase() || jornadasOperablesHoy().length === 0 || !jornadaCrearSel() || !nuevaClaseProg()">
+        {{ guardandoClase() ? 'Creando…' : 'Crear clase' }}
+      </button>
+    </div>
+  </argo-form-modal>
+}

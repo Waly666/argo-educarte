@@ -1,0 +1,215 @@
+<section class="req-veh-page card">
+  <header class="req-veh-head">
+    <div class="req-veh-head-main">
+      <h1>Requisitos de documentos — Vehículos</h1>
+      <p>
+        Defina tipos de documento, vencimientos y qué exige cada clase de vehículo.
+        Las alertas de la lista usan estos parámetros.
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="req-veh-badges">
+        <span class="req-veh-chip req-veh-chip--sky">{{ tiposDocumento().length }} tipo{{ tiposDocumento().length === 1 ? '' : 's' }} doc.</span>
+        <span class="req-veh-chip req-veh-chip--amber">{{ tiposActivos().length }} activo{{ tiposActivos().length === 1 ? '' : 's' }}</span>
+        <span class="req-veh-chip req-veh-chip--teal">{{ clases().length }} clase{{ clases().length === 1 ? '' : 's' }}</span>
+        <span class="req-veh-chip req-veh-chip--violet">Aviso {{ diasAvisoVencimiento() }} d</span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="req-veh-hint">Cargando configuración…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="req-veh-msg" [class.req-veh-msg--err]="msgError()" role="status">{{ texto }}</div>
+    }
+
+    <div class="req-veh-form argo-form-shell">
+      <!-- 1. Alertas -->
+      <section class="req-veh-section req-veh-section--amber">
+        <header class="req-veh-section-head">
+          <span class="req-veh-section-badge">1</span>
+          <div class="req-veh-section-titles">
+            <h2 class="req-veh-section-title">Alertas de vencimiento</h2>
+            <p class="req-veh-section-desc">
+              Días antes del vencimiento en que aparece la alerta «Vence» en la lista de vehículos (valor por defecto para todos los tipos).
+            </p>
+          </div>
+        </header>
+        <div class="req-veh-section-body">
+          <label class="req-veh-field req-veh-field--ancho">
+            <span class="req-veh-label">Días de aviso (global)</span>
+            <input
+              type="number"
+              min="1"
+              max="365"
+              [ngModel]="diasAvisoVencimiento()"
+              (ngModelChange)="diasAvisoVencimiento.set(+$event || 30)" />
+            <span class="req-veh-field-hint">Cada tipo puede sobreescribir este valor en la tabla de documentos.</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. Tipos de documento -->
+      <section class="req-veh-section req-veh-section--sky">
+        <header class="req-veh-section-head">
+          <span class="req-veh-section-badge">2</span>
+          <div class="req-veh-section-titles">
+            <h2 class="req-veh-section-title">Tipos de documento</h2>
+            <p class="req-veh-section-desc">SOAT, tecnomecánica, pólizas y demás documentos del vehículo.</p>
+          </div>
+          <button type="button" class="ghost mini req-veh-btn-add" (click)="agregarTipo()">+ Agregar tipo</button>
+        </header>
+        <div class="req-veh-section-body">
+          <div class="req-veh-table-wrap">
+            <table class="req-veh-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th class="req-veh-th-c" title="Exige expedición y vencimiento">Vence</th>
+                  <th>Días aviso</th>
+                  <th class="req-veh-th-c">Activo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of tiposDocumento(); track t.id; let i = $index) {
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-veh-input"
+                        [ngModel]="t.codigo"
+                        (ngModelChange)="patchTipo(i, 'codigo', $event)"
+                        placeholder="SOAT" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-veh-input"
+                        [ngModel]="t.nombre"
+                        (ngModelChange)="patchTipo(i, 'nombre', $event)"
+                        placeholder="SOAT" />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="req-veh-input"
+                        [ngModel]="t.descripcion"
+                        (ngModelChange)="patchTipo(i, 'descripcion', $event)" />
+                    </td>
+                    <td class="req-veh-td-c">
+                      <input
+                        type="checkbox"
+                        [ngModel]="t.controlaVencimiento !== false"
+                        (ngModelChange)="patchTipo(i, 'controlaVencimiento', $event)" />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        class="req-veh-input req-veh-input--num"
+                        [disabled]="t.controlaVencimiento === false"
+                        [ngModel]="t.diasAvisoVencimiento ?? ''"
+                        (ngModelChange)="patchTipoDiasAviso(i, $event)"
+                        placeholder="Global" />
+                    </td>
+                    <td class="req-veh-td-c">
+                      <input
+                        type="checkbox"
+                        [ngModel]="t.activo !== false"
+                        (ngModelChange)="patchTipo(i, 'activo', $event)" />
+                    </td>
+                    <td class="req-veh-td-r">
+                      <button type="button" class="ghost mini danger" (click)="quitarTipo(i)">Quitar</button>
+                    </td>
+                  </tr>
+                }
+                @if (!tiposDocumento().length) {
+                  <tr>
+                    <td colspan="7" class="req-veh-empty">Sin tipos definidos. Pulse «Agregar tipo» para comenzar.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="req-veh-field-hint req-veh-field-hint--block">
+            <strong>Vence:</strong> exige expedición y vencimiento al registrar el documento y genera alertas.
+            <strong>Días aviso</strong> vacío usa el valor global de la sección 1.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. Matriz por clase -->
+      <section class="req-veh-section req-veh-section--violet">
+        <header class="req-veh-section-head">
+          <span class="req-veh-section-badge">3</span>
+          <div class="req-veh-section-titles">
+            <h2 class="req-veh-section-title">Requisitos por clase de vehículo</h2>
+            <p class="req-veh-section-desc">
+              Marque los documentos obligatorios para cada clase. Si el vehículo no tiene clase asignada, no se aplican requisitos.
+            </p>
+          </div>
+        </header>
+        <div class="req-veh-section-body">
+          @if (clases().length && tiposActivos().length) {
+            <div class="req-veh-matrix-wrap">
+              <table class="req-veh-matrix">
+                <thead>
+                  <tr>
+                    <th class="req-veh-matrix-sticky">Clase de vehículo</th>
+                    @for (d of tiposActivos(); track d.id) {
+                      <th class="req-veh-matrix-doc" [title]="d.codigo">{{ d.nombre }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of clases(); track c.idClase) {
+                    <tr>
+                      <td class="req-veh-matrix-sticky">
+                        <strong>{{ c.label }}</strong>
+                        <span class="req-veh-matrix-id">{{ c.idClase }}</span>
+                      </td>
+                      @for (d of tiposActivos(); track d.id) {
+                        <td class="req-veh-td-c">
+                          <label class="req-veh-matrix-check">
+                            <input
+                              type="checkbox"
+                              [checked]="tieneDocClase(c.idClase, d.id)"
+                              (change)="toggleDocClase(c.idClase, d.id, $any($event.target).checked)" />
+                            <span class="sr-only">{{ d.nombre }} — {{ c.label }}</span>
+                          </label>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else if (!clases().length) {
+            <div class="req-veh-empty-block">
+              <span class="req-veh-empty-icon" aria-hidden="true">🚗</span>
+              <p>No hay clases de vehículo cargadas.</p>
+              <span class="req-veh-field-hint">Cargue el catálogo «Clases de vehículo» o recargue catálogos desde Excel.</span>
+            </div>
+          } @else {
+            <div class="req-veh-empty-block">
+              <span class="req-veh-empty-icon" aria-hidden="true">📄</span>
+              <p>No hay tipos de documento activos.</p>
+              <span class="req-veh-field-hint">Agregue y active al menos un tipo en la sección 2.</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <footer class="req-veh-foot">
+      <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  }
+</section>

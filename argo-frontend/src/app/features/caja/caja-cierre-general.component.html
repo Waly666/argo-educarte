@@ -1,0 +1,290 @@
+<section class="admin-caja-page caja-page">
+  <header class="caja-head page-head card">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Cierre general</p>
+      <p class="eyebrow">Administración · No es el cuadre del cajero</p>
+      <h1>Cierre general de caja</h1>
+      <p class="lead">
+        Un solo cierre general por día. Consolida todas las cajas que los cajeros ya cerraron y que aún no entraron en
+        ningún cierre general (incluye días anteriores pendientes).
+      </p>
+      <p class="hint sede-doc" *ngIf="sedeSvc.labelActiva() !== 'Sin sede'">
+        Sede operativa: <strong>{{ sedeSvc.labelActiva() }}</strong>
+      </p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--amber">Administración</span>
+      <a routerLink="/app/caja" class="ghost link-volver link-btn">← Resumen cajero</a>
+    </div>
+  </header>
+
+  <nav class="fichas-nav" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="ficha-btn"
+      [class.active]="ficha() === 'abiertas'"
+      [attr.aria-selected]="ficha() === 'abiertas'"
+      (click)="setFicha('abiertas')">
+      Cajas abiertas
+      <span class="badge-count" *ngIf="hayCajasAbiertas()">{{ cajasAbiertas().length }}</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="ficha-btn"
+      [class.active]="ficha() === 'consolidado'"
+      [attr.aria-selected]="ficha() === 'consolidado'"
+      (click)="setFicha('consolidado')">
+      Cierre del día
+    </button>
+  </nav>
+
+  <div class="ficha-panel" *ngIf="ficha() === 'abiertas'" role="tabpanel">
+    <p class="caja-msg" *ngIf="msgAbiertas()">{{ msgAbiertas() }}</p>
+
+    <section class="card">
+      <div class="card-head-row">
+        <h2>Sesiones abiertas ({{ cajasAbiertas().length }})</h2>
+        <button type="button" class="ghost sm" *ngIf="hayCajasAbiertas()" (click)="abrirCierreMultiple()">
+          Cierre simultáneo
+        </button>
+      </div>
+      <p class="hint">
+        El cajero debe cerrar con arqueo desde <strong>Resumen del día</strong>. Use aquí solo si el administrador cierra
+        por él.
+      </p>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Sesión</th>
+              <th>Cajero</th>
+              <th class="num">Ingresos</th>
+              <th class="num">Egresos</th>
+              <th class="num">Esperado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cajasAbiertas()">
+              <td>#{{ item.sesion.idSesion }}</td>
+              <td>{{ item.sesion.usuario }}</td>
+              <td class="num">{{ item.resumenParcial.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="num">{{ item.resumenParcial.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="num">{{ item.resumenParcial.efectivoEsperado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td>
+                <button type="button" class="ghost sm" (click)="cerrarAjena(item)">Cerrar</button>
+              </td>
+            </tr>
+            <tr *ngIf="!cajasAbiertas().length">
+              <td colspan="6" class="empty">Todas las cajas están cerradas. Pase a «Cierre del día».</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="primary sm" *ngIf="!hayCajasAbiertas()" (click)="setFicha('consolidado')">
+        Ir a cierre del día →
+      </button>
+    </section>
+  </div>
+
+  <div class="ficha-panel" *ngIf="ficha() === 'consolidado'" role="tabpanel">
+    <div class="msg ok" *ngIf="msgConsolidado()">{{ msgConsolidado() }}</div>
+
+    <section class="card paso">
+      <h2>Cierre general del día</h2>
+      <p class="hint">
+        Elija la <strong>fecha del cierre general</strong> (un solo registro por día). Al cargar verá
+        <strong>todas</strong> las cajas cerradas por cajeros que aún no estén en ningún cierre general, sin importar si
+        cerraron hoy o en días anteriores.
+      </p>
+      <div class="fila-fecha">
+        <argo-date-input label="Fecha del cierre general" [ngModel]="fecha()" (ngModelChange)="setFecha($event)" ></argo-date-input>
+        <button type="button" class="primary" [disabled]="loading()" (click)="cargarDia()">
+          {{ loading() ? 'Cargando…' : 'Cargar cajas pendientes' }}
+        </button>
+        <button type="button" class="ghost" *ngIf="hayCajasAbiertas()" (click)="setFicha('abiertas')">
+          Ver {{ cajasAbiertas().length }} caja(s) abierta(s)
+        </button>
+      </div>
+      <div class="estado-turnos" *ngIf="estadoDia() as e">
+        <span class="turno-chip" [class.ok]="e.registrado" [class.pend]="!e.registrado">
+          {{
+            e.registrado
+              ? '✓ Cierre #' + e.cierre?.idCierreGeneral + ' registrado'
+              : 'Pendiente de registrar cierre general'
+          }}
+        </span>
+      </div>
+    </section>
+
+    <ng-container *ngIf="preview() as g">
+      <div class="alerta warn" *ngIf="g.tieneCajasAbiertas">
+        <strong>Hay cajas abiertas:</strong> no entran al informe hasta cerrarlas.
+        <button type="button" class="linkish" (click)="setFicha('abiertas')">Ir a Cajas abiertas</button>
+      </div>
+
+      <div class="alerta info" *ngIf="g.sesionesDiasAnteriores && g.sesionesDiasAnteriores > 0">
+        <strong>{{ g.sesionesDiasAnteriores }} caja(s) de días anteriores</strong> se incluyen en este cierre porque aún
+        no estaban consolidadas.
+      </div>
+
+      <section class="card" *ngIf="sesionesCerradas().length">
+        <h2>{{ sesionesCerradas().length }} caja(s) a consolidar</h2>
+        <div class="kpi-row">
+          <article class="kpi">
+            <span>Ingresos</span>
+            <strong>{{ g.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+          </article>
+          <article class="kpi">
+            <span>Egresos</span>
+            <strong>{{ g.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+          </article>
+          <article class="kpi highlight">
+            <span>Efectivo contado (suma arqueos)</span>
+            <strong>{{ g.totalEfectivoContado | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+          </article>
+          <article class="kpi" [class.warn]="g.cantidadDescuadres">
+            <span>Descuadres</span>
+            <strong>{{ g.cantidadDescuadres || 0 }}</strong>
+          </article>
+        </div>
+
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Sesión</th>
+                <th>Fecha cierre</th>
+                <th>Cajero</th>
+                <th class="num">Ingresos</th>
+                <th class="num">Pagos electrónicos</th>
+                <th class="num">Egresos</th>
+                <th class="num">Esperado</th>
+                <th class="num">Contado</th>
+                <th class="num">Diferencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let s of sesionesCerradas()"
+                [class.fila-desc]="s.diferencia != null && (s.diferencia > 1 || s.diferencia < -1)">
+                <td>#{{ s.idSesion }}</td>
+                <td>{{ s.fechaCierre | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ cajeroLabel(s) }}</td>
+                <td class="num">{{ s.totalIngresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ ingresosElectronicos(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ s.totalEgresos | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ s.efectivoEsperado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ s.efectivoContado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="num">{{ s.diferencia | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <argo-caja-resumen-servicios
+          *ngIf="g.ingresosPorServicioDetalle?.length || g.ingresosPorServicio?.length"
+          [servicios]="g.ingresosPorServicio ?? []"
+          [serviciosPorSesion]="g.ingresosPorServicioDetalle ?? []"
+          modo="compacto"
+          titulo="Resumen por servicios"
+        />
+
+        <div class="cols-resumen" *ngIf="g.ingresosPorTipo?.length || g.egresosPorFormaPago?.length">
+          <div *ngIf="g.ingresosPorTipo?.length">
+            <h4>Ingresos por forma de pago</h4>
+            <ul class="lista-montos">
+              <li *ngFor="let t of g.ingresosPorTipo">
+                {{ t.descripcion || t.idTipoPago }}:
+                <strong>{{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+                <span class="cnt">({{ t.cantidad }})</span>
+              </li>
+            </ul>
+          </div>
+          <div *ngIf="g.egresosPorFormaPago?.length">
+            <h4>Egresos por forma de pago</h4>
+            <ul class="lista-montos">
+              <li *ngFor="let t of g.egresosPorFormaPago">
+                {{ t.descripcion || t.formaPago }}:
+                <strong>{{ t.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</strong>
+                <span class="cnt">({{ t.cantidad }})</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acciones-informe">
+          <label class="obs">
+            <span>Observaciones (opcional)</span>
+            <textarea rows="2" [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)"></textarea>
+          </label>
+          <div class="btn-row">
+            <button type="button" class="primary lg" (click)="imprimirInforme()">🖨 Imprimir informe consolidado</button>
+            <button
+              type="button"
+              class="ghost lg"
+              [disabled]="loading() || !puedeRegistrar()"
+              (click)="registrarCierre()">
+              Guardar cierre general del día
+            </button>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <section class="card historial" *ngIf="historial().length">
+      <h2>Historial de cierres generales</h2>
+      <table class="tbl compact">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Cajas</th>
+            <th>Registrado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of historial()">
+            <td>{{ c.idCierreGeneral }}</td>
+            <td>{{ c.fechaDia || (c.periodoDesde | date: 'dd/MM/yyyy') }}</td>
+            <td>{{ c.cantidadCajas ?? c.resumen?.cantidadCajas ?? '—' }}</td>
+            <td>{{ c.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }} — {{ c.usuarioAdmin }}</td>
+            <td class="r">
+              <button type="button" class="ghost sm" (click)="reimprimirHistorial(c)">Reimprimir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</section>
+
+<div class="modal-backdrop" *ngIf="mostrarCierreMultiple()" (click)="mostrarCierreMultiple.set(false)">
+  <div class="modal card" (click)="$event.stopPropagation()">
+    <h2>Cierre simultáneo</h2>
+    <p class="hint">Indique efectivo contado por caja (el cajero normalmente cierra con arqueo en su resumen).</p>
+    <table class="tbl compact">
+      <thead>
+        <tr><th>Cajero</th><th class="num">Esperado</th><th>Contado</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of cierresPendientes()">
+          <td>{{ p.usuario }} (#{{ p.idSesion }})</td>
+          <td class="num">{{ p.efectivoEsperado | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>
+            <input type="number" min="0" [ngModel]="p.efectivoContado" (ngModelChange)="actualizarContado(p.idSesion, $event)" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="modal-actions">
+      <button type="button" class="ghost" (click)="mostrarCierreMultiple.set(false)">Cancelar</button>
+      <button type="button" class="primary" [disabled]="loading()" (click)="cerrarTodasLasCajas()">
+        Cerrar {{ cierresPendientes().length }} caja(s)
+      </button>
+    </div>
+  </div>
+</div>

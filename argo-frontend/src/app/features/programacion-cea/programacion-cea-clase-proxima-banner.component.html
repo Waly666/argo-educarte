@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-cea-proxima"
+  icon="⏰"
+  [title]="titulo()"
+  hint="Clases CEA que inician pronto. Pulse para ver clases de hoy."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

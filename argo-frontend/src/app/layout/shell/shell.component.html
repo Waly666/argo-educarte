@@ -1,0 +1,172 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="logo-img" src="/logoargo.png" alt="ARGO" />
+    </div>
+
+    <nav class="menu">
+      @for (m of menuItems(); track trackMenu(m)) {
+        @if (m.kind === 'link') {
+          <a
+            [routerLink]="m.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="menu-item"
+            [title]="m.label">
+            <span class="icon" [ngClass]="iconClass(m.iconTone)">{{ m.icon }}</span>
+            <span class="label" *ngIf="!collapsed()">{{ m.label }}</span>
+          </a>
+        } @else {
+          <div class="menu-group" [class.menu-group-rrhh]="isRrhhGroup(m.label)" [class.menu-group-caja]="isCajaGroup(m.label)">
+            <button
+              type="button"
+              class="menu-item group-head"
+              [class.active]="(isRrhhGroup(m.label) && rrhhGroupActive()) || (isCajaGroup(m.label) && cajaGroupActive())"
+              (click)="toggleGroup(m.label, m.children, $event)"
+              [title]="m.label">
+              <span class="icon" [ngClass]="iconClass(m.iconTone)">{{ m.icon }}</span>
+              <span class="label" *ngIf="!collapsed()">{{ m.label }}</span>
+              <span class="chev" *ngIf="!collapsed()">{{ isGroupOpen(m.label) ? '▾' : '▸' }}</span>
+            </button>
+            <div
+              class="submenu"
+              [class.submenu-rrhh]="isRrhhGroup(m.label)"
+              [class.submenu-caja]="isCajaGroup(m.label)"
+              *ngIf="isGroupOpen(m.label) && !collapsed()">
+              @for (c of visibleChildren(m.children); track trackMenuChild(c)) {
+                @if (c.section) {
+                  <div class="submenu-section">{{ c.section }}</div>
+                }
+                <a
+                  [routerLink]="c.path"
+                  [queryParams]="c.queryParams || null"
+                  class="menu-item sub"
+                  [class.active]="subLinkActive(c)"
+                  [title]="c.label">
+                  <span class="icon" [ngClass]="iconClass(c.iconTone)">{{ c.icon }}</span>
+                  <span class="label">{{ c.label }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+      }
+    </nav>
+
+    <button class="collapse" (click)="toggle()" [title]="collapsed() ? 'Expandir' : 'Colapsar'">
+      {{ collapsed() ? '»' : '«' }}
+    </button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="welcome-title">
+          Bienvenido, {{ welcomeName() }}
+          <span class="wave" aria-hidden="true">👋</span>
+        </h1>
+        <p class="welcome-sub">Sistema de Información — <strong>ARGO</strong></p>
+        <div class="status-bar">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-text">
+            Sesión activa: <strong>{{ userLabel() || 'Usuario' }}</strong>
+            <span class="status-sep">—</span>
+            Rol: <strong>{{ rolLabel() }}</strong>
+          </span>
+        </div>
+        @if (mostrarAlarmasCabecera()) {
+        <div class="head-alarms-stack">
+          @if (mostrarBannerCajaCerrada()) {
+            <argo-caja-cerrada-banner class="head-caja-alarm head-alerta-pago-wrap" [blink]="true" />
+          }
+          @if (mostrarBannerCertificado()) {
+            <argo-certificado-jornada-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerComprobantesHoy()) {
+            <argo-comprobante-hoy-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerAlertaPagoAlumno()) {
+            <argo-alerta-pago-alumno-banner class="head-alerta-pago-wrap" modo="inline" />
+          }
+          @if (mostrarBannerDocsVehiculosFaltantes()) {
+            <argo-vehiculo-docs-faltantes-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerDocsEmpleadosFaltantes()) {
+            <argo-empleado-docs-faltantes-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerCertificadoVencimiento()) {
+            <argo-certificado-vencimiento-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerCertificadoVencido()) {
+            <argo-certificado-vencido-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerJornadaProceso()) {
+            <argo-jornada-en-proceso-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerDocsVehiculosVencidos()) {
+            <argo-vehiculo-docs-vencimiento-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerInspeccionVehiculos()) {
+            <argo-vehiculo-inspeccion-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerDocsEmpleadosVencidos()) {
+            <argo-empleado-docs-vencimiento-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerProgramacionCea()) {
+            <argo-programacion-cea-pendiente-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerClasesCeaCreado()) {
+            <argo-programacion-cea-clase-creado-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerClaseProximaCea()) {
+            <argo-programacion-cea-clase-proxima-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerInstructorPortal()) {
+            <argo-instructor-portal-banner class="head-alerta-pago-wrap" />
+          }
+          @if (mostrarBannerForoMensaje()) {
+            <argo-foro-mensaje-banner class="head-alerta-pago-wrap" />
+          }
+        </div>
+        }
+        @if (mostrarToastJornadaLive()) {
+          <argo-jornada-live-toast class="head-jornada-live-toast" />
+        }
+      </div>
+
+      <div class="topbar-right">
+        @if (mostrarFiltroSede()) {
+          <div class="sede-select-wrap">
+            <label class="sede-label" for="sede-activa">Filtrar sede</label>
+            <select
+              id="sede-activa"
+              class="sede-select"
+              [ngModel]="sedeSvc.idSede()"
+              (ngModelChange)="onSedeChange($event)">
+              @for (s of sedes(); track s.idSede) {
+                <option [value]="s.idSede">{{ s.nombre }}{{ s.codigo ? ' (' + s.codigo + ')' : '' }}</option>
+              }
+            </select>
+          </div>
+        }
+        @if (mostrarSedeFija()) {
+          <div class="sede-readonly" title="Sede de trabajo">
+            <span class="sede-label">Sede</span>
+            <span class="sede-value">{{ labelSedeHeader() }}</span>
+          </div>
+        }
+        <span class="user" *ngIf="user() as u">
+          <span [ngClass]="capRol(u.rol)">{{ u.rol || 'usuario' }}</span>
+        </span>
+        <button type="button" class="btn-icon" title="Panel" routerLink="/app/dashboard">⌂</button>
+        <button type="button" class="btn-tool btn-dash-red" (click)="logout()">Salir</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <argo-asistente-flotante />
+</div>

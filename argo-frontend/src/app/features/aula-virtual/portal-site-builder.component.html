@@ -1,0 +1,478 @@
+<div class="psb" [class.psb--preview]="previewVisible()">
+  <aside class="psb-sidebar" aria-label="Editor del sitio web">
+    <div class="psb-sidebar__brand">
+      <span class="psb-sidebar__logo" aria-hidden="true">🌐</span>
+      <div>
+        <strong>Editor del sitio</strong>
+        <span>Su página pública en internet</span>
+      </div>
+    </div>
+
+    <nav class="psb-menu">
+      @for (group of menuGroups; track group.title) {
+        <div class="psb-menu__group">
+          <p class="psb-menu__group-title">{{ group.title }}</p>
+          @for (item of group.items; track item.id) {
+            <button
+              type="button"
+              class="psb-menu__item"
+              [class.active]="panel() === item.id"
+              (click)="setPanel(item.id)"
+            >
+              <span class="psb-menu__icon" aria-hidden="true">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+            </button>
+          }
+        </div>
+      }
+    </nav>
+
+    <button type="button" class="psb-sidebar__toggle" (click)="togglePreview()">
+      {{ previewVisible() ? '👁️ Ocultar vista previa' : '👁️ Ver vista previa' }}
+    </button>
+    <a class="psb-sidebar__preview" [href]="portalUrl" target="_blank" rel="noopener">
+      Abrir sitio en otra pestaña ↗
+    </a>
+  </aside>
+
+  <div class="psb-main">
+    @if (panelInfo(); as info) {
+      <header class="psb-head">
+        <h2>{{ info.title }}</h2>
+        <p class="psb-help">{{ info.help }}</p>
+      </header>
+    }
+
+    @switch (panel()) {
+      @case ('panel') {
+        <div class="psb-progress">
+          <span>Progreso sugerido: {{ pasosCompletados() }} de {{ pasosGuia().length }} pasos</span>
+          <div class="psb-progress__bar" [style.width.%]="(pasosCompletados() / pasosGuia().length) * 100"></div>
+        </div>
+
+        <ol class="psb-steps">
+          @for (paso of pasosGuia(); track paso.num) {
+            <li class="psb-step" [class.psb-step--done]="paso.listo()">
+              <span class="psb-step__num">{{ paso.num }}</span>
+              <div class="psb-step__body">
+                <strong>{{ paso.titulo }}</strong>
+                <p>{{ paso.texto }}</p>
+                @if (paso.num < 5) {
+                  <button type="button" class="psb-link" (click)="setPanel(paso.panel)">Ir a este paso →</button>
+                } @else {
+                  <p class="psb-step__publish">Use el botón azul <strong>«Publicar cambios en el sitio»</strong> al final de la pantalla.</p>
+                }
+              </div>
+              @if (paso.listo()) {
+                <span class="psb-step__check" aria-label="Completado">✓</span>
+              }
+            </li>
+          }
+        </ol>
+
+        <div class="psb-cards">
+          <article class="psb-card">
+            <h3>{{ paginasActivas() }}</h3>
+            <p>páginas en el menú</p>
+            <button type="button" class="psb-link" (click)="setPanel('paginas')">Editar menú →</button>
+          </article>
+          <article class="psb-card">
+            <h3>{{ seccionesActivas() }}</h3>
+            <p>bloques activos en el inicio</p>
+            <button type="button" class="psb-link" (click)="setPanel('inicio')">Editar inicio →</button>
+          </article>
+        </div>
+
+        @if (!portalForm.nombreEmpresa?.trim()) {
+          <div class="psb-alert">
+            <strong>⚠️ Falta el nombre de su empresa.</strong>
+            Vaya a <button type="button" class="psb-link" (click)="setPanel('empresa')">Nombre y contacto</button>
+            y escríbalo. Si no lo hace, el sitio puede mostrar un nombre de ejemplo.
+          </div>
+        }
+      }
+
+      @case ('paginas') {
+        <p class="psb-note">
+          💡 <strong>Consejo:</strong> si no usa una página, desactívela. Así el menú queda más simple para sus visitantes.
+        </p>
+        <div class="psb-page-list">
+          @for (p of paginaMeta; track p.key) {
+            @if (site.paginas[p.key]; as pg) {
+              <article class="psb-page-card" [class.psb-page-card--off]="!paginaSiempreVisible(p.key) && !pg.activa">
+                <header class="psb-page-card__head">
+                  <strong>{{ p.titulo }}</strong>
+                  <span class="psb-muted">{{ p.descripcion }}</span>
+                </header>
+                <label class="psb-field psb-field--plain">
+                  <span>¿Cómo debe llamarse en el menú?</span>
+                  <input
+                    type="text"
+                    class="psb-input"
+                    [(ngModel)]="pg.etiquetaMenu"
+                    [disabled]="p.key === 'aula'"
+                    placeholder="Ej. Nuestra empresa"
+                  />
+                </label>
+                @if (paginaSiempreVisible(p.key)) {
+                  <span class="psb-badge psb-badge--ok">Siempre visible</span>
+                } @else {
+                  <label class="psb-check psb-check--card">
+                    <input type="checkbox" [checked]="pg.activa" (change)="togglePagina(p.key, $any($event.target).checked)" />
+                    Mostrar esta página en el sitio
+                  </label>
+                }
+              </article>
+            }
+          }
+        </div>
+      }
+
+      @case ('apariencia') {
+        <div class="psb-mode-toggle">
+          <button
+            type="button"
+            class="psb-mode-btn"
+            [class.active]="!aparienciaAvanzada()"
+            (click)="aparienciaAvanzada.set(false)"
+          >
+            Modo sencillo
+          </button>
+          <button
+            type="button"
+            class="psb-mode-btn"
+            [class.active]="aparienciaAvanzada()"
+            (click)="aparienciaAvanzada.set(true)"
+          >
+            Más opciones
+          </button>
+        </div>
+
+        <div class="psb-stack">
+          <label class="psb-field psb-field--plain psb-field--color">
+            <span>Color principal (botones y menú)</span>
+            <div class="psb-color-row">
+              <input type="color" [(ngModel)]="site.tema.colorPrimario" aria-label="Elegir color principal" />
+              <input type="text" class="psb-input" [(ngModel)]="site.tema.colorPrimario" />
+            </div>
+          </label>
+
+          @if (aparienciaAvanzada()) {
+            <div class="psb-grid2">
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Color oscuro (fondos)</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorPrimarioOscuro" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorPrimarioOscuro" />
+                </div>
+              </label>
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Color de acento (detalles)</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorAcento" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorAcento" />
+                </div>
+              </label>
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Fondo de la página</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorFondo" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorFondo" />
+                </div>
+              </label>
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Color del texto</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorTexto" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorTexto" />
+                </div>
+              </label>
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Superficie (tarjetas y paneles)</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorSuperficie" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorSuperficie" />
+                </div>
+              </label>
+              <label class="psb-field psb-field--plain psb-field--color">
+                <span>Texto secundario</span>
+                <div class="psb-color-row">
+                  <input type="color" [(ngModel)]="site.tema.colorTextoSecundario" />
+                  <input type="text" class="psb-input" [(ngModel)]="site.tema.colorTextoSecundario" />
+                </div>
+              </label>
+            </div>
+          }
+
+          <label class="psb-field psb-field--plain">
+            <span>Tipo de letra</span>
+            <select class="psb-input" [(ngModel)]="site.tema.fuente">
+              @for (f of fuentes; track f) {
+                <option [value]="f">{{ f }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="psb-hero-image">
+            <span class="psb-field-label">Imagen grande del inicio (banner)</span>
+            <p class="psb-hint">
+              Foto o ilustración que aparece a la derecha del texto principal. Se guarda al instante en el sitio;
+              no necesita publicar cambios. PNG, JPG o WEBP. Máx. 8 MB.
+            </p>
+            <div class="psb-hero-image__row">
+              @if (heroPreviewUrl(); as heroUrl) {
+                <figure class="psb-hero-image__preview">
+                  <img [src]="heroUrl" alt="Vista previa imagen del banner" />
+                </figure>
+              } @else {
+                <div class="psb-hero-image__preview psb-hero-image__preview--empty">
+                  Imagen por defecto del portal
+                </div>
+              }
+              <div class="psb-hero-image__actions">
+                <label class="psb-btn psb-btn--ghost psb-btn--file" [class.psb-btn--disabled]="heroUploading()">
+                  {{ heroUploading() ? 'Subiendo…' : 'Elegir imagen' }}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    hidden
+                    (change)="onHeroImagen($event)"
+                    [disabled]="heroUploading()"
+                  />
+                </label>
+                @if (tieneImagenHero()) {
+                  <button
+                    type="button"
+                    class="psb-btn psb-btn--ghost"
+                    [disabled]="heroUploading()"
+                    (click)="quitarImagenHero()"
+                  >
+                    Quitar imagen
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="psb-preview-theme" [ngStyle]="themePreviewVars()">
+            <span class="psb-preview-theme__label">Vista previa del tema:</span>
+            <div class="psb-preview-theme__samples">
+              <span class="psb-preview-theme__btn">Botón principal</span>
+              <span class="psb-preview-theme__chip">Detalle / acento</span>
+              <span class="psb-preview-theme__hero">Hero oscuro</span>
+              <span class="psb-preview-theme__footer">Pie de página</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @case ('inicio') {
+        <p class="psb-note">
+          ↕ Use <strong>Subir</strong> y <strong>Bajar</strong> para cambiar el orden. El interruptor enciende o apaga cada bloque.
+        </p>
+        <ul class="psb-sections">
+          @for (s of seccionesInicio(); track s.id) {
+            <li class="psb-sections__row" [class.psb-sections__row--off]="!s.activa">
+              <div class="psb-sections__order">
+                <button type="button" class="psb-order-btn" (click)="moverSeccion(s.id, -1)">↑ Subir</button>
+                <button type="button" class="psb-order-btn" (click)="moverSeccion(s.id, 1)">↓ Bajar</button>
+              </div>
+              <div class="psb-sections__info">
+                <span class="psb-sections__label">{{ s.label }}</span>
+                <span class="psb-sections__state" [class.is-on]="s.activa">{{ s.activa ? 'Visible' : 'Oculto' }}</span>
+              </div>
+              <label class="psb-switch" [attr.aria-label]="'Mostrar ' + s.label">
+                <input type="checkbox" [checked]="s.activa" (change)="toggleSeccion(s.id, $any($event.target).checked)" />
+                <span></span>
+              </label>
+            </li>
+          }
+        </ul>
+      }
+
+      @case ('contenido') {
+        <p class="psb-note">
+          Elija una sección abajo para editar sus textos. Los cambios se ven en la vista previa de la derecha.
+        </p>
+        <argo-portal-landing-editor [landing]="landing" />
+      }
+
+      @case ('institucional') {
+        <p class="psb-note">
+          Esta es la página que muchos llaman «Fundación», «Empresa» o «Quiénes somos». El nombre en el menú se cambia en
+          <button type="button" class="psb-link" (click)="setPanel('paginas')">Páginas visibles</button>.
+        </p>
+        <argo-portal-fundacion-editor
+          [fundacion]="landing.fundacion"
+          [nombreEmpresa]="portalForm.nombreEmpresa || ''"
+        />
+      }
+
+      @case ('blog') {
+        <p class="psb-note">
+          Estos textos aparecen siempre en la página <strong>/blog</strong> del sitio público.
+          Para crear o publicar artículos use
+          <a routerLink="/app/aula-virtual/blog">Aula virtual → Blog del portal</a>.
+        </p>
+        <div class="psb-stack">
+          <div class="psb-grid3">
+            <label class="psb-field psb-field--plain">
+              <span>Etiqueta pequeña</span>
+              <input type="text" class="psb-input" [(ngModel)]="landing.blog.kicker" placeholder="Blog" />
+            </label>
+            <label class="psb-field psb-field--plain psb-field--span2">
+              <span>Título de la página</span>
+              <input type="text" class="psb-input" [(ngModel)]="landing.blog.titulo" placeholder="Noticias y artículos" />
+            </label>
+          </div>
+          <label class="psb-field psb-field--plain">
+            <span>Texto introductorio</span>
+            <textarea class="psb-input" rows="3" [(ngModel)]="landing.blog.lead"></textarea>
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>Título cuando no hay artículos</span>
+            <input type="text" class="psb-input" [(ngModel)]="landing.blog.emptyTitulo" />
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>Mensaje cuando no hay artículos</span>
+            <textarea class="psb-input" rows="2" [(ngModel)]="landing.blog.emptyTexto"></textarea>
+          </label>
+        </div>
+      }
+
+      @case ('empresa') {
+        <div class="psb-stack psb-stack--wide">
+          <div class="psb-highlight">
+            <label class="psb-field psb-field--plain">
+              <span>¿Cómo se llama su empresa o institución?</span>
+              <input
+                type="text"
+                class="psb-input psb-input--lg"
+                [(ngModel)]="portalForm.nombreEmpresa"
+                placeholder="Ej. Academia de Conducción El Progreso"
+              />
+              <span class="psb-hint">Este nombre aparece en el menú superior, en el pie de página y en varias secciones del sitio.</span>
+            </label>
+          </div>
+
+          <h3 class="psb-subtitle">Datos de contacto (aparecen en el sitio)</h3>
+          <div class="psb-grid2">
+            <label class="psb-field psb-field--plain">
+              <span>NIT (opcional)</span>
+              <input type="text" class="psb-input" [(ngModel)]="portalForm.nit" />
+            </label>
+            <label class="psb-field psb-field--plain">
+              <span>Teléfono o WhatsApp</span>
+              <input type="text" class="psb-input" [(ngModel)]="portalForm.telefono" placeholder="300 123 4567" />
+            </label>
+            <label class="psb-field psb-field--plain">
+              <span>Dirección</span>
+              <input type="text" class="psb-input" [(ngModel)]="portalForm.direccion" placeholder="Calle 10 # 20-30" />
+            </label>
+            <label class="psb-field psb-field--plain">
+              <span>Ciudad</span>
+              <input type="text" class="psb-input" [(ngModel)]="portalForm.ciudad" placeholder="Bogotá" />
+            </label>
+            <label class="psb-field psb-field--plain psb-field--full">
+              <span>Correo que verán los visitantes</span>
+              <input type="email" class="psb-input" [(ngModel)]="portalForm.email" placeholder="info@suempresa.com" />
+            </label>
+          </div>
+
+          @if (portalForm.urlLogoAbsoluta; as logo) {
+            <div class="psb-logo-row">
+              <img [src]="logo" alt="Logo" class="psb-logo-thumb" />
+              <p class="psb-hint">Para cambiar el logo: <a routerLink="/app/aula-virtual">Aula virtual → pestaña Empresa</a>.</p>
+            </div>
+          } @else {
+            <p class="psb-hint">
+              📷 ¿Tiene logo?
+              <a routerLink="/app/aula-virtual">Súbalo en Aula virtual → Empresa</a>.
+            </p>
+          }
+
+          <hr class="psb-divider" />
+
+          <h3 class="psb-subtitle">Texto grande de la página principal</h3>
+          <p class="psb-hint">Es la frase animada que aparece en el banner del inicio (no es el nombre de la empresa).</p>
+          <label class="psb-field psb-field--plain">
+            <span>Frase principal del banner</span>
+            <input type="text" class="psb-input" [(ngModel)]="portalForm.heroTitulo" placeholder="Ej. Capacitación en seguridad vial" />
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>Texto debajo del banner</span>
+            <textarea class="psb-input" rows="2" [(ngModel)]="portalForm.heroSubtitulo" placeholder="Una oración que explique qué ofrece su institución"></textarea>
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>Página «Acerca de» (texto completo)</span>
+            <textarea class="psb-input" rows="5" [(ngModel)]="portalForm.acercaDeHtml" placeholder="Texto sobre su institución"></textarea>
+            <span class="psb-hint">La primera línea también se muestra bajo el logo en el pie. Para cambiar solo esa frase use <button type="button" class="psb-link" (click)="setPanel('marca')">Pie de página</button>.</span>
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>¿A qué correo llegan los mensajes del formulario de contacto?</span>
+            <input type="email" class="psb-input" [(ngModel)]="portalForm.emailContacto" placeholder="contacto@suempresa.com" />
+            <span class="psb-hint">Si lo deja vacío, se usa el correo de arriba o el configurado en Recibos.</span>
+          </label>
+        </div>
+      }
+
+      @case ('marca') {
+        <div class="psb-stack">
+          <h3 class="psb-subtitle">Texto junto al logo (parte superior del pie)</h3>
+          <p class="psb-hint">Es lo que aparece debajo del nombre de su institución en el pie del sitio, antes de los enlaces.</p>
+          <label class="psb-field psb-field--plain">
+            <span>Año o leyenda (ej. Est. 2025)</span>
+            <input
+              type="text"
+              class="psb-input"
+              [(ngModel)]="landing.footer.founded"
+              placeholder="Est. 2025"
+            />
+          </label>
+          <label class="psb-field psb-field--plain">
+            <span>Frase corta bajo el nombre</span>
+            <textarea
+              class="psb-input"
+              rows="2"
+              [ngModel]="footerFraseCorta()"
+              (ngModelChange)="setFooterFraseCorta($event)"
+              placeholder="Ej. Formación profesional con impacto social desde Villavicencio."
+            ></textarea>
+            <span class="psb-hint">Si aún ve textos de Finstruvial, reemplácelos aquí y pulse Publicar cambios.</span>
+          </label>
+
+          <hr class="psb-divider" />
+
+          <h3 class="psb-subtitle">Parte inferior del pie</h3>
+          <label class="psb-field psb-field--plain">
+            <span>Texto al final del sitio (derechos de autor)</span>
+            <textarea
+              class="psb-input"
+              rows="2"
+              [(ngModel)]="site.marca.textoCopyright"
+              placeholder="© 2026 Mi academia. Todos los derechos reservados."
+            ></textarea>
+          </label>
+          <label class="psb-check">
+            <input type="checkbox" [(ngModel)]="site.marca.ocultarMarcaDesarrollador" />
+            No mostrar nombre del desarrollador del sistema en el pie de página
+          </label>
+          @if (!site.marca.ocultarMarcaDesarrollador) {
+            <label class="psb-field psb-field--plain">
+              <span>Texto del desarrollador (opcional)</span>
+              <input type="text" class="psb-input" [(ngModel)]="site.marca.textoPieDesarrollador" />
+            </label>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  @if (previewVisible()) {
+    <argo-portal-site-preview
+      [portalForm]="portalForm"
+      [portalUrl]="portalUrl"
+      [activePanel]="panel()"
+    />
+  }
+</div>

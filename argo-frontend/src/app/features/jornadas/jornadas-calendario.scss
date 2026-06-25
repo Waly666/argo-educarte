@@ -1,0 +1,931 @@
+/* Calendario jornadas / clases — estilos globales (evita budget del componente hub) */
+
+@keyframes cal-tipo-live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.65), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.25), 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@keyframes cal-atencion-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(251, 191, 36, 0.9),
+      0 0 14px rgba(251, 191, 36, 0.45),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.35),
+      0 0 4px rgba(251, 191, 36, 0.15),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+}
+
+@keyframes cal-atencion-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes cal-atencion-onda {
+  0% {
+    transform: scale(1);
+    opacity: 0.72;
+  }
+  70%,
+  100% {
+    transform: scale(1.42);
+    opacity: 0;
+  }
+}
+
+@mixin cal-ripple-ondas($color: rgba(251, 191, 36, 0.82), $inset: -4px, $duration: 2s) {
+  overflow: visible;
+  isolation: isolate;
+  z-index: 2;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: $inset;
+    border-radius: inherit;
+    border: 2px solid $color;
+    background: transparent;
+    pointer-events: none;
+    z-index: -1;
+    box-shadow: none;
+    width: auto;
+    height: auto;
+    margin: 0;
+    animation: cal-atencion-onda $duration ease-out infinite;
+  }
+
+  &::after {
+    animation-delay: calc($duration * 0.5);
+  }
+}
+
+.argo-cal,
+.jornadas-page,
+.cea-clases {
+  /* Paleta CEA: teoría (violeta), taller (naranja), práctica (esmeralda) */
+  --cal-teoria-solid: #7c3aed;
+  --cal-teoria-accent: #c4b5fd;
+  --cal-teoria-text: #f5f3ff;
+  --cal-taller-solid: #ea580c;
+  --cal-taller-accent: #fdba74;
+  --cal-taller-text: #fff7ed;
+  --cal-practica-solid: #10b981;
+  --cal-practica-accent: #6ee7b7;
+  --cal-practica-text: #ecfdf5;
+
+  .vista-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  .vista-toggle {
+    display: inline-flex;
+    padding: 3px;
+    gap: 2px;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--surface-muted);
+
+    button {
+      padding: 0.4rem 0.95rem;
+      background: transparent;
+      border: none;
+      border-radius: 999px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+
+      &.active {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+      }
+    }
+  }
+
+  .cal-hint-all {
+    color: var(--accent-2);
+  }
+
+  .cal-panel {
+    margin-top: 0.75rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-lg);
+    background: var(--surface-elevated);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+  }
+
+  .cal-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+
+    .cal-title {
+      margin: 0;
+      min-width: 10rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      color: var(--text);
+    }
+  }
+
+  .cal-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.65rem;
+    margin-bottom: 0.55rem;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+
+    .cal-resumen-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border: 1px solid transparent;
+    }
+  }
+
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.85rem;
+    margin-bottom: 0.65rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: var(--radius);
+    background: rgba(8, 18, 42, 0.55);
+    border: 1px solid rgba(120, 170, 255, 0.12);
+
+    .cal-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    .cal-legend-muted {
+      opacity: 0.85;
+    }
+  }
+
+  .cal-legend-dot {
+    display: inline-block;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+
+    &.cap-amber {
+      background: #fbbf24;
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.5);
+    }
+
+    &.cap-emerald {
+      background: #34d399;
+      box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.5);
+    }
+
+    &.cap-slate {
+      background: #94a3b8;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.45);
+    }
+
+    &.cal-clase-programada {
+      background: #6366f1;
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.55);
+    }
+
+    &.cal-clase-creado {
+      background: #fbbf24;
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.55);
+      opacity: 0.92;
+    }
+
+    &.cal-clase-proceso {
+      background: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.55);
+    }
+
+    &.cal-clase-finalizada {
+      background: #64748b;
+      box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.5);
+    }
+
+    &.cal-tipo-teoria {
+      background: var(--cal-teoria-solid);
+      box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.55);
+    }
+
+    &.cal-tipo-taller {
+      background: var(--cal-taller-solid);
+      box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.55);
+    }
+
+    &.cal-tipo-practica {
+      background: var(--cal-practica-solid);
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.55);
+    }
+
+    &.cal-est-pendiente-legend {
+      position: relative;
+      background: #fbbf24;
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.65);
+      animation: cal-atencion-dot 1.1s ease-in-out infinite;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: -5px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(251, 191, 36, 0.85);
+        pointer-events: none;
+        animation: cal-atencion-onda 1.8s ease-out infinite;
+      }
+    }
+
+    &.sin-hora {
+      background: transparent;
+      border: 1px dashed rgba(120, 170, 255, 0.45);
+    }
+  }
+
+  .cal-loading,
+  .cal-empty {
+    margin: 0.75rem 0 0.25rem;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+  }
+
+  .cal-mes-head {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    margin-bottom: 1px;
+
+    .cal-mes-head-cell {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      padding: 0.35rem 0.2rem;
+
+      &.fin-semana {
+        color: rgba(248, 113, 113, 0.85);
+      }
+    }
+  }
+
+  .cal-mes-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: minmax(7rem, auto);
+    gap: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    padding: 2px;
+  }
+
+  .cal-mes-dia {
+    background: var(--surface-muted);
+    padding: 0.45rem 0.5rem;
+    min-height: 7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    &.otro-mes {
+      background: rgba(6, 12, 28, 0.72);
+
+      .cal-mes-num {
+        color: var(--text-soft);
+        opacity: 0.75;
+      }
+    }
+
+    &.fin-semana:not(.otro-mes) {
+      background: rgba(10, 16, 36, 0.98);
+    }
+
+    &.hoy {
+      box-shadow: inset 0 0 0 2px rgba(78, 163, 255, 0.65);
+
+      .cal-mes-num {
+        color: #fff;
+        background: var(--btn-indigo);
+      }
+    }
+
+    &.tiene-eventos:not(.otro-mes) {
+      background: rgba(9, 22, 52, 0.98);
+    }
+
+    &.expandido {
+      z-index: 2;
+      box-shadow: inset 0 0 0 1px rgba(78, 163, 255, 0.35);
+
+      .cal-mes-eventos {
+        max-height: none;
+        overflow: auto;
+      }
+    }
+  }
+
+  .cal-mes-dia-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+  }
+
+  .cal-mes-num {
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.15rem 0.4rem;
+    border-radius: 999px;
+    color: var(--text-dim);
+  }
+
+  .cal-mes-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.12rem 0.35rem;
+    border-radius: 999px;
+    background: rgba(78, 163, 255, 0.18);
+    color: var(--accent-2);
+    border: 1px solid rgba(78, 163, 255, 0.35);
+  }
+
+  .cal-mes-eventos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    min-height: 0;
+    flex: 1;
+    max-height: 4.75rem;
+    overflow: hidden;
+  }
+
+  .cal-evento {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.05rem;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    padding: 0.28rem 0.42rem 0.28rem 0.48rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+    font-size: 0.66rem;
+    line-height: 1.2;
+    cursor: pointer;
+    color: #e8f2ff;
+    box-shadow: var(--shadow-sm);
+
+    &.cap-amber {
+      background: rgba(251, 191, 36, 0.18);
+      border-color: rgba(251, 191, 36, 0.35);
+      border-left-color: #fbbf24;
+    }
+
+    &.cap-emerald,
+    &.estado-jornada-live {
+      background: rgba(52, 211, 153, 0.18);
+      border-color: rgba(52, 211, 153, 0.35);
+      border-left-color: #34d399;
+    }
+
+    &.cap-slate {
+      background: rgba(148, 163, 184, 0.14);
+      border-color: rgba(148, 163, 184, 0.3);
+      border-left-color: #94a3b8;
+      color: var(--text-dim);
+    }
+
+    &.sin-hora {
+      background: rgba(120, 170, 255, 0.1);
+      border-color: rgba(120, 170, 255, 0.3);
+      border-left-color: var(--accent);
+      border-style: dashed;
+      border-left-style: solid;
+      flex-direction: row;
+      align-items: center;
+      white-space: normal;
+    }
+
+    &.cal-evento-mas {
+      background: rgba(78, 163, 255, 0.1);
+      border-color: rgba(78, 163, 255, 0.35);
+      color: var(--accent-2);
+      font-weight: 600;
+      text-align: center;
+      align-items: center;
+    }
+
+    &.cal-clase-programada {
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.82), rgba(67, 56, 202, 0.72));
+      border-color: rgba(129, 140, 248, 0.75);
+      border-left-color: #a5b4fc;
+      color: #eef2ff;
+    }
+
+    &.cal-clase-creado {
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.88), rgba(217, 119, 6, 0.78));
+      border-color: rgba(252, 211, 77, 0.85);
+      border-left-color: #fde68a;
+      color: #451a03;
+      border-style: dashed;
+    }
+
+    &.cal-clase-proceso {
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.82), rgba(21, 128, 61, 0.72));
+      border-color: rgba(74, 222, 128, 0.75);
+      border-left-color: #86efac;
+      color: #ecfdf5;
+    }
+
+    &.cal-clase-finalizada {
+      background: linear-gradient(180deg, rgba(100, 116, 139, 0.8), rgba(71, 85, 105, 0.72));
+      border-color: rgba(148, 163, 184, 0.65);
+      border-left-color: #cbd5e1;
+      color: #f8fafc;
+    }
+
+    &.cal-tipo-teoria {
+      background: linear-gradient(180deg, rgba(124, 58, 237, 0.94), rgba(91, 33, 182, 0.86));
+      border-color: rgba(196, 181, 253, 0.82);
+      border-left-color: var(--cal-teoria-accent);
+      color: var(--cal-teoria-text);
+    }
+
+    &.cal-tipo-taller {
+      background: linear-gradient(180deg, rgba(234, 88, 12, 0.94), rgba(194, 65, 12, 0.86));
+      border-color: rgba(253, 186, 116, 0.85);
+      border-left-color: var(--cal-taller-accent);
+      color: var(--cal-taller-text);
+    }
+
+    &.cal-tipo-practica {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.94), rgba(4, 120, 87, 0.88));
+      border-color: rgba(110, 231, 183, 0.85);
+      border-left-color: var(--cal-practica-accent);
+      color: var(--cal-practica-text);
+    }
+
+    &.cal-est-en-proceso {
+      animation: cal-tipo-live-pulse 1.2s ease-in-out infinite;
+      box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.55), 0 2px 6px rgba(0, 0, 0, 0.3);
+      @include cal-ripple-ondas(rgba(74, 222, 128, 0.7), -3px, 2.2s);
+    }
+
+    &.cal-est-pendiente,
+    &.cal-clase-creado,
+    &.cal-clase-programada {
+      animation: cal-atencion-pulse 1.35s ease-in-out infinite;
+      @include cal-ripple-ondas(rgba(251, 191, 36, 0.82), -4px, 2s);
+    }
+
+    &.cal-est-finalizada {
+      opacity: 0.72;
+      filter: saturate(0.75);
+    }
+
+    &.cal-est-cancelada {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    &.cal-tipo-teoria,
+    &.cal-tipo-taller,
+    &.cal-tipo-practica,
+    &.cal-clase-programada,
+    &.cal-clase-proceso,
+    &.cal-clase-finalizada {
+      .cal-evento-tit,
+      .cal-evento-sub,
+      .cal-evento-est {
+        color: inherit;
+      }
+    }
+
+    &.sel {
+      box-shadow: 0 0 0 2px rgba(78, 163, 255, 0.75);
+    }
+
+    .cal-evento-tit {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .cal-evento-est {
+      font-size: 0.58rem;
+      opacity: 0.88;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  }
+
+  .cal-sin-horario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius);
+    background: rgba(120, 170, 255, 0.06);
+    border: 1px dashed rgba(120, 170, 255, 0.25);
+
+    .cal-sin-horario-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-right: 0.35rem;
+    }
+
+    .cal-evento {
+      width: auto;
+      max-width: 100%;
+    }
+  }
+
+  .cal-horas-scroll {
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line-soft);
+    background: var(--surface-muted);
+  }
+
+  .cal-horas-grid {
+    display: grid;
+    grid-template-columns: 3.25rem repeat(7, minmax(7.5rem, 1fr));
+    grid-template-rows: auto repeat(15, 2.5rem);
+    min-width: 54rem;
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: rgba(8, 18, 42, 0.92);
+  }
+
+  .cal-horas-corner {
+    grid-column: 1;
+    grid-row: 1;
+    background: rgba(6, 16, 41, 0.95);
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+
+  .cal-horas-dayhead {
+    grid-row: 1;
+    padding: 0.45rem 0.35rem;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    background: rgba(6, 16, 41, 0.95);
+    text-transform: capitalize;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+
+    &.fin-semana {
+      background: rgba(12, 14, 32, 0.95);
+    }
+
+    &.hoy {
+      color: var(--accent-2);
+      box-shadow: inset 0 -3px 0 var(--btn-indigo);
+      background: rgba(78, 163, 255, 0.08);
+    }
+
+    .cal-day-name {
+      line-height: 1.2;
+    }
+
+    .cal-day-count {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 0.08rem 0.35rem;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.25);
+      color: #c7d2fe;
+    }
+  }
+
+  .cal-horas-time {
+    grid-column: 1;
+    padding: 0.15rem 0.35rem 0;
+    font-size: 0.68rem;
+    color: var(--text-soft);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid rgba(120, 170, 255, 0.08);
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .cal-horas-slot {
+    border-right: 1px solid rgba(120, 170, 255, 0.08);
+    border-bottom: 1px solid rgba(120, 170, 255, 0.08);
+
+    &.fin-semana {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    &.hoy {
+      background: rgba(78, 163, 255, 0.05);
+    }
+  }
+
+  .cal-horas-events-layer {
+    grid-column: 2 / -1;
+    grid-row: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    position: relative;
+    pointer-events: none;
+    min-height: calc(15 * 2.5rem);
+    z-index: 2;
+  }
+
+  .cal-horas-events-col {
+    position: relative;
+    pointer-events: none;
+    border-right: 1px solid transparent;
+    min-height: 100%;
+    overflow: visible;
+
+    &:not(:last-child) {
+      border-right-color: rgba(120, 170, 255, 0.08);
+    }
+
+    &.hoy {
+      background: rgba(78, 163, 255, 0.03);
+    }
+  }
+
+  .cal-now-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.75);
+    z-index: 3;
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+  }
+
+  .cal-clase-block {
+    position: absolute;
+    right: auto;
+    min-width: 0;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    padding: 0.32rem 0.42rem 0.32rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+    color: #fff;
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    font-size: 0.67rem;
+    line-height: 1.15;
+    min-height: 1.75rem;
+    box-shadow: var(--shadow-sm);
+
+    &.cal-clase-programada {
+      border-color: rgba(129, 140, 248, 0.45);
+      border-left-color: #818cf8;
+      background: rgba(99, 102, 241, 0.28);
+    }
+
+    &.cal-clase-proceso {
+      border-color: rgba(74, 222, 128, 0.45);
+      border-left-color: #4ade80;
+      background: rgba(34, 197, 94, 0.28);
+    }
+
+    &.cal-clase-finalizada {
+      border-color: rgba(148, 163, 184, 0.4);
+      border-left-color: #94a3b8;
+      background: rgba(100, 116, 139, 0.28);
+      opacity: 0.94;
+    }
+
+    &.cal-tipo-teoria {
+      border-color: rgba(196, 181, 253, 0.58);
+      border-left-color: var(--cal-teoria-accent);
+      background: linear-gradient(180deg, rgba(124, 58, 237, 0.62), rgba(91, 33, 182, 0.52));
+      color: var(--cal-teoria-text);
+    }
+
+    &.cal-tipo-taller {
+      border-color: rgba(253, 186, 116, 0.58);
+      border-left-color: var(--cal-taller-accent);
+      background: linear-gradient(180deg, rgba(234, 88, 12, 0.65), rgba(194, 65, 12, 0.55));
+      color: var(--cal-taller-text);
+    }
+
+    &.cal-tipo-practica {
+      border-color: rgba(110, 231, 183, 0.58);
+      border-left-color: var(--cal-practica-accent);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.65), rgba(4, 120, 87, 0.55));
+      color: var(--cal-practica-text);
+    }
+
+    &.cal-est-en-proceso {
+      animation: cal-tipo-live-pulse 1.2s ease-in-out infinite;
+      @include cal-ripple-ondas(rgba(74, 222, 128, 0.68), -3px, 2.2s);
+    }
+
+    &.cal-est-pendiente,
+    &.cal-clase-creado,
+    &.cal-clase-programada {
+      animation: cal-atencion-pulse 1.35s ease-in-out infinite;
+      @include cal-ripple-ondas(rgba(251, 191, 36, 0.82), -4px, 2s);
+    }
+
+    &.cal-est-finalizada {
+      opacity: 0.68;
+      filter: saturate(0.75);
+    }
+
+    &.sel {
+      box-shadow: 0 0 0 2px rgba(78, 163, 255, 0.85), 0 4px 12px rgba(0, 0, 0, 0.28);
+      z-index: 4;
+    }
+
+    &:hover {
+      z-index: 5;
+      filter: brightness(1.06);
+    }
+
+    .cal-clase-hora {
+      font-weight: 700;
+      font-size: 0.64rem;
+      opacity: 0.96;
+    }
+
+    .cal-clase-tit {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cal-clase-inst {
+      font-size: 0.6rem;
+      opacity: 0.88;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cal-clase-est {
+      font-size: 0.58rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  }
+
+  .cal-evento-mini {
+    position: relative;
+
+    &.cal-tipo-teoria {
+      background: rgba(124, 58, 237, 0.72);
+      color: var(--cal-teoria-text);
+      border: 1px solid rgba(196, 181, 253, 0.45);
+    }
+
+    &.cal-tipo-taller {
+      background: rgba(234, 88, 12, 0.78);
+      color: var(--cal-taller-text);
+      border: 1px solid rgba(253, 186, 116, 0.45);
+    }
+
+    &.cal-tipo-practica {
+      background: rgba(16, 185, 129, 0.78);
+      color: var(--cal-practica-text);
+      border: 1px solid rgba(110, 231, 183, 0.45);
+    }
+
+    &.cal-est-pendiente,
+    &.cal-clase-creado,
+    &.cal-clase-programada {
+      animation: cal-atencion-pulse 1.35s ease-in-out infinite;
+      @include cal-ripple-ondas(rgba(251, 191, 36, 0.78), -2px, 1.7s);
+    }
+
+    &.cal-est-en-proceso {
+      @include cal-ripple-ondas(rgba(74, 222, 128, 0.65), -2px, 1.9s);
+    }
+  }
+
+  .cal-resumen-chip.cal-clase-programada {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.45);
+    color: #c7d2fe;
+  }
+
+  .cal-resumen-chip.cal-clase-proceso {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.45);
+    color: #bbf7d0;
+  }
+
+  .cal-resumen-chip.cal-clase-finalizada {
+    background: rgba(100, 116, 139, 0.2);
+    border-color: rgba(100, 116, 139, 0.45);
+    color: #cbd5e1;
+  }
+}
+
+@media (max-width: 900px) {
+  .argo-cal,
+  .jornadas-page,
+  .cea-clases {
+    .cal-mes-grid {
+      grid-auto-rows: minmax(5.5rem, auto);
+    }
+
+    .cal-mes-dia {
+      min-height: 5.5rem;
+      padding: 0.28rem;
+    }
+
+    .cal-horas-grid {
+      min-width: 48rem;
+      grid-template-columns: 2.75rem repeat(7, minmax(6.5rem, 1fr));
+    }
+  }
+}

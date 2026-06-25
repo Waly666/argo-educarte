@@ -1,0 +1,575 @@
+<section class="mig-hist" *ngIf="store.hasAlumno(); else noAlumno">
+  <div class="msg ok" *ngIf="msg() && !msgEsError()">{{ msg() }}</div>
+  <div class="msg err" *ngIf="msg() && msgEsError()">{{ msg() }}</div>
+
+  <div class="warn card" *ngIf="estado() && !estado()!.habilitado">
+    <strong>Movimientos de migración deshabilitados</strong>
+    <p>Un administrador debe activarlos en Configuración → Migración.</p>
+  </div>
+
+  <div class="warn card" *ngIf="estado()?.habilitado && !estado()?.puedeUsar">
+    <strong>Sin permiso</strong>
+    <p>Su rol no tiene el permiso «Movimientos históricos de migración».</p>
+  </div>
+
+  <ng-container *ngIf="estado()?.puedeUsar">
+    <p class="intro">
+      Use programas <strong>actuales</strong> de ARGO (no los del sistema anterior). Cree la matrícula con fecha
+      histórica, luego registre los recibos del Access sin abrir caja.
+    </p>
+
+    <div class="header-row">
+      <div class="card stat">
+        <span class="label">Total Liquidado</span>
+        <span class="value">{{ fmt(totales().valor) }}</span>
+      </div>
+      <div class="card stat">
+        <span class="label">Total Pagado</span>
+        <span class="value">{{ fmt(totales().abonado) }}</span>
+      </div>
+      <div class="card stat">
+        <span class="label">Saldo Pendiente</span>
+        <span class="value" [class.warn]="num(totales().saldo) > 0">{{ fmt(totales().saldo) }}</span>
+      </div>
+    </div>
+
+    <div class="saldo-servicios" *ngIf="itemsConSaldo().length">
+      <button
+        type="button"
+        class="compact"
+        [class.serv-saldo-alarm]="!esVirtual(it)"
+        [class.virtual-saldo-alarm]="esVirtual(it)"
+        *ngFor="let it of itemsConSaldo(); trackBy: trackByLiquidacion"
+        (click)="agregarItemPago(it._id)"
+        [class.sel]="itemSeleccionado(it._id)"
+        [disabled]="itemSeleccionado(it._id)"
+        [attr.title]="tituloSaldoItem(it.descripcion, fmt(it.saldo))">
+        <span [class.serv-saldo-pulse]="!esVirtual(it)" [class.virtual-saldo-pulse]="esVirtual(it)" aria-hidden="true"></span>
+        <span [class.serv-saldo-icon]="!esVirtual(it)" [class.virtual-saldo-icon]="esVirtual(it)">
+          {{ esVirtual(it) ? 'V' : '$' }}
+        </span>
+        <span [class.serv-saldo-text]="!esVirtual(it)" [class.virtual-saldo-text]="esVirtual(it)">
+          <ng-container *ngIf="esVirtual(it)">Virtual · </ng-container>{{ etiquetaSaldo(it.descripcion) }} · {{ fmt(it.saldo) }}
+        </span>
+      </button>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>1 · Matrícula histórica</h2>
+
+        <argo-catalogo-enum-buscar
+          label="Programa (catálogo actual)"
+          placeholder="Seleccione programa…"
+          [textoInicial]="textoPrograma()"
+          [modoCombo]="true"
+          [remoto]="true"
+          [minLength]="1"
+          [buscarRemoto]="buscarProgramasRemoto"
+          (seleccionado)="onProgramaPick($event)"
+          (limpiado)="onProgramaLimpiar()"
+        />
+
+        <div class="row" *ngIf="idProg()">
+          <div class="col-6 col-fecha">
+            <argo-date-input
+              label="Fecha matrícula (histórica)"
+              inputId="mig-fecha-matricula"
+              [ngModel]="fechaMat"
+              (ngModelChange)="fechaMat = $event"
+            />
+          </div>
+          <div class="col-6">
+            <label>Tarifa (modalidad)</label>
+            <select [(ngModel)]="tarifa" (ngModelChange)="onTarifaChange()">
+              <option [ngValue]="1">Tarifa 1</option>
+              <option [ngValue]="2">Tarifa 2</option>
+              <option [ngValue]="3">Tarifa 3</option>
+              <option [ngValue]="4">Virtual</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" *ngIf="idProg() && numCuotasActivas() > 1">
+          <div class="col-12">
+            <label>Hasta semestre</label>
+            <input
+              type="number"
+              min="1"
+              [max]="maxSemestres()"
+              step="1"
+              [(ngModel)]="semestreHasta"
+              (ngModelChange)="onSemestreHastaChange()"
+              placeholder="Ej. 3 de {{ maxSemestres() }}"
+            />
+            <p class="hint">Genera liquidaciones del 1.º al semestre indicado ({{ numCuotasActivas() }} cuota(s)).</p>
+          </div>
+        </div>
+
+        <div class="cuotas-semestre-panel" *ngIf="idProg() && puedeCuotasSemestre()">
+          <div class="cuotas-semestre-head">
+            <label class="cuotas-check">
+              <input
+                type="checkbox"
+                [ngModel]="ajustarCuotasSemestre"
+                (ngModelChange)="onAjustarCuotasSemestreChange($event)"
+              />
+              <span class="cuotas-check-text">
+                <strong>Personalizar cuotas por semestre</strong>
+                <small>Valores históricos del Access (presencial / mixta)</small>
+              </span>
+            </label>
+          </div>
+
+          <ng-container *ngIf="ajustarCuotasSemestre">
+            <div class="cuotas-toolbar">
+              <button type="button" class="ghost mini" (click)="repartirCuotasEquitativo()">Repartir equitativamente</button>
+              <button type="button" class="ghost mini" (click)="restaurarCuotasCatalogo()">Restaurar catálogo</button>
+            </div>
+            <p class="hint cuotas-formato-hint">Valores en pesos colombianos, <strong>solo números enteros</strong>.</p>
+
+            <div class="cuotas-grid">
+              <div
+                class="cuota-card"
+                *ngFor="let v of valoresCuotasSemestre(); let i = index; trackBy: trackByCuotaIndex"
+                [class.cuota-card--invalid]="cuotaSemestreInvalida(i)"
+              >
+                <div class="cuota-card-head">
+                  <span class="cuota-badge">Sem. {{ i + 1 }}</span>
+                  <span class="cuota-nombre" [title]="etiquetaSemestre(i)">{{ etiquetaSemestre(i) }}</span>
+                </div>
+                <div class="cuota-card-body">
+                  <label class="cuota-label">Catálogo ARGO</label>
+                  <span class="cuota-catalogo">{{ fmt(cuotasSemestreCatalogo()[i]) }}</span>
+                  <label class="cuota-label">Valor Access</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="cuota-input"
+                    [ngModel]="valoresCuotasSemestre()[i]"
+                    (ngModelChange)="onCuotaSemestreChange(i, $event)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="cuotas-resumen">
+              <div class="cuotas-resumen-row cuotas-resumen-row--total">
+                <span>Total matrícula histórica</span>
+                <strong>{{ fmt(totalCuotasSemestre()) }}</strong>
+              </div>
+            </div>
+
+            <div class="cuotas-motivo">
+              <label>Motivo <span class="opt">(opcional)</span></label>
+              <input type="text" [(ngModel)]="motivoAjusteCuotas" placeholder="Ej. precios distintos por semestre en Access…" maxlength="300" />
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="row" *ngIf="idProg() && !ajustarCuotasSemestre">
+          <div class="col-12">
+            <label>Valor matrícula (histórico total)</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              [(ngModel)]="valorHistorico"
+              (ngModelChange)="onValorHistoricoChange()"
+              placeholder="Precio del curso en Access"
+            />
+            <p class="hint">
+              Referencia catálogo ARGO: {{ fmt(valorCatalogoReferencia()) }}.
+              Edite si el total en Access era distinto{{ numCuotasActivas() > 1 ? ' (se reparte entre semestres)' : '' }}.
+            </p>
+          </div>
+        </div>
+
+        <div class="row" *ngIf="idProg() && ajustarCuotasSemestre && puedeCuotasSemestre()">
+          <div class="col-12">
+            <p class="hint total-sync-hint">
+              Total a registrar: <strong>{{ fmt(totalCuotasSemestre()) }}</strong>
+              (suma de cuotas por semestre)
+            </p>
+          </div>
+        </div>
+
+        <div class="row" *ngIf="idProg()">
+          <div class="col-12">
+            <label>Observaciones</label>
+            <input type="text" [(ngModel)]="observacionesMat" placeholder="Opcional — curso equivalente en Access" />
+          </div>
+        </div>
+
+        <button type="button" class="primary" (click)="crearMatriculaHistorica()" [disabled]="loading() || !idProg()">
+          Crear matrícula histórica
+        </button>
+      </div>
+    </div>
+
+    <div class="card card-registrar-pago">
+      <header class="registro-header">
+        <div>
+          <h2>2 · Recibo de migración</h2>
+          <p class="registro-sub">
+            Elija uno o varios ítems con saldo, indique el valor de cada uno y registre el recibo histórico del Access.
+          </p>
+        </div>
+        <div class="registro-header-actions" *ngIf="itemsConSaldo().length">
+          <button type="button" class="ghost mini" (click)="limpiarItemsPago()" [disabled]="!itemsPagoMigracion().length">
+            Vaciar lista
+          </button>
+        </div>
+      </header>
+
+      <div class="liquidar-todo-wrap" *ngIf="itemsConSaldo().length && opcionesItemsLiquidacion().length">
+        <button
+          type="button"
+          class="liquidar-todo-btn"
+          (click)="agregarTodoPendiente()"
+          title="Agrega todos los ítems pendientes al saldo completo en un solo clic">
+          <span class="ltb-icon">⚡</span>
+          <span class="ltb-texto">
+            <span class="ltb-titulo">Agregar todo lo pendiente</span>
+            <span class="ltb-sub">{{ opcionesItemsLiquidacion().length }} ítem(s) · {{ fmt(totales().saldo) }} total</span>
+          </span>
+          <span class="ltb-arrow">→</span>
+        </button>
+      </div>
+
+      <div class="registro-layout">
+        <section class="registro-bloque registro-servicios">
+          <h3 class="bloque-titulo">
+            <span class="paso-num">1</span>
+            Ítems a pagar
+          </h3>
+
+          <div class="saldo-servicios saldo-servicios-inline" *ngIf="itemsConSaldo().length">
+            <span class="saldo-servicios-label">Acceso rápido:</span>
+            <button
+              type="button"
+              class="compact"
+              [class.serv-saldo-alarm]="!esVirtual(it)"
+              [class.virtual-saldo-alarm]="esVirtual(it)"
+              *ngFor="let it of itemsConSaldo(); trackBy: trackByLiquidacion"
+              (click)="agregarItemPago(it._id)"
+              [class.sel]="itemSeleccionado(it._id)"
+              [disabled]="itemSeleccionado(it._id)"
+              [attr.title]="tituloSaldoItem(it.descripcion, fmt(it.saldo))">
+              <span [class.serv-saldo-pulse]="!esVirtual(it)" [class.virtual-saldo-pulse]="esVirtual(it)" aria-hidden="true"></span>
+              <span [class.serv-saldo-icon]="!esVirtual(it)" [class.virtual-saldo-icon]="esVirtual(it)">
+                {{ esVirtual(it) ? 'V' : '$' }}
+              </span>
+              <span [class.serv-saldo-text]="!esVirtual(it)" [class.virtual-saldo-text]="esVirtual(it)">
+                <ng-container *ngIf="esVirtual(it)">Virtual · </ng-container>{{ etiquetaSaldo(it.descripcion) }} · {{ fmt(it.saldo) }}
+              </span>
+            </button>
+          </div>
+
+          <argo-catalogo-enum-buscar
+            label="Buscar y agregar ítem"
+            placeholder="Escriba o seleccione un ítem con saldo…"
+            [textoInicial]="''"
+            [modoCombo]="true"
+            [remoto]="false"
+            [minLength]="1"
+            [opcionesLocales]="opcionesItemsLiquidacion()"
+            (seleccionado)="onItemLiquidacionPick($event)"
+            (limpiado)="onItemLiquidacionLimpiar()"
+          />
+
+          <div class="items-pago-vacio" *ngIf="!itemsPagoMigracion().length">
+            <p class="vacio-titulo">Aún no hay ítems en este recibo</p>
+            <p class="vacio-hint">
+              Toque un ítem con saldo arriba o búsquelo en el campo. Puede combinar varios en un mismo recibo de migración.
+            </p>
+          </div>
+
+          <ul class="items-pago-lista" *ngIf="itemsPagoMigracion().length">
+            <li class="item-pago-fila" *ngFor="let it of itemsPagoMigracion(); trackBy: trackByItemPago; let i = index" [class.item-pago-fila--invalid]="itemPagoInvalido(it)">
+              <div class="item-pago-info">
+                <span class="item-pago-nombre">{{ it.descripcion }}</span>
+                <span class="item-pago-saldo">Saldo: {{ fmt(it.saldo) }}</span>
+              </div>
+              <div class="item-pago-valor">
+                <label [attr.for]="'mig-valor-' + it.idLiquidacion">Valor a pagar</label>
+                <div class="item-pago-valor-row">
+                  <input
+                    class="item-pago-valor-input"
+                    [id]="'mig-valor-' + it.idLiquidacion"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    [ngModel]="it.valor"
+                    (ngModelChange)="onItemPagoValorChange(i, $event)"
+                  />
+                  <button
+                    type="button"
+                    class="ghost mini"
+                    (click)="pagarSaldoCompletoItem(it.idLiquidacion)"
+                    title="Usar saldo completo">
+                    Total
+                  </button>
+                </div>
+                <span class="item-pago-parcial" *ngIf="it.valor > 0 && it.valor < it.saldo - 0.0001">Abono parcial</span>
+                <span class="item-pago-parcial ok" *ngIf="it.valor >= it.saldo - 0.0001">Pago total del ítem</span>
+              </div>
+              <button
+                type="button"
+                class="ghost mini item-pago-quitar"
+                (click)="quitarItemPago(i)"
+                title="Quitar del recibo">
+                ✕
+              </button>
+            </li>
+          </ul>
+        </section>
+
+        <aside class="registro-bloque registro-pago-aside">
+          <h3 class="bloque-titulo">
+            <span class="paso-num">2</span>
+            Datos del recibo
+          </h3>
+
+          <argo-date-input
+            label="Fecha del recibo (histórica)"
+            inputId="mig-fecha-recibo"
+            [ngModel]="fechaPago"
+            (ngModelChange)="fechaPago = $event"
+          />
+
+          <label class="campo-simple">
+            Nº recibo (Access)
+            <input type="text" [(ngModel)]="numRecibo" [placeholder]="estado()?.prefijoRecibo + '…'" />
+          </label>
+
+          <label class="campo-simple">
+            Forma de pago
+            <select [(ngModel)]="formaPago">
+              <option *ngFor="let f of formasPago" [value]="f">{{ f }}</option>
+            </select>
+          </label>
+
+          <label class="campo-simple">
+            Observaciones
+            <input type="text" [(ngModel)]="observacionesPago" placeholder="Opcional" />
+          </label>
+
+          <div class="registro-resumen">
+            <div class="resumen-linea">
+              <span>Ítems</span>
+              <strong>{{ itemsPagoMigracion().length }}</strong>
+            </div>
+            <div class="resumen-linea resumen-total">
+              <span>Total recibo</span>
+              <strong>{{ fmt(totalPagoMigracion()) }}</strong>
+            </div>
+            <button
+              type="button"
+              class="primary btn-registrar"
+              (click)="registrarPago()"
+              [disabled]="loading() || !itemsPagoMigracion().length || !fechaPago">
+              {{ loading() ? 'Registrando…' : 'Registrar recibo de migración' }}
+            </button>
+            <p class="resumen-ayuda" *ngIf="!itemsConSaldo().length">No hay liquidaciones pendientes. Cree matrícula primero.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="card cuotas-matriculas-card" *ngIf="matriculasCuotasEditables().length">
+      <div class="cuotas-matriculas-head">
+        <h2>Cuotas por semestre</h2>
+        <p class="hint">Ajuste los valores de matrícula histórica ya creada (presencial / mixta).</p>
+      </div>
+
+      <div class="cuotas-matricula-list">
+        <article class="cuotas-matricula-item" *ngFor="let m of matriculasCuotasEditables()">
+          <header class="cuotas-matricula-item-head">
+            <div>
+              <strong>{{ nombreProgramaMatricula(m) }}</strong>
+              <span class="cuotas-mat-meta">
+                Tarifa {{ m.tarifa }} · Total {{ fmt(m.valorMat) }} · {{ m.pagada || 'No Pago' }}
+              </span>
+            </div>
+            <button
+              type="button"
+              class="ghost mini cuotas-edit-btn"
+              (click)="abrirEditorCuotas(m._id)"
+              [class.cuotas-edit-btn--active]="cuotasEditorId() === m._id"
+            >
+              {{ cuotasEditorId() === m._id ? 'Cerrar' : 'Ajustar cuotas' }}
+            </button>
+          </header>
+
+          <div class="cuotas-editor" *ngIf="cuotasEditorId() === m._id">
+            <div class="loading" *ngIf="cuotasEditorLoading()">Cargando cuotas…</div>
+
+            <ng-container *ngIf="!cuotasEditorLoading() && cuotasEditorData() as ed">
+              <div class="cuotas-grid cuotas-grid--editor">
+                <div
+                  class="cuota-card"
+                  *ngFor="let c of ed.cuotas; let i = index; trackBy: trackByCuotaIndex"
+                  [class.cuota-card--invalid]="cuotaEditorInvalida(i)"
+                  [class.cuota-card--pagada]="c.abonado > 0 && c.saldo <= 0"
+                  [class.cuota-card--parcial]="c.abonado > 0 && c.saldo > 0"
+                >
+                  <div class="cuota-card-head">
+                    <span class="cuota-badge">Sem. {{ c.semestre }}</span>
+                    <span class="cuota-estado" *ngIf="c.abonado > 0">Abonado {{ fmt(c.abonado) }}</span>
+                  </div>
+                  <p class="cuota-nombre cuota-nombre--full">{{ c.descripcion }}</p>
+                  <div class="cuota-card-body">
+                    <label class="cuota-label">Catálogo</label>
+                    <span class="cuota-catalogo">{{ fmt(c.valorCatalogo) }}</span>
+                    <label class="cuota-label">Nuevo valor</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      class="cuota-input"
+                      [ngModel]="cuotasEditorDraft()[i]"
+                      (ngModelChange)="onCuotaEditorChange(i, $event)"
+                    />
+                    <span class="cuota-saldo-hint" *ngIf="c.abonado > 0">Mínimo: {{ fmt(c.abonado) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cuotas-resumen cuotas-resumen--editor">
+                <div class="cuotas-resumen-row">
+                  <span>Subtotal cuotas</span>
+                  <strong>{{ fmt(totalCuotasEditor()) }}</strong>
+                </div>
+                <div class="cuotas-resumen-row" *ngIf="ed.totales?.extras">
+                  <span>Extras matrícula</span>
+                  <strong>{{ fmt(ed.totales!.extras) }}</strong>
+                </div>
+                <div class="cuotas-resumen-row cuotas-resumen-row--total">
+                  <span>Nuevo total matrícula</span>
+                  <strong>{{ fmt(totalCuotasEditor() + (ed.totales?.extras || 0)) }}</strong>
+                </div>
+              </div>
+
+              <div class="cuotas-motivo">
+                <label>Motivo <span class="opt">(opcional)</span></label>
+                <input type="text" [(ngModel)]="cuotasEditorMotivo" placeholder="Ej. precios distintos por semestre en Access…" maxlength="300" />
+              </div>
+
+              <div class="cuotas-editor-actions">
+                <button type="button" class="primary" (click)="guardarCuotasEditor()" [disabled]="cuotasEditorSaving()">
+                  {{ cuotasEditorSaving() ? 'Guardando…' : 'Guardar cuotas' }}
+                </button>
+                <button type="button" class="ghost" (click)="cerrarEditorCuotas()">Cancelar</button>
+              </div>
+            </ng-container>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="card liq-card">
+      <h2>Liquidación del alumno</h2>
+
+      <div class="virtual-liq-banner" *ngIf="tieneVirtualConSaldo()">
+        <span class="virtual-liq-banner-pulse" aria-hidden="true"></span>
+        <strong>Matrícula aula virtual con pago pendiente</strong>
+        <p>El alumno puede cursar en línea. El certificado se habilita al saldar el saldo.</p>
+      </div>
+      <div class="loading" *ngIf="loadingLiq()">Cargando…</div>
+
+      <table class="argo" *ngIf="!loadingLiq()">
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Tipo</th>
+            <th class="r">Valor</th>
+            <th class="r">Abonado</th>
+            <th class="r">Saldo</th>
+            <th>Estado</th>
+            <th class="r">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let it of liquidacionResumen().items; trackBy: trackByLiquidacion"
+            [class.liq-row-virtual]="esVirtual(it)">
+            <td>
+              {{ it.descripcion || '—' }}
+              <span class="badge virtual mini-badge" *ngIf="esVirtual(it)">Aula virtual</span>
+            </td>
+            <td>
+              <span class="badge info" *ngIf="it.idProg">Programa</span>
+              <span class="badge" *ngIf="!it.idProg">Servicio</span>
+              <span class="badge virtual" *ngIf="esVirtual(it)">Virtual</span>
+            </td>
+            <td class="r">{{ fmt(it.valor) }}</td>
+            <td class="r">{{ fmt(it.abonado) }}</td>
+            <td class="r" [class.saldo-pendiente-cell]="num(it.saldo) > 0">
+              <span class="virtual-saldo-inline" *ngIf="esVirtual(it) && num(it.saldo) > 0">{{ fmt(it.saldo) }}</span>
+              <span class="serv-saldo-inline" *ngIf="!esVirtual(it) && num(it.saldo) > 0">{{ fmt(it.saldo) }}</span>
+              <span *ngIf="num(it.saldo) <= 0">{{ fmt(it.saldo) }}</span>
+            </td>
+            <td>
+              <span class="badge" [class.virtual-estado]="esVirtual(it)" [ngClass]="estadoClass(it)">
+                {{ estadoVirtualLabel(it) }}
+              </span>
+            </td>
+            <td class="r actions-cell">
+              <button
+                type="button"
+                class="ghost mini"
+                *ngIf="num(it.saldo) > 0"
+                (click)="agregarItemPago(it._id)"
+                [disabled]="itemSeleccionado(it._id)">
+                {{ itemSeleccionado(it._id) ? 'En recibo' : 'Agregar al recibo' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="liquidacionResumen().items.length === 0">
+            <td colspan="7" class="empty">No hay ítems en liquidación.</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="liquidacionResumen().items.length > 0">
+          <tr>
+            <th colspan="2">Totales</th>
+            <th class="r">{{ fmt(totales().valor) }}</th>
+            <th class="r">{{ fmt(totales().abonado) }}</th>
+            <th class="r">{{ fmt(totales().saldo) }}</th>
+            <th colspan="2"></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="card" *ngIf="pagosMigracion().length">
+      <h2>Recibos de migración de este alumno</h2>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Recibo</th>
+            <th>Concepto</th>
+            <th class="r">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pagosMigracion()">
+            <td>{{ fechaFmt(p['fecha']) }}</td>
+            <td>{{ p['numRecibo'] }}</td>
+            <td>{{ p['concepto'] || p['observaciones'] || '—' }}</td>
+            <td class="r">{{ fmt(num(p['valor'])) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</section>
+
+<ng-template #noAlumno>
+  <div class="empty-state card">
+    <p>Guarde o seleccione un alumno para registrar movimientos de migración.</p>
+  </div>
+</ng-template>

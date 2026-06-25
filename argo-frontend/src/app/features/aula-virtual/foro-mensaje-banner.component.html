@@ -1,0 +1,12 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-foro"
+  icon="💬"
+  [title]="'Nuevos mensajes en foro (' + rows().length + ')'"
+  hint="Pulse una fila para abrir el foro del programa."
+  [items]="rows()"
+  [itemDismissible]="true"
+  (closed)="cerrar()"
+  (itemClick)="onItemClick($event)"
+  (itemDismiss)="onItemDismiss($event)"
+/>

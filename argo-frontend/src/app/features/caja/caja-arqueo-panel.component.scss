@@ -1,0 +1,116 @@
+@use './caja-shared' as *;
+
+.arqueo-panel {
+  border: 1px solid rgba(78, 163, 255, 0.25);
+  border-radius: 10px;
+  padding: 14px;
+  background: rgba(6, 16, 41, 0.45);
+  margin-bottom: 14px;
+}
+
+.arqueo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    flex: 1;
+  }
+
+  .hint {
+    width: 100%;
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+}
+
+.arqueo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  h4 {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--accent-2);
+  }
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.arqueo-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  th {
+    text-align: left;
+    color: var(--text-soft);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  td.num {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  input {
+    width: 72px;
+    padding: 4px 6px;
+  }
+
+  tr.hidden {
+    display: none;
+  }
+}
+
+.arqueo-totales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+
+  article {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-soft);
+
+    span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1rem;
+    }
+
+    &.ok strong {
+      color: var(--ok);
+    }
+
+    &.bad strong {
+      color: var(--err);
+    }
+  }
+}

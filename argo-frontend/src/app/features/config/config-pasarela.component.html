@@ -1,0 +1,306 @@
+<section class="card pas-page">
+
+  <header class="pas-head">
+
+    <div>
+
+      <h1>Configuraciones avanzadas — Wompi</h1>
+
+      <p>
+
+        Copie las llaves del panel Wompi (Desarrollo → Programadores) y pegue la
+
+        <strong>URL de eventos</strong> en su comercio. Los ingresos van a la caja virtual diaria.
+
+      </p>
+
+    </div>
+
+    <div class="pas-head-badges">
+
+      @if (!loading()) {
+
+        <span class="pas-chip" [class.pas-chip--on]="form().activo">{{ form().activo ? 'Activa' : 'Inactiva' }}</span>
+
+        <span class="pas-chip pas-chip--test" [class.pas-chip--prod]="!modoPruebas()">
+
+          {{ modoPruebas() ? 'Modo de pruebas' : 'Producción' }}
+
+        </span>
+
+      }
+
+    </div>
+
+  </header>
+
+
+
+  @if (loading()) {
+
+    <p class="hint">Cargando…</p>
+
+  } @else {
+
+    @if (msg()) {
+
+      <div class="msg" [class.err]="msgError()">{{ msg() }}</div>
+
+    }
+
+
+
+    <div class="pas-form">
+
+      <argo-switch
+
+        label="Pasarela activa en ARGO"
+
+        [checked]="form().activo === true"
+
+        (checkedChange)="patch('activo', $event)"
+
+      />
+
+
+
+      <fieldset class="pas-block">
+
+        <legend>Seguimiento de transacciones</legend>
+
+        <p class="hint">
+
+          En Wompi → Desarrollo → Programadores, pegue esta URL en <strong>URL de Eventos</strong>.
+
+          Use una URL distinta en sandbox y en producción.
+
+        </p>
+
+        <label>
+
+          URL de eventos (webhook)
+
+          <div class="pas-inline">
+
+            <input type="text" [value]="webhookUrl()" readonly />
+
+            <button type="button" class="ghost" (click)="copiarWebhook()">Copiar</button>
+
+          </div>
+
+        </label>
+
+        @if (copyMsg()) {
+
+          <p class="hint pas-copy-msg">{{ copyMsg() }}</p>
+
+        }
+
+      </fieldset>
+
+
+
+      <fieldset class="pas-block">
+
+        <legend>Llaves del API para integración técnica</legend>
+
+        <label>
+
+          Llave pública
+
+          <input
+
+            type="text"
+
+            [ngModel]="form().publicKey"
+
+            (ngModelChange)="patch('publicKey', $event)"
+
+            placeholder="pub_test_… o pub_prod_…"
+
+            autocomplete="off"
+
+          />
+
+        </label>
+
+        <label>
+
+          Llave privada
+
+          <div class="pas-inline">
+
+            <input
+
+              [type]="showPrivateKey() ? 'text' : 'password'"
+
+              [ngModel]="form().privateKey"
+
+              (ngModelChange)="patch('privateKey', $event)"
+
+              autocomplete="new-password"
+
+            />
+
+            <button type="button" class="ghost" (click)="toggleSecret('privateKey')">
+
+              {{ showPrivateKey() ? 'Ocultar' : 'Mostrar' }}
+
+            </button>
+
+          </div>
+
+        </label>
+
+        <p class="hint">La llave privada valida cada pago contra el API de Wompi al recibir el webhook.</p>
+
+      </fieldset>
+
+
+
+      <fieldset class="pas-block">
+
+        <legend>Secretos para integración técnica</legend>
+
+        <label>
+
+          Eventos
+
+          <div class="pas-inline">
+
+            <input
+
+              [type]="showEventsSecret() ? 'text' : 'password'"
+
+              [ngModel]="form().eventsSecret"
+
+              (ngModelChange)="patch('eventsSecret', $event)"
+
+              placeholder="test_events_… o prod_events_…"
+
+              autocomplete="new-password"
+
+            />
+
+            <button type="button" class="ghost" (click)="toggleSecret('eventsSecret')">
+
+              {{ showEventsSecret() ? 'Ocultar' : 'Mostrar' }}
+
+            </button>
+
+          </div>
+
+        </label>
+
+        <label>
+
+          Integridad
+
+          <div class="pas-inline">
+
+            <input
+
+              [type]="showIntegritySecret() ? 'text' : 'password'"
+
+              [ngModel]="form().integritySecret"
+
+              (ngModelChange)="patch('integritySecret', $event)"
+
+              placeholder="test_integrity_… o prod_integrity_…"
+
+              autocomplete="new-password"
+
+            />
+
+            <button type="button" class="ghost" (click)="toggleSecret('integritySecret')">
+
+              {{ showIntegritySecret() ? 'Ocultar' : 'Mostrar' }}
+
+            </button>
+
+          </div>
+
+        </label>
+
+      </fieldset>
+
+
+
+      <fieldset class="pas-block pas-block--argo">
+
+        <legend>Configuración ARGO</legend>
+
+        <label>
+
+          Ambiente (según llave pública)
+
+          <select [ngModel]="form().ambiente" (ngModelChange)="patch('ambiente', $event)">
+
+            <option value="sandbox">Sandbox — pub_test_</option>
+
+            <option value="production">Producción — pub_prod_</option>
+
+          </select>
+
+        </label>
+
+
+
+        <label>
+
+          ID sede virtual / en línea
+
+          <input type="text" [ngModel]="form().idSedeVirtual" (ngModelChange)="patch('idSedeVirtual', $event)" placeholder="Ej. VIRTUAL" />
+
+        </label>
+
+
+
+        <label>
+
+          ID cuenta bancaria destino (pasarela)
+
+          <input type="text" [ngModel]="form().idCuentaBancaria" (ngModelChange)="patch('idCuentaBancaria', $event)" />
+
+        </label>
+
+
+
+        <label>
+
+          URL retorno portal (redirect-url después del pago)
+
+          <input type="url" [ngModel]="form().redirectUrlBase" (ngModelChange)="patch('redirectUrlBase', $event)" placeholder="https://…/cursos/…" />
+
+        </label>
+
+
+
+        <p class="hint">
+
+          Tipo de pago: <strong>Pago en línea (PL)</strong>. También puede cobrar matrículas virtuales en caja física (pago total).
+
+        </p>
+
+      </fieldset>
+
+
+
+      <div class="actions">
+
+        <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+
+        </button>
+
+        <a routerLink="/app/informes/matriculas-virtuales" class="ghost">Ver informes virtuales</a>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>
+

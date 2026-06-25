@@ -1,0 +1,196 @@
+<section class="listado-admin admin-list-page">
+  <header class="caja-head page-head card">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Todos los egresos</p>
+      <h1>Todos los egresos</h1>
+      <p class="hint">Histórico completo de egresos. Solo administradores.</p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--amber">Administración</span>
+      <button type="button" class="ghost sm" (click)="cargar()">Actualizar</button>
+      <span class="total-badge egreso">{{ totalValor() | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+  </header>
+
+  <argo-caja-descuadres-banner />
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <p class="filtro-sesion-activo" *ngIf="idSesion()">
+    Filtrando sesión #{{ idSesion() }}
+    <button type="button" class="linkish" (click)="limpiarFiltros()">Quitar filtro</button>
+    <button type="button" class="linkish" (click)="irAlCierre(+idSesion())">Ir al cierre →</button>
+  </p>
+
+  <div class="card filtros">
+    <label>
+      Buscar
+      <input type="search" placeholder="Nombre, concepto, recibo…" [ngModel]="q()" (ngModelChange)="q.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <label>
+      Documento
+      <input type="text" placeholder="Nº documento beneficiario" [ngModel]="numDoc()" (ngModelChange)="numDoc.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <label>
+      Sesión caja
+      <input type="number" min="1" placeholder="# sesión" [ngModel]="idSesion()" (ngModelChange)="idSesion.set($event)" (keyup.enter)="cargar()" />
+    </label>
+    <argo-date-input label="Desde" [ngModel]="desde()" (ngModelChange)="desde.set($event)" ></argo-date-input>
+    <argo-date-input label="Hasta" [ngModel]="hasta()" (ngModelChange)="hasta.set($event)" ></argo-date-input>
+    <div class="filtro-actions">
+      <button type="button" class="primary sm" (click)="cargar()">Filtrar</button>
+      <button type="button" class="ghost sm" (click)="limpiarFiltros()">Limpiar</button>
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+        <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+      </div>
+      <span class="count">{{ items().length }} de {{ total() }}</span>
+    </div>
+  </div>
+
+  <div class="warn-docs card" *ngIf="!loading() && cantSinSoporte() > 0">
+    <strong>Aviso: egresos sin soporte adjunto ({{ cantSinSoporte() }})</strong>
+    <p class="hint">Falta imagen de factura, voucher o comprobante. Use Editar o el botón de alerta en la fila para adjuntarlo.</p>
+    <ul>
+      <li *ngFor="let e of egresosSinSoporte() | slice: 0 : 6">
+        {{ e.numRecibo || '—' }} — {{ e.concepto }}
+        <span class="dim">({{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }})</span>
+      </li>
+    </ul>
+    <p class="hint" *ngIf="cantSinSoporte() > 6">… y {{ cantSinSoporte() - 6 }} más en la lista.</p>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando egresos…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Recibo</th>
+            <th>Sesión</th>
+            <th>Beneficiario</th>
+            <th>Documento</th>
+            <th>Concepto</th>
+            <th>Tipo</th>
+            <th>Placa</th>
+            <th>Forma pago</th>
+            <th class="r">Valor</th>
+            <th class="col-alertas">Alertas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of items()" [class.fila-sin-soporte]="!tieneSoporte(e)">
+            <td><span [ngClass]="capFecha(e.fechaEgreso)">{{ e.fechaEgreso | date: 'dd/MM/yyyy HH:mm' }}</span></td>
+            <td><span [ngClass]="capRecibo(e.numRecibo)">{{ e.numRecibo || '—' }}</span></td>
+            <td class="sesion-cell">
+              <ng-container *ngIf="e.idSesion; else sinSesion">
+                <button type="button" class="linkish" (click)="filtrarPorSesion(e.idSesion)">#{{ e.idSesion }}</button>
+                <button type="button" class="ghost mini" (click)="irAlCierre(e.idSesion)" title="Detalle cierre">📋</button>
+              </ng-container>
+              <ng-template #sinSesion>—</ng-template>
+            </td>
+            <td><span [ngClass]="capBeneficiario(e.pagueA)">{{ e.pagueA || '—' }}</span></td>
+            <td><span [ngClass]="capDoc(e.numeroDocumento)">{{ e.numeroDocumento || '—' }}</span></td>
+            <td><span [ngClass]="capConceptoCaja(e.concepto)">{{ e.concepto }}</span></td>
+            <td><span [ngClass]="capTipoEgreso(e.tipoEgresoDescr)">{{ e.tipoEgresoDescr || '—' }}</span></td>
+            <td>
+              <span *ngIf="e.placa; else sinPlaca" [ngClass]="capPlaca(e.placa)">{{ e.placa }}</span>
+              <ng-template #sinPlaca><span class="dim">—</span></ng-template>
+            </td>
+            <td><span [ngClass]="capFormaPago(e.formaPago)">{{ e.formaPago || '—' }}</span></td>
+            <td class="num"><span [ngClass]="capValorEgreso()">{{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></td>
+            <td class="col-alertas">
+              <button
+                type="button"
+                class="row-alarm doc-alarm"
+                *ngIf="!tieneSoporte(e)"
+                (click)="onAlarmaSoporte(e, $event)"
+                [attr.title]="tituloSoporte(e)"
+                [attr.aria-label]="tituloSoporte(e)">
+                <span class="row-alarm-pulse" aria-hidden="true"></span>
+                <span class="row-alarm-icon">!</span>
+                <span class="row-alarm-label">Sop.</span>
+              </button>
+              <span *ngIf="tieneSoporte(e)" class="dim">OK</span>
+            </td>
+            <td class="actions-cell">
+              <button type="button" class="ghost mini" (click)="verRecibo(e)">Ver</button>
+              <button
+                type="button"
+                class="primary mini"
+                *ngIf="tieneSoporte(e)"
+                (click)="abrirSoporte(e)"
+                title="Abrir imagen del soporte de pago">
+                Soporte
+              </button>
+              <button type="button" class="primary mini" *ngIf="puedeEditarEgreso(e)" (click)="editarEgreso(e)">Editar</button>
+              <button type="button" class="danger mini" (click)="anularEgreso(e)">Anular</button>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0"><td colspan="12" class="empty">Sin resultados.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article class="list-card" *ngFor="let e of items()" [class.list-card-sin-soporte]="!tieneSoporte(e)">
+        <div class="card-title">
+          <h3>{{ e.numRecibo || 'Egreso' }}</h3>
+          <p class="card-sub">
+            {{ e.pagueA || '—' }} · {{ e.fechaEgreso | date: 'dd/MM/yyyy HH:mm' }}
+            <span *ngIf="e.idSesion"> · Sesión #{{ e.idSesion }}</span>
+          </p>
+          <button
+            type="button"
+            class="row-alarm doc-alarm card-soporte-alarm"
+            *ngIf="!tieneSoporte(e)"
+            (click)="onAlarmaSoporte(e, $event)"
+            [attr.title]="tituloSoporte(e)"
+            [attr.aria-label]="tituloSoporte(e)">
+            <span class="row-alarm-pulse" aria-hidden="true"></span>
+            <span class="row-alarm-icon">!</span>
+            <span class="row-alarm-label">Sin soporte</span>
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="card-row"><span class="lbl">Concepto</span><span>{{ e.concepto }}</span></div>
+          <div class="card-row"><span class="lbl">Tipo</span><span [ngClass]="capTipoEgreso(e.tipoEgresoDescr)">{{ e.tipoEgresoDescr || '—' }}</span></div>
+          <div class="card-row" *ngIf="e.placa"><span class="lbl">Placa</span><span [ngClass]="capPlaca(e.placa)">{{ e.placa }}</span></div>
+          <div class="card-row"><span class="lbl">Valor</span><span [ngClass]="capValorEgreso()">{{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></div>
+        </div>
+        <div class="card-foot">
+          <button type="button" class="ghost sm" *ngIf="e.idSesion" (click)="irAlCierre(e.idSesion)">Cierre #{{ e.idSesion }}</button>
+          <button type="button" class="ghost sm" (click)="verRecibo(e)">Ver recibo</button>
+          <button type="button" class="primary sm" *ngIf="tieneSoporte(e)" (click)="abrirSoporte(e)">Ver soporte</button>
+          <button type="button" class="primary sm" *ngIf="puedeEditarEgreso(e)" (click)="editarEgreso(e)">Editar</button>
+          <button type="button" class="danger sm" (click)="anularEgreso(e)">Anular</button>
+        </div>
+      </article>
+      <p class="cards-empty empty" *ngIf="items().length === 0">Sin resultados.</p>
+    </div>
+  </div>
+</section>
+
+<div class="modal-backdrop auth-anular-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarAnularSupervisor()">
+  <div class="modal card auth-anular-modal" (click)="$event.stopPropagation()">
+    <h3>Autorización para anular egreso</h3>
+    <p class="hint" *ngIf="egresoPendienteAnular() as pe">
+      Movimiento de sesión #{{ pe.idSesion || '—' }} (no es su caja abierta actual). Ingrese credenciales de administrador.
+    </p>
+    <label>
+      Usuario administrador
+      <input type="text" autocomplete="username" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+    </label>
+    <label>
+      Contraseña
+      <input type="password" autocomplete="current-password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+    </label>
+    <div class="actions">
+      <button type="button" class="ghost mini" (click)="cancelarAnularSupervisor()">Cancelar</button>
+      <button type="button" class="danger mini" (click)="confirmarAnularSupervisor()">Autorizar y anular</button>
+    </div>
+  </div>
+</div>

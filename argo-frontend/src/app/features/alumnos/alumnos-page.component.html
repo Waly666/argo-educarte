@@ -1,0 +1,40 @@
+<section class="alumnos-page">
+  <header class="page-head card">
+    <div class="title">
+      <h1>Alumnos</h1>
+      <p>Gestión integral de matrículas, pagos y certificados.</p>
+    </div>
+
+    <div class="search">
+      <argo-alumno-buscador></argo-alumno-buscador>
+    </div>
+
+    <div class="current" *ngIf="alumno() as a">
+      <div class="avatar">
+        <img *ngIf="fotoUrl() as f" [src]="f" alt="" />
+        <span *ngIf="!a.foto">{{ (a.nombres.charAt(0) || '?') + (a.apellidos.charAt(0) || '') }}</span>
+      </div>
+      <div class="meta">
+        <strong>{{ nombreCompleto() }}</strong>
+        <span>{{ a.tipoDoc || 'CC' }} {{ a.numDoc }}</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button *ngFor="let t of tabs"
+            class="tab"
+            [class.active]="tab() === t.key"
+            (click)="setTab(t.key)">
+      {{ t.label }}
+    </button>
+  </nav>
+
+  <div class="tab-body">
+    <argo-datos-principales       *ngIf="tab() === 'datos'"></argo-datos-principales>
+    <argo-servicios                *ngIf="tab() === 'servicios'"></argo-servicios>
+    <argo-pagos                    *ngIf="tab() === 'pagos'"></argo-pagos>
+    <argo-certificados             *ngIf="tab() === 'certificados'"></argo-certificados>
+    <argo-documentos               *ngIf="tab() === 'documentos'"></argo-documentos>
+  </div>
+</section>

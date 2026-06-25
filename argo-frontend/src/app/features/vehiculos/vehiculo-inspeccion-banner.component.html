@@ -1,0 +1,9 @@
+<argo-head-alarm-list-banner
+  [visible]="visible()"
+  theme="hal-theme-veh-inspeccion"
+  icon="🔍"
+  [title]="titulo()"
+  hint="Vehículos sin inspección preoperacional hoy. Pulse para registrar."
+  [items]="rows()"
+  (closed)="cerrar()"
+/>

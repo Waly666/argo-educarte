@@ -1,0 +1,269 @@
+<section class="cobros-page admin-list-page" [class.detalle-abierto]="!!seleccionado()">
+  <header class="caja-head page-head card">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Cobros pendientes</p>
+      <h1>Cobros pendientes</h1>
+      <p class="hint">Servicios con saldo por cobrar. Registre pagos desde el detalle de cada alumno.</p>
+      <p class="hint warn" *ngIf="!cajaAbierta()">Abra su caja en Resumen del día para registrar cobros.</p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--sky">{{ items().length }} servicio{{ items().length === 1 ? '' : 's' }}</span>
+      <button type="button" class="ghost sm" (click)="cargar()">Actualizar</button>
+      <span class="total-badge">{{ totales().saldo | currency: 'COP':'symbol-narrow':'1.0-0' }} pendiente</span>
+    </div>
+  </header>
+
+  <argo-alerta-pago-alumno-banner modo="panel" />
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="card toolbar">
+    <input
+      type="search"
+      placeholder="Buscar por documento o nombre del alumno…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="onBuscar($event)"
+      autocomplete="off"
+    />
+    <div class="view-toggle" role="group" aria-label="Modo de vista">
+      <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+      <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+    </div>
+    <span class="count">{{ items().length }} de {{ total() }} servicios</span>
+  </div>
+
+  <div class="resumen-row card">
+    <div class="stat">
+      <span class="label">Total liquidado</span>
+      <span class="value">{{ totales().valor | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+    <div class="stat">
+      <span class="label">Total pagado</span>
+      <span class="value">{{ totales().abonado | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+    <div class="stat">
+      <span class="label">Saldo pendiente</span>
+      <span class="value warn">{{ totales().saldo | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando servicios con saldo…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Alumno</th>
+            <th>Documento</th>
+            <th>Tipo</th>
+            <th>Servicio</th>
+            <th class="r">Valor</th>
+            <th class="r">Abonado</th>
+            <th class="r">Saldo</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let it of items()"
+            class="row-click"
+            [class.sel]="seleccionado()?._id === it._id"
+            (click)="abrir(it)">
+            <td>
+              <span *ngIf="fechaItem(it) as f" [ngClass]="capFecha(f)">{{ f | date: 'dd/MM/yyyy' }}</span>
+              <span *ngIf="!fechaItem(it)">—</span>
+            </td>
+            <td>{{ it.alumnoNombre || '—' }}</td>
+            <td><span [ngClass]="capDoc(it.alumnoDoc)">{{ it.alumnoDoc }}</span></td>
+            <td>
+              <span [ngClass]="capTipoIngreso(it.tipoIngresoDescr)">{{ it.tipoIngresoDescr || '—' }}</span>
+            </td>
+            <td>{{ it.descripcion || '—' }}</td>
+            <td class="r">{{ fmt(it.valor) }}</td>
+            <td class="r">{{ fmt(it.abonado) }}</td>
+            <td class="r saldo-cell">{{ fmt(it.saldo) }}</td>
+            <td>{{ estadoLabel(it) }}</td>
+            <td class="actions">
+              <button type="button" class="primary mini" (click)="abrir(it); $event.stopPropagation()">Abrir</button>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0">
+            <td colspan="10" class="empty">No hay servicios con saldo pendiente.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article
+        class="list-card saldo-card"
+        *ngFor="let it of items()"
+        [class.sel]="seleccionado()?._id === it._id"
+        tabindex="0"
+        (click)="abrir(it)"
+        (keyup.enter)="abrir(it)">
+        <div class="card-title">
+          <h3>{{ it.descripcion || 'Servicio' }}</h3>
+          <p class="card-sub">{{ it.alumnoNombre }} · {{ it.alumnoDoc }}</p>
+        </div>
+        <div class="card-body">
+          <div class="card-row">
+            <span class="lbl">Fecha</span>
+            <span *ngIf="fechaItem(it) as f" [ngClass]="capFecha(f)">{{ f | date: 'dd/MM/yyyy' }}</span>
+            <span *ngIf="!fechaItem(it)">—</span>
+          </div>
+          <div class="card-row">
+            <span class="lbl">Tipo</span>
+            <span [ngClass]="capTipoIngreso(it.tipoIngresoDescr)">{{ it.tipoIngresoDescr || '—' }}</span>
+          </div>
+          <div class="card-row">
+            <span class="lbl">Saldo</span>
+            <span class="saldo-big" [ngClass]="capValorIngreso()">{{ fmt(it.saldo) }}</span>
+          </div>
+          <div class="card-row">
+            <span class="lbl">Abonado</span>
+            <span>{{ fmt(it.abonado) }} / {{ fmt(it.valor) }}</span>
+          </div>
+        </div>
+        <div class="card-foot">
+          <button type="button" class="primary sm" (click)="abrir(it); $event.stopPropagation()">Ver y cobrar</button>
+        </div>
+      </article>
+      <p class="cards-empty empty" *ngIf="items().length === 0">No hay servicios con saldo pendiente.</p>
+    </div>
+  </div>
+
+  <aside class="detalle-panel" *ngIf="seleccionado() as it">
+    <header class="detalle-head">
+      <div>
+        <h2>{{ it.descripcion || 'Servicio' }}</h2>
+        <p class="hint">
+          {{ it.alumnoNombre }} · Doc. {{ it.alumnoDoc }}
+          <span *ngIf="fechaItem(it) as f"> · {{ f | date: 'dd/MM/yyyy' }}</span>
+        </p>
+      </div>
+      <button type="button" class="ghost sm" (click)="cerrarDetalle()" aria-label="Cerrar">✕</button>
+    </header>
+
+    <div class="detalle-stats">
+      <div class="stat">
+        <span class="label">Valor</span>
+        <span class="value">{{ fmt(it.valor) }}</span>
+      </div>
+      <div class="stat">
+        <span class="label">Abonado</span>
+        <span class="value">{{ fmt(it.abonado) }}</span>
+      </div>
+      <div class="stat">
+        <span class="label">Saldo</span>
+        <span class="value warn">{{ fmt(it.saldo) }}</span>
+      </div>
+    </div>
+
+    <section class="detalle-block" *ngIf="num(it.saldo) > 0.0001">
+      <h3>Registrar cobro</h3>
+      <div class="form-grid">
+        <label>
+          Valor
+          <input type="number" min="0" [max]="num(it.saldo)" [ngModel]="valor()" (ngModelChange)="valor.set(+$event)" />
+          <span class="field-hint">Saldo: {{ fmt(it.saldo) }}</span>
+        </label>
+        <label>
+          Forma de pago
+          <select [ngModel]="idTipoPago()" (ngModelChange)="onTipoPagoChange($event)">
+            <option value="">— Seleccionar —</option>
+            <option *ngFor="let t of tiposPago()" [value]="tipoPagoValor(t)">{{ tipoPagoLabel(t) }}</option>
+          </select>
+        </label>
+        <label *ngIf="requiereCuentaEmpresa()">
+          Cuenta empresa *
+          <select [ngModel]="idCuentaBancaria()" (ngModelChange)="idCuentaBancaria.set($event)">
+            <option value="">— Seleccionar —</option>
+            <option *ngFor="let c of cuentasBancarias()" [value]="cuentaValor(c)">{{ labelCuenta(c) }}</option>
+          </select>
+        </label>
+        <label *ngIf="requiereCuentaEmpresa()">
+          Referencia *
+          <input type="text" [ngModel]="numComprobante()" (ngModelChange)="numComprobante.set($event)" />
+        </label>
+        <argo-pago-soporte-field
+          *ngIf="requiereSoporte()"
+          class="full"
+          [obligatorio]="true"
+          [previewUrl]="previewSoporte()"
+          [nombreArchivo]="archivoSoporte()?.name ?? null"
+          (seleccionado)="onSoporteArchivo($event)"
+          (quitado)="quitarSoporte()"
+        />
+        <label class="full">
+          Observaciones
+          <input type="text" [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)" />
+        </label>
+      </div>
+      <div class="detalle-actions">
+        <button type="button" class="primary" [disabled]="saving() || !cajaAbierta() || !puedeRegistrar()" (click)="registrar()">
+          {{ saving() ? 'Guardando…' : 'Registrar cobro' }}
+        </button>
+        <p class="hint err" *ngIf="mensajePagoIntangible() as aviso">{{ aviso }}</p>
+      </div>
+    </section>
+
+    <section class="detalle-block">
+      <h3>Historial de pagos</h3>
+      <div class="loading" *ngIf="loadingDetalle()">Cargando…</div>
+      <table class="argo mini-table" *ngIf="!loadingDetalle()">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Recibo</th>
+            <th>Tipo</th>
+            <th class="r">Valor</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pagosItem()">
+            <td>{{ tiempoFmt(p.fecha || p.createdAt) }}</td>
+            <td>{{ p.numRecibo || '—' }}</td>
+            <td>{{ p.tipoAbonoDescr || p.tipoPagoDescr || '—' }}</td>
+            <td class="r">{{ fmt(p.valor) }}</td>
+            <td class="actions-cell">
+              <button type="button" class="ghost mini" (click)="verRecibo(p)">Ver</button>
+              <button type="button" class="ghost mini" (click)="imprimirRecibo(p)">Imprimir</button>
+              <button type="button" class="danger mini" *ngIf="cajaAbierta()" (click)="reversar(p)">Reversar</button>
+            </td>
+          </tr>
+          <tr *ngIf="pagosItem().length === 0">
+            <td colspan="5" class="empty">Sin pagos registrados para este servicio.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </aside>
+
+  <div class="detalle-backdrop" *ngIf="seleccionado()" (click)="cerrarDetalle()"></div>
+
+  <div class="modal-backdrop auth-anular-backdrop" *ngIf="mostrarAuthAnular()" (click)="cancelarReversarSupervisor()">
+    <div class="modal card auth-anular-modal" (click)="$event.stopPropagation()">
+      <h3>Autorización para anular ingreso</h3>
+      <p class="hint" *ngIf="ingresoPendienteAnular() as pi">
+        Comprobante {{ pi.numRecibo || '—' }} — ingrese credenciales de un administrador.
+      </p>
+      <label>
+        Usuario administrador
+        <input type="text" [ngModel]="authAdminUser()" (ngModelChange)="authAdminUser.set($event)" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" [ngModel]="authAdminPass()" (ngModelChange)="authAdminPass.set($event)" />
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost mini" (click)="cancelarReversarSupervisor()">Cancelar</button>
+        <button type="button" class="danger mini" (click)="confirmarReversarConSupervisor()">Autorizar y reversar</button>
+      </div>
+    </div>
+  </div>
+</section>

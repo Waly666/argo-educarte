@@ -1,0 +1,230 @@
+.georef-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 920px;
+}
+
+.georef-head {
+  h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.35rem;
+  }
+
+  p {
+    margin: 0;
+    max-width: 52rem;
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+}
+
+.msg.ok {
+  padding: 0.65rem 0.9rem;
+  background: rgba(78, 163, 255, 0.1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+
+.georef-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.georef-section {
+  border: 1px solid rgba(120, 170, 255, 0.16);
+  border-left: 3px solid rgba(56, 189, 248, 0.75);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(8, 18, 45, 0.72), rgba(5, 12, 32, 0.55));
+  overflow: hidden;
+
+  &--here {
+    border-left-color: rgba(99, 102, 241, 0.8);
+  }
+
+  &--test {
+    border-left-color: rgba(16, 185, 129, 0.75);
+  }
+}
+
+.georef-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 0.65rem;
+  border-bottom: 1px solid rgba(120, 170, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.georef-section-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e0f2fe;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.45), rgba(99, 102, 241, 0.45));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.georef-section-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: var(--text, #e6eeff);
+}
+
+.georef-section-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+
+  a {
+    color: var(--accent-2);
+  }
+}
+
+.georef-section-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.georef-field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+
+  &--wide {
+    max-width: 100%;
+  }
+
+  &--key {
+    min-width: 0;
+  }
+}
+
+.georef-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim, #94a3b8);
+}
+
+.georef-optional {
+  font-weight: 500;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+}
+
+.georef-field input,
+.georef-field select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  border-radius: 9px;
+  border: 1px solid rgba(120, 170, 255, 0.22);
+  background: rgba(3, 10, 28, 0.65);
+  color: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.55);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+  }
+}
+
+.georef-field-hint {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  line-height: 1.4;
+}
+
+.georef-cred-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 1rem 1.25rem;
+  align-items: start;
+}
+
+.georef-note {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 170, 255, 0.14);
+  background: rgba(6, 16, 41, 0.4);
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+.georef-test-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.georef-test-action {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 1px;
+
+  button {
+    white-space: nowrap;
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+.georef-prueba-result {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: #a7f3d0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.georef-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+
+  .primary {
+    min-width: 11rem;
+    min-height: 2.5rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .georef-page {
+    max-width: 100%;
+  }
+
+  .georef-cred-grid,
+  .georef-test-row {
+    grid-template-columns: 1fr;
+  }
+
+  .georef-test-action button {
+    width: 100%;
+  }
+}

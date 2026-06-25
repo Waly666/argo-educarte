@@ -1,0 +1,111 @@
+<section class="instructor-detalle card">
+  <header class="det-head">
+    <div>
+      <p class="breadcrumb"><a routerLink="/app/instructores">Instructores</a> / Detalle</p>
+      <h1>Ficha de instructor</h1>
+    </div>
+    <div class="det-actions">
+      <a routerLink="/app/instructores" class="ghost link-btn">← Volver al listado</a>
+      @if (puedeEditarRrhh() && instructor()) {
+        <a [routerLink]="linkEditarRrhh()" [queryParams]="queryEditarRrhh()" class="primary link-btn">Editar en RRHH</a>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="hint">Cargando…</p>
+  } @else if (error()) {
+    <div class="msg error">{{ error() }}</div>
+  } @else {
+    @if (instructor(); as e) {
+      <div class="det-hero">
+        <div class="det-foto" aria-hidden="true">
+          @if (fotoUrl(e.urlFoto); as f) {
+            <img [src]="f" alt="" />
+          } @else {
+            <span>{{ iniciales(e) }}</span>
+          }
+        </div>
+        <div class="det-resumen">
+          <h2>{{ e.nombreCompleto }}</h2>
+          <p class="mono det-doc">{{ e.tipoDocumento }} {{ e.numeroDocumento }}</p>
+          <div class="det-chips">
+            <span class="chip">{{ e.cargoNombre || 'Instructor' }}</span>
+            <span class="chip" [class.chip-warn]="!e.usuarioLogin">{{ e.usuarioLogin || 'Sin acceso al sistema' }}</span>
+            <span class="chip">{{ e.estado || 'activo' }}</span>
+          </div>
+          <p class="hint det-contacto">{{ contacto(e) }}</p>
+        </div>
+      </div>
+
+      <nav class="det-tabs">
+        <button type="button" [class.active]="tab() === 'datos'" (click)="setTab('datos')">Datos</button>
+        @if (puedeDocumentos()) {
+          <button type="button" [class.active]="tab() === 'documentos'" (click)="setTab('documentos')">Documentos</button>
+        }
+      </nav>
+
+      @if (tab() === 'datos') {
+        <div class="det-grid">
+          <section class="det-block">
+            <h3>Identificación</h3>
+            <dl>
+              <div><dt>Sexo</dt><dd>{{ e.sexo || '—' }}</dd></div>
+              <div><dt>Fecha nacimiento</dt><dd>{{ fmtFecha(e.fechaNacimiento) }}</dd></div>
+              <div><dt>Estado civil</dt><dd>{{ e.estadoCivil || '—' }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="det-block">
+            <h3>Contacto</h3>
+            <dl>
+              <div><dt>Celular</dt><dd>{{ e.celular || '—' }}</dd></div>
+              <div><dt>Teléfono</dt><dd>{{ e.telefono || '—' }}</dd></div>
+              <div><dt>Correo personal</dt><dd>{{ e.correoPersonal || '—' }}</dd></div>
+              <div><dt>Correo corporativo</dt><dd>{{ e.correoCorporativo || '—' }}</dd></div>
+              <div><dt>Dirección</dt><dd>{{ e.direccion || '—' }}</dd></div>
+              <div><dt>Ciudad</dt><dd>{{ e.ciudad || '—' }}</dd></div>
+              <div><dt>Departamento</dt><dd>{{ e.departamento || '—' }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="det-block">
+            <h3>Contrato y cargo</h3>
+            <dl>
+              <div><dt>Departamento</dt><dd>{{ e.departamentoNombre || '—' }}</dd></div>
+              <div><dt>Tipo contrato</dt><dd>{{ e.tipoContrato || '—' }}</dd></div>
+              <div><dt>Fecha ingreso</dt><dd>{{ fmtFecha(e.fechaIngreso) }}</dd></div>
+              <div><dt>Fecha retiro</dt><dd>{{ fmtFecha(e.fechaRetiro) }}</dd></div>
+              @if (puedeEditarRrhh()) {
+                <div><dt>Salario</dt><dd>{{ fmtMoneda(e.salario) }}</dd></div>
+              }
+            </dl>
+          </section>
+
+          <section class="det-block">
+            <h3>Seguridad social</h3>
+            <dl>
+              <div><dt>EPS</dt><dd>{{ e.epsNombre || '—' }}</dd></div>
+              <div><dt>AFP</dt><dd>{{ e.afpNombre || '—' }}</dd></div>
+              <div><dt>ARL</dt><dd>{{ e.arlNombre || '—' }}</dd></div>
+              <div><dt>Caja compensación</dt><dd>{{ e.cajaNombre || '—' }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="det-block">
+            <h3>Acceso al sistema</h3>
+            <dl>
+              <div><dt>Usuario login</dt><dd class="mono">{{ e.usuarioLogin || '—' }}</dd></div>
+              <div><dt>Rol</dt><dd>{{ e.usuarioRol || '—' }}</dd></div>
+            </dl>
+            @if (!e.usuarioLogin) {
+              <p class="hint warn-text">Sin usuario vinculado. Use RRHH para crear o vincular acceso.</p>
+            }
+          </section>
+        </div>
+      } @else if (tab() === 'documentos') {
+        <argo-empleado-documentos-panel [idEmpleado]="e.idEmpleado" [cargoId]="e.cargoId ?? null" />
+      }
+    }
+  }
+</section>

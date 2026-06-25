@@ -1,0 +1,50 @@
+<section class="prog-det-page">
+  @if (loading()) {
+    <p class="prog-det-msg">Cargando programa…</p>
+  } @else if (error()) {
+    <p class="prog-det-msg prog-det-msg--err">{{ error() }}</p>
+    <button type="button" class="ghost" (click)="volver()">← Volver a programas</button>
+  } @else if (programa()) {
+    <header class="prog-det-head card">
+      <div class="prog-det-head-left">
+        <button type="button" class="ghost back" (click)="volver()">← Programas</button>
+        <div class="prog-det-meta">
+          <p class="prog-det-crumb">
+            <a routerLink="/app">Inicio</a> · <a routerLink="/app/programas">Programas</a> · {{ programa()!.codigoProg || programa()!.idPrograma }}
+          </p>
+          <h1>{{ programa()!.nombreProg }}</h1>
+          <p class="prog-det-sub">{{ programa()!.nomCert || 'Sin nombre en certificado' }}</p>
+          <div class="prog-det-badges">
+            @if (esVirtual()) {
+              <span class="prog-badge prog-badge--virtual">Aula virtual</span>
+            } @else {
+              <span class="prog-badge prog-badge--presencial">Presencial</span>
+            }
+            @if (programa()!.estado) {
+              <span class="prog-badge prog-badge--estado">{{ programa()!.estado }}</span>
+            }
+            @if (programa()!.tipoCertificado; as tc) {
+              <span class="prog-badge prog-badge--cert">{{ labelTipoCert(tc) }}</span>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="prog-det-head-actions">
+        <button type="button" class="ghost" (click)="editarEnLista()">Editar catálogo</button>
+      </div>
+    </header>
+
+    <nav class="prog-det-tabs card" aria-label="Secciones del programa">
+      @for (t of tabs; track t.key) {
+        <button type="button" [class.active]="tab() === t.key" (click)="setTab(t.key)">{{ t.label }}</button>
+      }
+    </nav>
+
+    @if (tab() === 'datos') {
+      <argo-programa-datos-tab [detalle]="detalle()!" />
+    }
+    @if (tab() === 'alumnos') {
+      <argo-programa-alumnos-tab [programaId]="programaId()" [esVirtualPrograma]="esVirtual()" />
+    }
+  }
+</section>

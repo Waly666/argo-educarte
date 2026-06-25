@@ -1,0 +1,184 @@
+/* Onda al hover — anillos visibles como head-alarm-pulse del ERP */
+@keyframes av-card-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  70% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+
+.card-wave-host {
+  --card-wave-a: var(--av-card-wave-a);
+  --card-wave-b: var(--av-card-wave-b);
+  position: relative;
+  overflow: visible;
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.32s ease,
+    border-color 0.32s ease;
+
+  .card-wave-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: inherit;
+    border: 2px solid var(--card-wave-a);
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+  }
+
+  .card-wave-ring--2 {
+    border-color: var(--card-wave-b);
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+  }
+
+  &:hover .card-wave-ring {
+    animation: av-card-wave 1.25s ease-out infinite;
+  }
+
+  &:hover .card-wave-ring--2 {
+    animation: av-card-wave 1.25s ease-out 0.38s infinite;
+  }
+}
+
+/* Gana sobre reveal / reveal-scale */
+.card-wave-host.reveal-scale.is-visible:hover,
+.reveal-scale.is-visible.card-wave-host:hover,
+.card-wave-host.reveal.is-visible:hover,
+.reveal.is-visible.card-wave-host:hover {
+  transform: translateY(-6px) scale(1);
+}
+
+.oferta-card.card-wave-host,
+.info-card.card-wave-host,
+.servicio-chip.card-wave-host,
+.catalog-card.card-wave-host,
+.fund-card.card-wave-host,
+.fund-servicio.card-wave-host,
+.fund-about__bloque.card-wave-host,
+.fund-about__stat.card-wave-host,
+.fund-about__logo-wrap.card-wave-host,
+.fund-contacto__item.card-wave-host,
+.consulta-card.card-wave-host,
+.acerca-panel.card-wave-host,
+.acerca-valor.card-wave-host,
+.acerca-contact-list li.card-wave-host,
+.contacto-form.card-wave-host,
+.registro-card.card-wave-host,
+.auth.card.card-wave-host,
+.detail-buy-card.card-wave-host {
+  --card-wave-a: var(--av-card-wave-light-a);
+  --card-wave-b: var(--av-card-wave-light-b);
+}
+
+.dark-card.card-wave-host,
+.carrera-nodo.card-wave-host,
+.faq-item.card-wave-host,
+.section-faq .card-wave-host,
+.dash-stat-card.card-wave-host,
+.dash-score-card.card-wave-host,
+.dash-cert-card.card-wave-host,
+.dash-profile-card.card-wave-host,
+.aula-gate-card.card-wave-host,
+.section-starfield .card-wave-host,
+.hero.section-starfield .card-wave-host,
+.site-footer__contact-card.card-wave-host {
+  --card-wave-a: var(--av-card-wave-dark-a);
+  --card-wave-b: var(--av-card-wave-dark-b);
+}
+
+.paso-card.card-wave-host {
+  --card-wave-a: var(--av-card-wave-light-a);
+  --card-wave-b: var(--av-card-wave-light-b);
+}
+
+.nav a.card-wave-host {
+  --card-wave-a: var(--av-card-wave-dark-a);
+  --card-wave-b: var(--av-accent-a22);
+}
+
+.nav a.card-wave-host:hover {
+  transform: translateY(-2px);
+}
+
+.nav a.card-wave-host:hover .card-wave-ring {
+  border-width: 2px;
+}
+
+/* Botones — distintivo verde + fucsia encendido */
+.btn-wave-host {
+  --card-wave-a: rgba(74, 222, 128, 0.96);
+  --card-wave-b: rgba(232, 121, 249, 0.92);
+  position: relative;
+  overflow: visible;
+  z-index: 0;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  &:hover .card-wave-ring {
+    border-width: 2px;
+  }
+}
+
+.btn-wave-host.reveal-scale.is-visible:hover,
+.reveal-scale.is-visible.btn-wave-host:hover,
+.btn-wave-host.reveal.is-visible:hover,
+.reveal.is-visible.btn-wave-host:hover {
+  transform: translateY(-3px) scale(1);
+}
+
+/* Gana sobre hovers locales de Acerca / Fundación (encapsulated styles cargan después) */
+.acerca-valor.card-wave-host:hover,
+.acerca-panel.card-wave-host:hover,
+.fund-servicio.card-wave-host:hover,
+.fund-about__bloque.card-wave-host:hover,
+.fund-card.card-wave-host:hover,
+.fund-about__stat.card-wave-host:hover,
+.fund-contacto__item.card-wave-host:hover,
+.site-footer__contact-card.card-wave-host:hover,
+.faq-item.card-wave-host:hover,
+.acerca-contact-list li.card-wave-host:hover {
+  transform: translateY(-6px) !important;
+}
+
+.card-wave-host .icon-pop,
+.chip-lift .icon-pop {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.card-wave-host:hover .icon-pop,
+.chip-lift:hover .icon-pop {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-wave-host:hover .card-wave-ring {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .card-wave-host:hover,
+  .card-wave-host.reveal-scale.is-visible:hover,
+  .card-wave-host.reveal.is-visible:hover,
+  .btn-wave-host:hover,
+  .btn-wave-host.reveal-scale.is-visible:hover,
+  .btn-wave-host.reveal.is-visible:hover {
+    transform: none;
+    box-shadow:
+      0 0 0 2px var(--card-wave-a),
+      0 14px 32px rgba(15, 23, 42, 0.18);
+  }
+}

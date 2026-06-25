@@ -1,0 +1,117 @@
+<section class="contratos-page card admin-list-page">
+  <header class="jor-head page-head">
+    <div class="jor-head-main title">
+      <p class="breadcrumb"><a routerLink="/app/jornadas">Jornadas</a> / Contratos</p>
+      <h1>Contratos de capacitación</h1>
+      <p class="hint">Listado de contrataciones con empresas. Abra el hub para gestionar jornadas y clases.</p>
+    </div>
+    <div class="jor-badges head-actions">
+      @if (enEjecucionCount() > 0) {
+        <span class="jor-chip jor-chip--emerald">{{ enEjecucionCount() }} en ejecución</span>
+      }
+      <a routerLink="/app/jornadas" class="ghost sm link-btn">Hub jornadas</a>
+      <button type="button" class="primary" *ngIf="puedeGestionar()" (click)="nuevoContrato()">
+        + Nuevo contrato
+      </button>
+    </div>
+  </header>
+
+  @if (msg(); as t) {
+    <p
+      class="jor-banner"
+      [class.jor-banner--error]="msgEsError()"
+      [class.jor-banner--ok]="!msgEsError()"
+      role="status">
+      <span>{{ t }}</span>
+      <button type="button" class="jor-banner-close" (click)="cerrarMsg()" aria-label="Cerrar">×</button>
+    </p>
+  }
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="ic">◎</span>
+      <input
+        type="text"
+        placeholder="Buscar por código, cliente, ciudad, supervisor…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        autocomplete="off" />
+    </div>
+    <div class="filtro-estado">
+      <label>Estado</label>
+      <select [ngModel]="estadoFiltro()" (ngModelChange)="estadoFiltro.set($event)">
+        <option value="">Todos</option>
+        <option *ngFor="let e of ESTADOS_CONTRATO" [value]="e">{{ e }}</option>
+      </select>
+    </div>
+    <span class="count">
+      {{ totalFiltrado() }} de {{ total() }} contrato(s)
+    </span>
+  </div>
+
+  <div class="content-wrap">
+    <p class="loading" *ngIf="loading()">Cargando contratos…</p>
+
+    <table class="argo data-table contratos-tabla" *ngIf="!loading()">
+      <thead>
+        <tr>
+          <th>Cód. contrato</th>
+          <th>Cliente</th>
+          <th>Ciudad</th>
+          <th>Supervisor</th>
+          <th>Estado</th>
+          <th>Jornadas</th>
+          <th>Ses. cert.</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let c of contratosFiltrados()"
+          class="contrato-row"
+          [ngClass]="rowContratoClass(c.estado)"
+          (click)="editarContrato(c)"
+          [title]="'Editar contrato ' + (c.codContrato || '')">
+          <td><span [ngClass]="capCodContrato(c.codContrato)">{{ c.codContrato || '—' }}</span></td>
+          <td><span [ngClass]="capCliente(labelCliente(c))">{{ labelCliente(c) }}</span></td>
+          <td><span [ngClass]="capMunicipioJor(c.ciudad)">{{ labelCiudad(c) }}</span></td>
+          <td>{{ c.supervisor || '—' }}</td>
+          <td>
+            <span [ngClass]="estadoContratoLiveClass(c.estado)">{{ labelEstadoContrato(c.estado) }}</span>
+          </td>
+          <td>
+            <span [ngClass]="capMetaNum(c.numerojornadas)">{{ c.numerojornadas || 0 }}</span>
+            <span [ngClass]="capGenerado(c.jornadasGeneradas)" class="jor-inline-cap">
+              {{ etiquetaGenerado(c.jornadasGeneradas) }}
+            </span>
+          </td>
+          <td><span [ngClass]="capSesCert(c.numSesCert)">{{ c.numSesCert || 1 }}</span></td>
+          <td class="col-actions actions-cell">
+            <button type="button" class="mini primary" (click)="editarContrato(c); $event.stopPropagation()">
+              Editar
+            </button>
+            <button
+              type="button"
+              class="mini danger"
+              *ngIf="puedeGestionar()"
+              (click)="eliminar(c); $event.stopPropagation()">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="contratosFiltrados().length === 0">
+          <td colspan="8" class="empty">
+            <p>
+              @if (total() === 0) {
+                Aún no hay contratos registrados.
+                @if (puedeGestionar()) { Pulse <strong>+ Nuevo contrato</strong> para crear el primero. }
+              } @else {
+                No hay contratos que coincidan con los filtros.
+              }
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

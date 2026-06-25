@@ -1,0 +1,166 @@
+<aside class="psp" aria-label="Vista previa del portal">
+  <header class="psp-toolbar">
+    <div class="psp-toolbar__title">
+      <strong>Vista previa</strong>
+      <span class="psp-toolbar__hint">{{ panelHint() }}</span>
+    </div>
+    <div class="psp-toolbar__modes" role="tablist" aria-label="Modo de vista previa">
+      <button
+        type="button"
+        role="tab"
+        class="psp-tab"
+        [class.active]="previewMode() === 'borrador'"
+        [attr.aria-selected]="previewMode() === 'borrador'"
+        (click)="setPreviewMode('borrador')"
+      >
+        Mientras edita
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="psp-tab"
+        [class.active]="previewMode() === 'publicado'"
+        [attr.aria-selected]="previewMode() === 'publicado'"
+        (click)="setPreviewMode('publicado')"
+      >
+        Ya publicado
+      </button>
+    </div>
+    <div class="psp-toolbar__device" aria-label="Dispositivo">
+      <button
+        type="button"
+        class="psp-device"
+        [class.active]="deviceMode() === 'desktop'"
+        title="Escritorio"
+        (click)="setDeviceMode('desktop')"
+      >
+        ▭
+      </button>
+      <button
+        type="button"
+        class="psp-device"
+        [class.active]="deviceMode() === 'mobile'"
+        title="Móvil"
+        (click)="setDeviceMode('mobile')"
+      >
+        ▮
+      </button>
+    </div>
+  </header>
+
+  <div class="psp-browser" [class.psp-browser--mobile]="deviceMode() === 'mobile'">
+    <div class="psp-browser__chrome">
+      <span class="psp-browser__dots" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </span>
+      <span class="psp-browser__url">{{ portalUrl }}</span>
+      @if (previewMode() === 'borrador') {
+        <span class="psp-browser__badge">Vista previa</span>
+      }
+    </div>
+
+    @if (previewMode() === 'publicado') {
+      <div class="psp-iframe-wrap">
+        <div class="psp-iframe-toolbar">
+          <button type="button" class="psp-refresh" (click)="refreshPublishedIframe()">↻ Actualizar</button>
+        </div>
+        <iframe
+          class="psp-iframe"
+          [src]="liveIframeUrl()"
+          title="Sitio publicado"
+          loading="lazy"
+        ></iframe>
+        <p class="psp-iframe-note">
+          Muestra el sitio <strong>como lo ven hoy sus visitantes</strong>. Para ver cambios sin publicar, use la pestaña «Mientras edita».
+        </p>
+      </div>
+    } @else {
+      <div
+        class="psp-canvas"
+        [class.psp-canvas--mobile]="deviceMode() === 'mobile'"
+        [ngStyle]="themeVars()"
+      >
+        <header class="pv-topbar">
+          <div class="pv-brand">
+            @if (logoUrl(); as logo) {
+              <img [src]="logo" alt="" class="pv-brand__logo" />
+            } @else {
+              <span class="pv-brand__mark" aria-hidden="true">◆</span>
+            }
+            <span class="pv-brand__name">{{ nombreCea() }}</span>
+          </div>
+          @if (deviceMode() === 'desktop') {
+            <nav class="pv-nav" aria-label="Menú previo">
+              @for (item of navItems(); track item.key) {
+                <span class="pv-nav__link">{{ item.label }}</span>
+              }
+            </nav>
+          } @else {
+            <span class="pv-menu-icon" aria-hidden="true">☰</span>
+          }
+        </header>
+
+        @if (deviceMode() === 'mobile') {
+          <div class="pv-mobile-nav">
+            @for (item of navItems(); track item.key) {
+              <span>{{ item.label }}</span>
+            }
+          </div>
+        }
+
+        <section class="pv-hero">
+          <div class="pv-hero__copy">
+            <p class="pv-hero__eyebrow">{{ nombreCea() }}</p>
+            <h1 class="pv-hero__title">{{ heroTitulo() }}</h1>
+            <p class="pv-hero__lead">{{ heroSubtitulo() }}</p>
+            <div class="pv-hero__actions">
+              <span class="pv-btn pv-btn--primary">{{ landingConfig().hero.ctaPrincipal }}</span>
+              <span class="pv-btn pv-btn--outline">{{ landingConfig().hero.ctaSecundario }}</span>
+            </div>
+          </div>
+          <figure class="pv-hero__visual">
+            <img [src]="heroImageUrl()" alt="" />
+          </figure>
+        </section>
+
+        <div class="pv-sections-label">
+          <span>Inicio — {{ seccionesActivasCount() }} bloques activos</span>
+        </div>
+
+        <div class="pv-blocks" [class.pv-blocks--inicio]="activePanel === 'inicio'">
+          @for (s of seccionesHome(); track s.id) {
+            <div
+              class="pv-block"
+              [class.pv-block--off]="!s.activa"
+              [class.pv-block--hero]="s.id === 'hero'"
+              [class.pv-block--highlight]="highlightSection(s.id) && s.activa"
+            >
+              <span class="pv-block__icon" aria-hidden="true">{{ sectionIcon(s.id) }}</span>
+              <span class="pv-block__label">{{ s.label }}</span>
+              @if (!s.activa) {
+                <span class="pv-block__off">Oculto</span>
+              }
+            </div>
+          }
+        </div>
+
+        <footer class="pv-footer">
+          <div class="pv-footer__brand">
+            @if (logoUrl(); as logo) {
+              <img [src]="logo" alt="" class="pv-footer__logo" />
+            }
+            <strong>{{ nombreCea() }}</strong>
+          </div>
+          <p class="pv-footer__copy">{{ copyrightText() }}</p>
+          <div class="pv-footer__nav">
+            @for (item of navItems(); track item.key) {
+              <span>{{ item.label }}</span>
+            }
+          </div>
+        </footer>
+      </div>
+    }
+  </div>
+
+  <a class="psp-open" [href]="portalUrl" target="_blank" rel="noopener">Abrir sitio completo ↗</a>
+</aside>

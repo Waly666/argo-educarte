@@ -1,0 +1,74 @@
+<section class="documentos" *ngIf="store.hasAlumno(); else noAlumno">
+  <div class="msg ok" *ngIf="msg() && !err()">{{ msg() }}</div>
+  <div class="msg err" *ngIf="msg() && err()">{{ msg() }}</div>
+
+  <header class="doc-head form-head">
+    <div class="form-head-text">
+      <h2>Documentos del alumno</h2>
+      <p>Según las matrículas del alumno (activas, finalizadas o certificadas), se listan los requisitos configurados. Un mismo archivo sirve para todos los tipos de capacitación que lo exijan.</p>
+    </div>
+    <div class="actions">
+      <button type="button" class="primary btn-actualizar" (click)="actualizar()" [disabled]="loading()">
+        {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="loading" *ngIf="loading()">Cargando requisitos…</div>
+
+  <div class="cap-resumen card" *ngIf="!loading() && tiposCap().length">
+    <h3>Tipos de capacitación detectados</h3>
+    <ul>
+      <li *ngFor="let c of tiposCap()">
+        <strong>{{ c.label }}</strong>
+        <span *ngIf="c.programas.length"> — {{ c.programas.join(' · ') }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="empty-state card" *ngIf="!loading() && sinMatriculas()">
+    <p>El alumno no tiene matrículas. Al matricularlo en un programa aparecerán aquí los documentos requeridos.</p>
+  </div>
+
+  <div class="empty-state card" *ngIf="!loading() && !sinMatriculas() && documentos().length === 0">
+    <p>Hay matrículas pero no hay requisitos configurados para esos tipos de capacitación. Revise <strong>Configuración → Requisitos alumnos</strong>.</p>
+  </div>
+
+  <div class="doc-grid" *ngIf="!loading() && documentos().length">
+    <article class="doc-card" *ngFor="let doc of documentos(); let i = index" [ngClass]="cardTone(i)">
+      <header class="doc-card-head">
+        <span class="doc-icon">{{ iconLabel(doc.codigo) }}</span>
+        <div>
+          <h3>{{ doc.nombre }}</h3>
+          <p *ngIf="doc.descripcion">{{ doc.descripcion }}</p>
+          <p class="req-by" *ngIf="doc.requeridoPor.length">
+            Requerido por: {{ doc.requeridoPor.join(', ') }}
+          </p>
+        </div>
+        <span class="badge ok" *ngIf="tiene(doc)">Subido</span>
+        <span class="badge warn" *ngIf="!tiene(doc)">Pendiente</span>
+      </header>
+      <div class="doc-preview" [class.empty]="!tiene(doc)">
+        <img *ngIf="preview(doc) as src" [src]="src" [alt]="doc.nombre" />
+        <span *ngIf="!tiene(doc)">Sin escaneo</span>
+      </div>
+      <div class="doc-actions">
+        <label class="upload-btn">
+          <input type="file" accept="image/*" capture="environment" (change)="onFile(doc, $event)" hidden />
+          <span>{{ saving() === doc.id ? 'Guardando…' : (tiene(doc) ? 'Reemplazar imagen' : 'Cargar / escanear') }}</span>
+        </label>
+        <button type="button" class="ghost" (click)="abrir(doc)" [disabled]="!tiene(doc)">Ver ampliada</button>
+      </div>
+      <p class="doc-hint" *ngIf="doc.codigo === 'CEDULA'">
+        Para leer datos automáticamente (OCR), use <strong>Datos Principales → Escanear cédula</strong>.
+      </p>
+    </article>
+  </div>
+</section>
+
+<ng-template #noAlumno>
+  <div class="card ph">
+    <h2>Documentos</h2>
+    <p>Guarde el alumno en Datos Principales para poder adjuntar documentos.</p>
+  </div>
+</ng-template>

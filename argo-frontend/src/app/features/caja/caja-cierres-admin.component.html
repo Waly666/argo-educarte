@@ -1,0 +1,165 @@
+<section class="cierres-page listado-admin admin-list-page">
+  <header class="caja-head page-head card">
+    <div class="caja-head-main">
+      <p class="breadcrumb"><a routerLink="/app/caja">Caja</a> / Cierres de caja</p>
+      <h1>Cierres de caja</h1>
+      <p class="hint">
+        Histórico de cierres por cajero. Entre a cada sesión para egresos, anular ingresos o registrar
+        <strong>Reposición caja</strong>.
+      </p>
+      <p class="hint sede-doc" *ngIf="sedeSvc.labelActiva() !== 'Sin sede'">
+        Sede: <strong>{{ sedeSvc.labelActiva() }}</strong>
+      </p>
+    </div>
+    <div class="caja-badges head-actions">
+      <span class="caja-chip caja-chip--amber">Administración</span>
+      <button type="button" class="ghost sm" (click)="cargar()" [disabled]="loading()">Actualizar</button>
+      <span class="caja-chip caja-chip--sky" *ngIf="cierres().length">{{ cierresVisibles().length }} cierres</span>
+    </div>
+  </header>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="kpi-row" *ngIf="cierres().length">
+    <div class="kpi-card">
+      <span class="cap cap-indigo cap-sm">Mes</span>
+      <strong>{{ cierres().length }}</strong>
+      <span class="kpi-lbl">Cierres registrados</span>
+    </div>
+    <div class="kpi-card" [class.kpi-warn]="totalPendientes() > 0">
+      <span class="cap cap-amber cap-sm">Pendientes</span>
+      <strong>{{ totalPendientes() }}</strong>
+      <span class="kpi-lbl">Descuadres por resolver</span>
+    </div>
+  </div>
+
+  <div class="card filtros">
+    <label>
+      Mes (fecha de cierre)
+      <input type="month" [ngModel]="mes()" (ngModelChange)="mes.set($event); cargar()" />
+    </label>
+    <label>
+      Cajero
+      <input
+        type="text"
+        placeholder="Usuario…"
+        [ngModel]="filtroCajero()"
+        (ngModelChange)="filtroCajero.set($event)"
+        (keyup.enter)="cargar()"
+      />
+    </label>
+    <label class="check-filtro">
+      <input type="checkbox" [ngModel]="soloDescuadre()" (ngModelChange)="soloDescuadre.set($event)" />
+      Solo con descuadre pendiente
+    </label>
+    <div class="filtro-actions">
+      <button type="button" class="primary sm" (click)="cargar()" [disabled]="loading()">Buscar</button>
+      <div class="view-toggle" role="group" aria-label="Modo de vista">
+        <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+        <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Tarjetas</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card content-wrap">
+    <div class="loading" *ngIf="loading()">Cargando cierres…</div>
+
+    <div class="table-scroll" *ngIf="!loading() && vista() === 'lista'">
+      <table class="argo data-table cierres-table">
+        <thead>
+          <tr>
+            <th>Sesión</th>
+            <th>Fecha cierre</th>
+            <th>Cajero</th>
+            <th class="r">Ventas</th>
+            <th class="r">Esperado</th>
+            <th class="r">Contado</th>
+            <th class="r">Diferencia</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of cierresVisibles()" [class.row-pendiente]="tieneDescuadrePendiente(s)">
+            <td><span [ngClass]="capSesion()">#{{ s.idSesion }}</span></td>
+            <td><span [ngClass]="capFecha(s.fechaCierre)">{{ s.fechaCierre | date: 'dd/MM/yyyy HH:mm' }}</span></td>
+            <td><span [ngClass]="capRol(s.usuario)">{{ s.usuario }}</span></td>
+            <td class="r"><span [ngClass]="capValorIngreso()">{{ ventas(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></td>
+            <td class="r"><span class="cap cap-blue cap-money cap-sm">{{ esperado(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</span></td>
+            <td class="r">
+              <span class="cap cap-cyan cap-money cap-sm" *ngIf="contado(s) != null; else sinContado">
+                {{ contado(s)! | currency: 'COP':'symbol-narrow':'1.0-0' }}
+              </span>
+              <ng-template #sinContado><span class="cap cap-slate cap-sm">—</span></ng-template>
+            </td>
+            <td class="r">
+              <span [ngClass]="capDiferencia(s)" *ngIf="diferencia(s) != null; else sinDif">
+                {{ diferencia(s)! | currency: 'COP':'symbol-narrow':'1.0-0' }}
+              </span>
+              <ng-template #sinDif><span class="cap cap-slate cap-sm">—</span></ng-template>
+            </td>
+            <td><span [ngClass]="capEstadoDescuadre(s)">{{ estadoLabel(s) }}</span></td>
+            <td class="actions-cell">
+              <a class="primary sm link-btn" [routerLink]="['/app/cierres', s.idSesion]">Gestionar</a>
+            </td>
+          </tr>
+          <tr *ngIf="!cierresVisibles().length">
+            <td colspan="9" class="empty">No hay cierres en este período.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cierres-grid" *ngIf="!loading() && vista() === 'cards'">
+      <article
+        class="cierre-card"
+        *ngFor="let s of cierresVisibles()"
+        [class.cierre-pendiente]="tieneDescuadrePendiente(s)">
+        <header class="cierre-head">
+          <div class="cierre-head-left">
+            <span [ngClass]="capSesion()">Sesión #{{ s.idSesion }}</span>
+            <span [ngClass]="capEstadoDescuadre(s)">{{ estadoLabel(s) }}</span>
+          </div>
+          <a class="primary sm link-btn" [routerLink]="['/app/cierres', s.idSesion]">Gestionar →</a>
+        </header>
+
+        <div class="cierre-meta">
+          <span [ngClass]="capFecha(s.fechaCierre)">{{ s.fechaCierre | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <span [ngClass]="capRol(s.usuario)">{{ s.usuario }}</span>
+        </div>
+
+        <div class="montos-grid">
+          <div class="monto-box">
+            <span class="monto-lbl">Ventas</span>
+            <span [ngClass]="capValorIngreso()">{{ ventas(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          <div class="monto-box">
+            <span class="monto-lbl">Esperado</span>
+            <span class="cap cap-blue cap-money cap-sm">{{ esperado(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          <div class="monto-box">
+            <span class="monto-lbl">Contado</span>
+            <span class="cap cap-cyan cap-money cap-sm" *ngIf="contado(s) != null; else cardSinContado">
+              {{ contado(s)! | currency: 'COP':'symbol-narrow':'1.0-0' }}
+            </span>
+            <ng-template #cardSinContado><span class="cap cap-slate cap-sm">—</span></ng-template>
+          </div>
+          <div class="monto-box" [class.monto-alerta]="tieneDescuadrePendiente(s)">
+            <span class="monto-lbl">Diferencia</span>
+            <span [ngClass]="capDiferencia(s)" *ngIf="diferencia(s) != null; else cardSinDif">
+              {{ diferencia(s)! | currency: 'COP':'symbol-narrow':'1.0-0' }}
+            </span>
+            <ng-template #cardSinDif><span class="cap cap-slate cap-sm">—</span></ng-template>
+          </div>
+        </div>
+
+        <footer class="cierre-foot" *ngIf="tieneDescuadrePendiente(s) && montoDebe(s) > 0">
+          <span class="cap cap-amber cap-sm">Debe reponer</span>
+          <span class="cap cap-red cap-money cap-sm">{{ montoDebe(s) | currency: 'COP':'symbol-narrow':'1.0-0' }}</span>
+        </footer>
+      </article>
+
+      <p class="cards-empty empty" *ngIf="!cierresVisibles().length">No hay cierres en este período.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,169 @@
+<section class="alrt-page card">
+  <header class="alrt-head">
+    <div class="alrt-head-main">
+      <h1>Alertas y notificaciones</h1>
+      <p>
+        Comportamiento global de avisos: cuándo aparecen, cuánto duran y cada cuánto se consultan.
+        <strong>Quién las ve</strong> se define en
+        <a routerLink="/app/configuracion/roles">Roles y permisos</a> (pestaña Alarmas).
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="alrt-head-badges">
+        <span class="alrt-chip alrt-chip--sky">{{ activasCount() }} activas</span>
+        <span class="alrt-chip alrt-chip--violet">{{ reglas().length }} tipos</span>
+      </div>
+    }
+  </header>
+
+  @if (msg(); as texto) {
+    <div class="alrt-msg" [class.alrt-msg--err]="msgError()" role="status">{{ texto }}</div>
+  }
+
+  <aside class="alrt-legend">
+    <div class="alrt-legend-item">
+      <span class="alrt-dot alrt-dot--reg"></span>
+      <span><strong>Desde registro</strong> — solo movimientos nuevos tras iniciar sesión o en cada consulta.</span>
+    </div>
+    <div class="alrt-legend-item">
+      <span class="alrt-dot alrt-dot--day"></span>
+      <span><strong>Desde inicio del día</strong> — al entrar muestra todo lo del día calendario.</span>
+    </div>
+    <div class="alrt-legend-item">
+      <span class="alrt-dot alrt-dot--time"></span>
+      <span><strong>Duración 0</strong> — permanece hasta cerrar manualmente (como hoy).</span>
+    </div>
+  </aside>
+
+  @if (loading()) {
+    <p class="alrt-loading">Cargando configuración…</p>
+  } @else {
+    <div class="alrt-grupos">
+      @for (g of grupos(); track g.id) {
+        <article class="alrt-grupo" [class]="'alrt-grupo alrt-grupo--' + g.accent" [class.alrt-grupo--open]="grupoAbierto() === g.id">
+          <button type="button" class="alrt-grupo-head" (click)="toggleGrupo(g.id)">
+            <span class="alrt-grupo-icon">{{ g.accent === 'alumnos' ? '💳' : g.accent === 'caja' ? '🧾' : '🔔' }}</span>
+            <div class="alrt-grupo-titles">
+              <h2>{{ g.label }}</h2>
+              <p>{{ activasEnGrupo(g.reglas) }} de {{ g.reglas.length }} activas</p>
+            </div>
+            <span class="alrt-grupo-chevron">{{ grupoAbierto() === g.id ? '▾' : '▸' }}</span>
+          </button>
+
+          @if (grupoAbierto() === g.id) {
+            <div class="alrt-grupo-body">
+              @for (r of g.reglas; track r.key) {
+                <div class="alrt-card" [class.alrt-card--off]="!r.activo">
+                  <header class="alrt-card-head">
+                    <label class="alrt-toggle">
+                      <input type="checkbox" [ngModel]="r.activo" (ngModelChange)="patchRegla(r.key, 'activo', $event)" />
+                      <span class="alrt-toggle-ui"></span>
+                    </label>
+                    <div class="alrt-card-title">
+                      <h3>{{ tituloCorto(r.label) }}</h3>
+                      <p class="alrt-card-desc">{{ r.label }}</p>
+                    </div>
+                  </header>
+
+                  @if (r.activo) {
+                    <div class="alrt-card-fields">
+                      <label class="alrt-field">
+                        <span class="alrt-label">Inicio de la alerta</span>
+                        <select [ngModel]="r.ventanaInicio" (ngModelChange)="patchRegla(r.key, 'ventanaInicio', $event)">
+                          @for (v of ventanas(); track v.id) {
+                            <option [value]="v.id">{{ v.label }}</option>
+                          }
+                        </select>
+                      </label>
+
+                      <label class="alrt-field">
+                        <span class="alrt-label">Duración visible (min)</span>
+                        <div class="alrt-suffix">
+                          <input
+                            type="number"
+                            min="0"
+                            max="1440"
+                            [ngModel]="r.duracionMinutos"
+                            (ngModelChange)="patchRegla(r.key, 'duracionMinutos', +$event)" />
+                          <span>min</span>
+                        </div>
+                        <span class="alrt-hint">0 = solo cierre manual</span>
+                      </label>
+
+                      @if (muestraPoll(r)) {
+                        <label class="alrt-field">
+                          <span class="alrt-label">Consulta al servidor</span>
+                          <div class="alrt-suffix">
+                            <input
+                              type="number"
+                              min="5"
+                              max="600"
+                              [ngModel]="r.intervaloPollSegundos"
+                              (ngModelChange)="patchRegla(r.key, 'intervaloPollSegundos', +$event)" />
+                            <span>seg</span>
+                          </div>
+                        </label>
+                      }
+
+                      @if (tieneAntelacion(r)) {
+                        <label class="alrt-field">
+                          <span class="alrt-label">Antelación (min)</span>
+                          <div class="alrt-suffix">
+                            <input
+                              type="number"
+                              min="1"
+                              max="120"
+                              [ngModel]="r.antelacionMinutos"
+                              (ngModelChange)="patchRegla(r.key, 'antelacionMinutos', +$event)" />
+                            <span>min</span>
+                          </div>
+                        </label>
+                      }
+
+                      @if (tieneDiasAntelacion(r)) {
+                        <label class="alrt-field">
+                          <span class="alrt-label">Días antes del vencimiento</span>
+                          <div class="alrt-suffix">
+                            <input
+                              type="number"
+                              min="1"
+                              max="90"
+                              [ngModel]="r.diasAntelacion"
+                              (ngModelChange)="patchRegla(r.key, 'diasAntelacion', +$event)" />
+                            <span>días</span>
+                          </div>
+                        </label>
+                      }
+
+                      @if (tieneDiasGracia(r)) {
+                        <label class="alrt-field">
+                          <span class="alrt-label">Días después de vencido</span>
+                          <div class="alrt-suffix">
+                            <input
+                              type="number"
+                              min="1"
+                              max="30"
+                              [ngModel]="r.diasGracia"
+                              (ngModelChange)="patchRegla(r.key, 'diasGracia', +$event)" />
+                            <span>días</span>
+                          </div>
+                        </label>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </article>
+      }
+    </div>
+
+    <footer class="alrt-foot">
+      <p>Los cambios aplican al recargar la aplicación o al guardar (el shell actualiza en caliente).</p>
+      <button type="button" class="primary alrt-btn-save" (click)="guardar()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar alertas' }}
+      </button>
+    </footer>
+  }
+</section>

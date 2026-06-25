@@ -1,0 +1,247 @@
+<section class="insp-panel">
+  <div class="msg ok" *ngIf="msg() && !saveAlarmFlash()">{{ msg() }}</div>
+  <div class="msg err" *ngIf="err()">{{ err() }}</div>
+
+  <ng-container *ngIf="modo() === 'listado'">
+    <header class="insp-head">
+      <div>
+        <h2>Inspecciones preoperacionales</h2>
+        <p>Historial por placa. Puede crear la inspección del día o abrir una registrada.</p>
+      </div>
+      <div class="head-actions">
+        <button type="button" class="ghost" (click)="cargarListado()" [disabled]="loadingLista()">Actualizar</button>
+        <button type="button" class="primary" (click)="nuevaInspeccion()">+ Crear inspección</button>
+      </div>
+    </header>
+
+    <div class="loading" *ngIf="loadingLista()">Cargando inspecciones…</div>
+
+    <div class="empty-state card inner" *ngIf="!loadingLista() && listado().length === 0">
+      <p>No hay inspecciones registradas para este vehículo.</p>
+      <button type="button" class="primary" (click)="nuevaInspeccion()">+ Crear inspección del día</button>
+    </div>
+
+    <div class="insp-list card inner" *ngIf="!loadingLista() && listado().length">
+      <table class="insp-table list-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Instructor</th>
+            <th>Apto</th>
+            <th>Consecutivo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of listado()">
+            <td>{{ row.fecha }}</td>
+            <td>{{ row.hora || '—' }}</td>
+            <td>{{ row.nombreInstructor || '—' }}</td>
+            <td><span class="badge" [ngClass]="claseApto(row.aptoLaborar)">{{ etiquetaApto(row.aptoLaborar) }}</span></td>
+            <td>{{ row.consecutivo || '—' }}</td>
+            <td class="actions">
+              <button type="button" class="ghost sm" (click)="abrirInspeccion(row)">Abrir</button>
+              <button type="button" class="ghost sm" (click)="imprimir(row.fecha)">Imprimir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="list-foot" *ngIf="totalListado() > listado().length">
+        Mostrando {{ listado().length }} de {{ totalListado() }} registros.
+      </p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="modo() === 'formulario'">
+    <header class="insp-head">
+      <div>
+        <button type="button" class="ghost back" *ngIf="!modoInline" (click)="volverListado()">← Volver al listado</button>
+        <h2>Inspección preoperacional</h2>
+        <p *ngIf="fechaFormulario() as f">Fecha <strong>{{ f }}</strong> · un registro por placa y día calendario.</p>
+        <p class="clase-hint" *ngIf="inspeccion()?.claseVehiculo as cv">Clase del vehículo: <strong>{{ cv }}</strong></p>
+      </div>
+      <div class="head-actions save-actions" *ngIf="inspeccion() as ins">
+        <button type="button" class="ghost" (click)="cargarFormulario(ins.fecha)" [disabled]="loading()">Actualizar</button>
+        <button type="button" class="ghost" (click)="imprimir(ins.fecha)">Imprimir informe</button>
+        <div class="save-actions-main">
+          <div
+            class="btn-alarm"
+            *ngIf="saveAlarmVisible() || saveAlarmFlash()"
+            [class.flash]="saveAlarmFlash()"
+            role="status"
+            [attr.aria-live]="saveAlarmFlash() ? 'assertive' : 'polite'">
+            <span class="btn-alarm-pulse" aria-hidden="true"></span>
+            <span class="btn-alarm-icon" aria-hidden="true">!</span>
+            <span class="btn-alarm-text">{{ saveAlarmTexto() }}</span>
+          </div>
+          <button
+            type="button"
+            class="primary btn-save"
+            [class.needs-save]="saveAlarmVisible()"
+            [class.alarm-flash]="saveAlarmFlash()"
+            (click)="guardar()"
+            [disabled]="saving() || loading()"
+            [attr.title]="saveAlarmVisible() ? saveAlarmTexto() : ''">
+            {{ saving() ? 'Guardando…' : (ins.guardada ? 'Guardar cambios' : 'Guardar inspección') }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="loading" *ngIf="loading()">Cargando formulario…</div>
+
+    <ng-container *ngIf="!loading() && inspeccion() as ins">
+      <p class="hint warn-hint" *ngIf="ins.avisoRolInstructor">{{ ins.avisoRolInstructor }}</p>
+      <p class="hint warn-hint" *ngIf="!ins.quienRecibe">
+        Su usuario no está vinculado a un empleado en RRHH. Debe vincularse para que aparezca el nombre en «Quien recibe» y poder guardar.
+      </p>
+      <p class="hint info-hint" *ngIf="ins.esPrimeraRevision">
+        Es la primera inspección registrada de este vehículo. Quien entrega aparece como «Primera revisión».
+      </p>
+      <p class="hint info-hint" *ngIf="!ins.esPrimeraRevision && ins.fechaRevisionAnterior">
+        Quien entrega realizó la inspección del {{ ins.fechaRevisionAnterior }}.
+      </p>
+
+      <div class="insp-meta card inner">
+        <div class="row">
+          <span class="badge ok" *ngIf="ins.guardada">Guardada</span>
+          <span class="badge warn" *ngIf="!ins.guardada">Sin guardar</span>
+          <span class="badge slate" *ngIf="ins.nombreInstructor">Instructor: {{ ins.nombreInstructor }}</span>
+        </div>
+        <div class="row">
+          <div class="col-3">
+            <label>Fecha</label>
+            <input type="text" [ngModel]="ins.fecha" readonly />
+          </div>
+          <div class="col-2">
+            <label>Hora</label>
+            <input type="text" [ngModel]="ins.hora" (ngModelChange)="patchCampo('hora', $event)" />
+          </div>
+          <div class="col-2">
+            <label>Combustible</label>
+            <input type="text" [ngModel]="ins.combustible" (ngModelChange)="patchCampo('combustible', $event)" />
+          </div>
+          <div class="col-2">
+            <label>Consecutivo</label>
+            <input type="text" [ngModel]="ins.consecutivo" readonly class="readonly" />
+            <span class="field-hint" *ngIf="!ins.guardada">Se confirma al guardar la inspección</span>
+            <span class="field-hint" *ngIf="ins.guardada">Numeración asignada al registrar</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <label>Quien entrega el vehículo</label>
+            <input type="text" [ngModel]="ins.quienEntrega" readonly class="readonly" />
+            <span class="field-hint" *ngIf="ins.esPrimeraRevision">Sin inspección anterior registrada</span>
+          </div>
+          <div class="col-4">
+            <label>Quien recibe (instructor)</label>
+            <input type="text" [ngModel]="ins.quienRecibe" readonly class="readonly" />
+            <span class="field-hint">Usuario logueado vinculado a empleado · Doc. {{ ins.recibe || '—' }}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <label>Inspector</label>
+            <input type="text" [ngModel]="ins.inspector" (ngModelChange)="patchCampo('inspector', $event)" placeholder="Nombre (opcional)" />
+          </div>
+          <div class="col-4">
+            <label>Documento inspector</label>
+            <input type="text" [ngModel]="ins.documentoInspector" (ngModelChange)="patchCampo('documentoInspector', $event)" placeholder="Opcional" />
+          </div>
+          <div class="col-4">
+            <label>¿Apto para laborar?</label>
+            <select [ngModel]="ins.aptoLaborar" (ngModelChange)="patchCampo('aptoLaborar', $event)">
+              <option [ngValue]="null">— Sin marcar —</option>
+              <option [ngValue]="true">Sí</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="row foto-row">
+          <div class="col-3">
+            <label>Foto lateral derecha (URL)</label>
+            <input type="text" [ngModel]="ins.urlfotoLatDer" (ngModelChange)="patchCampo('urlfotoLatDer', $event)" />
+          </div>
+          <div class="col-3">
+            <label>Foto lateral izquierda (URL)</label>
+            <input type="text" [ngModel]="ins.urlfotoLatIzq" (ngModelChange)="patchCampo('urlfotoLatIzq', $event)" />
+          </div>
+          <div class="col-3">
+            <label>Foto frontal (URL)</label>
+            <input type="text" [ngModel]="ins.urlfotoFrontal" (ngModelChange)="patchCampo('urlfotoFrontal', $event)" />
+          </div>
+          <div class="col-3">
+            <label>Foto posterior (URL)</label>
+            <input type="text" [ngModel]="ins.urlfotoPost" (ngModelChange)="patchCampo('urlfotoPost', $event)" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-w-full">
+            <label>Observaciones generales</label>
+            <textarea rows="2" [ngModel]="ins.observacionesGenerales" (ngModelChange)="patchCampo('observacionesGenerales', $event)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <section class="insp-block card inner docs-auto">
+        <h3>Documentos de cumplimiento — Vehículo</h3>
+        <p class="section-hint">Calculado automáticamente desde los documentos registrados del vehículo.</p>
+        <p class="empty-docs" *ngIf="!ins.documentosVehiculo.length">Sin requisitos configurados o sin clase asignada.</p>
+        <table class="insp-table" *ngIf="ins.documentosVehiculo.length">
+          <thead><tr><th>Documento</th><th>Sí</th><th>No</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of ins.documentosVehiculo" [class.doc-ok]="item.si === true" [class.doc-fail]="item.si === false">
+              <td>{{ item.nombre }}</td>
+              <td class="c"><span class="check-mark ok" *ngIf="item.si === true">✓</span></td>
+              <td class="c"><span class="check-mark err" *ngIf="item.si === false">✗</span></td>
+              <td>{{ item.observacion || 'Al día' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="insp-block card inner docs-auto">
+        <h3>Documentos de cumplimiento — Instructor / conductor</h3>
+        <p class="section-hint">Calculado automáticamente desde los documentos registrados del empleado instructor.</p>
+        <p class="empty-docs" *ngIf="!ins.documentosInstructor.length">Sin requisitos configurados para el cargo del instructor.</p>
+        <table class="insp-table" *ngIf="ins.documentosInstructor.length">
+          <thead><tr><th>Documento</th><th>Sí</th><th>No</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of ins.documentosInstructor" [class.doc-ok]="item.si === true" [class.doc-fail]="item.si === false">
+              <td>{{ item.nombre }}</td>
+              <td class="c"><span class="check-mark ok" *ngIf="item.si === true">✓</span></td>
+              <td class="c"><span class="check-mark err" *ngIf="item.si === false">✗</span></td>
+              <td>{{ item.observacion || 'Al día' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="insp-block card inner checklist-empty" *ngIf="!totalLineasChecklist(ins)">
+        <h3>Checklist preoperacional</h3>
+        <p class="empty-docs">
+          No hay ítems configurados para la clase
+          <strong>{{ ins.claseVehiculo || '—' }}</strong>.
+          Administre «Ítems inspección» y «Características inspección» en Configuración → Catálogos.
+        </p>
+      </section>
+
+      <section class="insp-block card inner" *ngFor="let grupo of ins.grupos; let gi = index">
+        <h3>{{ grupo.titulo }}</h3>
+        <table class="insp-table">
+          <thead><tr><th>Ítem</th><th>Sí</th><th>No</th><th>Observaciones</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of grupo.lineas; let li = index">
+              <td>{{ item.nombre }}</td>
+              <td class="c"><input type="radio" [name]="'ck'+gi+'_'+li" [checked]="item.si === true" (change)="setSi(gi, li, true)" /></td>
+              <td class="c"><input type="radio" [name]="'ck'+gi+'_'+li" [checked]="item.si === false" (change)="setSi(gi, li, false)" /></td>
+              <td><input type="text" [ngModel]="item.observacion" (ngModelChange)="setObs(gi, li, $event)" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </ng-container>
+  </ng-container>
+</section>

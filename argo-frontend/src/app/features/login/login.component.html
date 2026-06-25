@@ -1,0 +1,141 @@
+<div class="login-wrapper">
+  <canvas #matrix class="matrix-canvas"></canvas>
+
+  <div class="login-shell">
+    <div class="brand-side">
+      @if (logoUrl()) {
+        <img class="brand-logo" [src]="logoUrl()" [alt]="nombreEmpresa() || 'Logo institución'" />
+      } @else {
+        <div class="logo">A</div>
+      }
+      <h1>ARGO</h1>
+      <p class="tag">Sistema de Información</p>
+      <p class="desc">Gestión integral de alumnos, programación, facturación y vehículos.</p>
+      @if (nombreEmpresa()) {
+        <p class="licencia">Licenciado a <strong>{{ nombreEmpresa() }}</strong></p>
+      }
+      <div class="grid-lines"></div>
+    </div>
+
+    <form class="login-form" (ngSubmit)="
+      uiStep() === 'credentials' ? submitCredentials() :
+      uiStep() === 'mfa_verify' ? submitMfaVerify() :
+      uiStep() === 'mfa_setup' ? submitMfaSetup() :
+      uiStep() === 'mfa_recovery' ? submitRecovery() :
+      continueAfterRecoveryCodes()
+    ">
+      @switch (uiStep()) {
+        @case ('credentials') {
+          <h2>Iniciar Sesión</h2>
+          <p class="hint">Acceso restringido a personal autorizado</p>
+
+          <label>Usuario</label>
+          <input type="text"
+                 autocomplete="username"
+                 [ngModel]="username()"
+                 (ngModelChange)="username.set($event)"
+                 name="username"
+                 placeholder="documento o nick"
+                 [disabled]="loading()" />
+
+          <label>Contraseña</label>
+          <input type="password"
+                 autocomplete="current-password"
+                 [ngModel]="password()"
+                 (ngModelChange)="password.set($event)"
+                 name="password"
+                 placeholder="••••••••"
+                 [disabled]="loading()" />
+
+          @if (turnstileSiteKey()) {
+            <argo-turnstile [siteKey]="turnstileSiteKey()" (tokenChange)="turnstileToken.set($event)" />
+          }
+        }
+
+        @case ('mfa_verify') {
+          <h2>Verificación 2FA</h2>
+          <p class="hint">Hola <strong>{{ displayName() }}</strong>. Abra Google Authenticator (o similar) e ingrese el código de 6 dígitos.</p>
+
+          <label>Código de autenticación</label>
+          <input type="text"
+                 inputmode="numeric"
+                 maxlength="6"
+                 autocomplete="one-time-code"
+                 [ngModel]="mfaCode()"
+                 (ngModelChange)="mfaCode.set($event)"
+                 name="mfaCode"
+                 placeholder="000000"
+                 [disabled]="loading()" />
+
+          <button type="button" class="link-btn" (click)="showRecovery()">Usar código de recuperación</button>
+        }
+
+        @case ('mfa_setup') {
+          <h2>Activar 2FA (obligatorio)</h2>
+          <p class="hint">
+            Por seguridad, todos los usuarios del ERP deben configurar doble autenticación.
+            Escanee el QR con <strong>Google Authenticator</strong> o Microsoft Authenticator.
+          </p>
+
+          @if (qrDataUrl()) {
+            <img class="qr" [src]="qrDataUrl()" alt="QR 2FA" width="220" height="220" />
+          }
+          @if (manualSecret()) {
+            <p class="hint secret-hint">Clave manual: <code>{{ manualSecret() }}</code></p>
+          }
+
+          <label>Código de la app (6 dígitos)</label>
+          <input type="text"
+                 inputmode="numeric"
+                 maxlength="6"
+                 [ngModel]="mfaCode()"
+                 (ngModelChange)="mfaCode.set($event)"
+                 name="setupCode"
+                 placeholder="000000"
+                 [disabled]="loading()" />
+        }
+
+        @case ('mfa_recovery') {
+          <h2>Código de recuperación</h2>
+          <p class="hint">Use uno de los códigos de un solo uso que guardó al activar 2FA.</p>
+
+          <label>Código de recuperación</label>
+          <input type="text"
+                 [ngModel]="recoveryCode()"
+                 (ngModelChange)="recoveryCode.set($event)"
+                 name="recoveryCode"
+                 placeholder="XXXXXXXXXX"
+                 [disabled]="loading()" />
+
+          <button type="button" class="link-btn" (click)="backToMfaVerify()">Volver al código de la app</button>
+        }
+
+        @case ('recovery_codes') {
+          <h2>Guarde estos códigos</h2>
+          <p class="hint warn">
+            Son de un solo uso. Guárdelos en un lugar seguro (no en el mismo celular que la app 2FA).
+          </p>
+          <ul class="recovery-list">
+            @for (c of recoveryCodes(); track c) {
+              <li><code>{{ c }}</code></li>
+            }
+          </ul>
+        }
+      }
+
+      <div class="error" *ngIf="error()">{{ error() }}</div>
+
+      <button type="submit" class="primary" [disabled]="loading()">
+        @if (uiStep() === 'recovery_codes') {
+          {{ loading() ? '...' : 'Entrar al sistema' }}
+        } @else {
+          {{ loading() ? 'Validando...' : (uiStep() === 'mfa_setup' ? 'Activar y entrar' : 'Continuar') }}
+        }
+      </button>
+    </form>
+
+    <p class="login-shell-foot">
+      © {{ anioActual }} · TODOS LOS DERECHOS RESERVADOS · DESARROLLADOR WALTER ALEXANDER AGUILAR
+    </p>
+  </div>
+</div>

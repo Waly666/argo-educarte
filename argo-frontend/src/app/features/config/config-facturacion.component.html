@@ -1,0 +1,363 @@
+<section class="fac-page card">
+  <header class="fac-head">
+    <div class="fac-head-main">
+      <h1>Facturación electrónica (Factus)</h1>
+      <p>
+        Credenciales y parámetros para emitir facturas DIAN vía
+        <a href="https://developers.factus.com.co" target="_blank" rel="noopener">Factus API</a>.
+        Sin resolución DIAN, deje el ambiente en <strong>Desarrollo</strong>.
+      </p>
+    </div>
+    @if (!loading()) {
+      <div class="fac-head-badges">
+        <span class="fac-chip" [class.fac-chip--sandbox]="form().ambiente === 'sandbox'" [class.fac-chip--prod]="form().ambiente === 'produccion'">
+          {{ form().ambiente === 'produccion' ? 'Producción' : 'Sandbox' }}
+        </span>
+        <span class="fac-chip" [class.fac-chip--on]="form().activo" [class.fac-chip--off]="!form().activo">
+          {{ form().activo ? 'Integración ON' : 'Integración OFF' }}
+        </span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="fac-hint">Cargando…</p>
+  } @else {
+    @if (msg(); as texto) {
+      <div class="fac-msg fac-msg--ok" role="status">{{ texto }}</div>
+    }
+
+    <div class="fac-form argo-form-shell">
+      <!-- 1. Proveedor -->
+      <section class="fac-section fac-section--sky">
+        <header class="fac-section-head">
+          <span class="fac-section-badge">1</span>
+          <div>
+            <h2 class="fac-section-title">Proveedor y ambiente</h2>
+            <p class="fac-section-desc">Conexión con Factus y modo de operación del CEA.</p>
+          </div>
+        </header>
+        <div class="fac-section-body">
+          <div class="fac-grid fac-grid--3">
+            <label class="fac-field">
+              <span class="fac-label">Proveedor</span>
+              <select [ngModel]="form().proveedor" (ngModelChange)="patch('proveedor', $event)">
+                @for (p of catalogos().proveedores; track p.id) {
+                  <option [value]="p.id">{{ p.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="fac-field">
+              <span class="fac-label">Ambiente</span>
+              <select [ngModel]="form().ambiente" (ngModelChange)="patch('ambiente', $event)">
+                @for (a of catalogos().ambientes; track a.id) {
+                  <option [value]="a.id">{{ a.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="fac-toggle">
+              <input type="checkbox" [ngModel]="form().activo" (ngModelChange)="patch('activo', $event)" />
+              <span class="fac-toggle-box">
+                <span class="fac-toggle-title">Integración activa</span>
+                <span class="fac-toggle-desc">Enviar documentos a Factus (desmarcado = solo desarrollo local).</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      @if (esFactus()) {
+        <section class="fac-section fac-section--violet">
+          <header class="fac-section-head">
+            <span class="fac-section-badge">2</span>
+            <div>
+              <h2 class="fac-section-title">Credenciales Factus</h2>
+              <p class="fac-section-desc">OAuth y numeración. Los secretos se guardan solo en el servidor.</p>
+            </div>
+          </header>
+          <div class="fac-section-body fac-stack">
+            <label class="fac-field">
+              <span class="fac-label">URL base <span class="fac-optional">(opcional)</span></span>
+              <input
+                type="text"
+                [ngModel]="form().baseUrl"
+                (ngModelChange)="patch('baseUrl', $event)"
+                placeholder="https://api-sandbox.factus.com.co" />
+            </label>
+            <div class="fac-grid fac-grid--2">
+              <label class="fac-field">
+                <span class="fac-label">Client ID</span>
+                <input type="text" [ngModel]="form().clientId" (ngModelChange)="patch('clientId', $event)" autocomplete="off" />
+              </label>
+              <label class="fac-field">
+                <span class="fac-label">Client Secret</span>
+                <input
+                  type="password"
+                  [ngModel]="form().clientSecret"
+                  (ngModelChange)="patch('clientSecret', $event)"
+                  [placeholder]="form().secretConfigurado ? ('Actual: ' + (form().clientSecretEnmascarado || '••••')) : 'Secret'"
+                  autocomplete="new-password" />
+              </label>
+            </div>
+            <div class="fac-grid fac-grid--3">
+              <label class="fac-field">
+                <span class="fac-label">Usuario / correo</span>
+                <input type="text" [ngModel]="form().username" (ngModelChange)="patch('username', $event)" autocomplete="off" />
+              </label>
+              <label class="fac-field">
+                <span class="fac-label">Contraseña</span>
+                <input
+                  type="password"
+                  [ngModel]="form().password"
+                  (ngModelChange)="patch('password', $event)"
+                  [placeholder]="form().passwordConfigurado ? ('Actual: ' + (form().passwordEnmascarado || '••••')) : 'Contraseña'"
+                  autocomplete="new-password" />
+              </label>
+              <label class="fac-field">
+                <span class="fac-label">ID rango numeración</span>
+                <input
+                  type="number"
+                  min="0"
+                  [ngModel]="form().numberingRangeId"
+                  (ngModelChange)="patch('numberingRangeId', $event ? +$event : null)" />
+                <span class="fac-field-hint">Resolución DIAN activa en Factus (cada CEA tendrá el suyo).</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="fac-section fac-section--sandbox">
+          <header class="fac-section-head">
+            <span class="fac-section-badge">🧪</span>
+            <div>
+              <h2 class="fac-section-title">Pruebas sandbox Factus V2</h2>
+              <p class="fac-section-desc">
+                Cargue la plantilla de pruebas, guarde, conecte y seleccione el rango de numeración del sandbox.
+                Cuando un CEA compre ARGO, aquí configurará su resolución real.
+              </p>
+            </div>
+          </header>
+          <div class="fac-section-body fac-stack">
+            <div class="fac-sandbox-actions">
+              <button type="button" class="ghost" (click)="aplicarPlantillaSandbox()">
+                Cargar plantilla sandbox V2
+              </button>
+              <button type="button" class="ghost" (click)="cargarRangos()" [disabled]="cargandoRangos()">
+                {{ cargandoRangos() ? 'Cargando rangos…' : 'Cargar rangos desde Factus' }}
+              </button>
+              <button type="button" class="ghost" (click)="limpiarPendientesFactus()" [disabled]="limpiandoPendientes()">
+                {{ limpiandoPendientes() ? 'Limpiando…' : 'Limpiar pendientes en Factus' }}
+              </button>
+            </div>
+            <p class="fac-field-hint">
+              Si aparece «factura pendiente por enviar a la DIAN» (error 409), hay documentos de prueba sin validar en Factus.
+              Use «Limpiar pendientes» y vuelva a emitir.
+            </p>
+
+            @if (rangosMsg(); as rm) {
+              <p class="fac-rangos-msg" role="status">{{ rm }}</p>
+            }
+
+            @if (rangos().length) {
+              <div class="fac-rangos-table-wrap">
+                <table class="fac-rangos-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>ID</th>
+                      <th>Prefijo</th>
+                      <th>Resolución</th>
+                      <th>Consecutivos</th>
+                      <th>Tipo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of rangos(); track r.id) {
+                      <tr [class.fac-rango--sel]="form().numberingRangeId === r.id">
+                        <td>
+                          <input
+                            type="radio"
+                            name="rangoFactus"
+                            [checked]="form().numberingRangeId === r.id"
+                            (change)="seleccionarRango(r.id)" />
+                        </td>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.prefix || '—' }}</td>
+                        <td>{{ r.resolutionNumber || '—' }}</td>
+                        <td>
+                          @if (r.from != null && r.to != null) {
+                            {{ r.from }} – {{ r.to }}
+                          } @else {
+                            —
+                          }
+                        </td>
+                        <td>{{ r.documentType || 'Factura' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              @if (rangoSeleccionado(); as sel) {
+                <p class="fac-rango-sel">Rango seleccionado: <strong>{{ sel.label }}</strong> (ID {{ sel.id }})</p>
+              }
+            }
+
+            <div class="fac-emision-prueba">
+              <button
+                type="button"
+                class="primary fac-emision-btn"
+                (click)="probarEmision()"
+                [disabled]="probandoEmision() || !form().numberingRangeId">
+                {{ probandoEmision() ? 'Emitiendo prueba…' : 'Emitir factura de prueba (sandbox)' }}
+              </button>
+              <span class="fac-field-hint">
+                Usa el rango seleccionado en la tabla (se guarda al emitir). Credenciales deben estar guardadas antes.
+              </span>
+            </div>
+
+            @if (emisionPrueba(); as ep) {
+              <div class="fac-emision-result" [class.fac-emision-result--ok]="ep.ok" [class.fac-emision-result--err]="!ep.ok">
+                <p><strong>{{ ep.message }}</strong></p>
+                @if (ep.numeroFactura) {
+                  <p>Número: <code>{{ ep.numeroFactura }}</code></p>
+                }
+                @if (ep.cufe) {
+                  <p class="fac-cufe">CUFE: <code>{{ ep.cufe }}</code></p>
+                }
+                @if (ep.isValidated != null) {
+                  <p>Validada DIAN: {{ ep.isValidated ? 'Sí' : 'Pendiente' }}</p>
+                }
+                @if (ep.urlPdf) {
+                  <button type="button" class="ghost" (click)="abrirPdfPrueba()">Abrir PDF Factus</button>
+                }
+                @if (tieneErroresDian(ep.errors)) {
+                  <ul class="fac-errores-dian">
+                    @for (kv of ep.errors | keyvalue; track kv.key) {
+                      <li><strong>{{ kv.key }}:</strong> {{ kv.value }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <section class="fac-section fac-section--amber" [class.fac-section--step3]="!esFactus()">
+        <header class="fac-section-head">
+          <span class="fac-section-badge">{{ esFactus() ? '3' : '2' }}</span>
+          <div>
+            <h2 class="fac-section-title">Datos fiscales del emisor</h2>
+            <p class="fac-section-desc">Identificación del CEA en la factura electrónica.</p>
+          </div>
+        </header>
+        <div class="fac-section-body fac-stack">
+          <div class="fac-grid fac-grid--nit">
+            <label class="fac-field">
+              <span class="fac-label">NIT</span>
+              <input type="text" [ngModel]="form().emisorNit" (ngModelChange)="patch('emisorNit', $event)" />
+            </label>
+            <label class="fac-field fac-field--dv">
+              <span class="fac-label">DV</span>
+              <input type="text" maxlength="1" [ngModel]="form().emisorDv" (ngModelChange)="patch('emisorDv', $event)" />
+            </label>
+            <label class="fac-field fac-field--grow">
+              <span class="fac-label">Razón social</span>
+              <input type="text" [ngModel]="form().emisorRazonSocial" (ngModelChange)="patch('emisorRazonSocial', $event)" />
+            </label>
+          </div>
+          <div class="fac-grid fac-grid--3">
+            <label class="fac-field">
+              <span class="fac-label">Responsabilidad fiscal</span>
+              <input type="text" [ngModel]="form().emisorResponsabilidadFiscal" (ngModelChange)="patch('emisorResponsabilidadFiscal', $event)" placeholder="R-99-PN" />
+            </label>
+            <label class="fac-field">
+              <span class="fac-label">Régimen</span>
+              <input type="text" [ngModel]="form().emisorRegimen" (ngModelChange)="patch('emisorRegimen', $event)" placeholder="No responsable de IVA" />
+            </label>
+            <label class="fac-field">
+              <span class="fac-label">Actividad económica (CIIU)</span>
+              <input type="text" [ngModel]="form().emisorActividadEconomica" (ngModelChange)="patch('emisorActividadEconomica', $event)" />
+            </label>
+          </div>
+          <div class="fac-grid fac-grid--3">
+            <label class="fac-field">
+              <span class="fac-label">Cód. municipio</span>
+              <input type="text" [ngModel]="form().emisorMunicipioCodigo" (ngModelChange)="patch('emisorMunicipioCodigo', $event)" />
+            </label>
+            <label class="fac-field">
+              <span class="fac-label">% IVA por defecto</span>
+              <input type="number" min="0" max="100" [ngModel]="form().ivaPorDefecto" (ngModelChange)="patch('ivaPorDefecto', +$event)" />
+            </label>
+            <label class="fac-field">
+              <span class="fac-label">Prefijo numeración (desarrollo)</span>
+              <input type="text" [ngModel]="form().prefijoDesarrollo" (ngModelChange)="patch('prefijoDesarrollo', $event)" placeholder="DEV" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="fac-section fac-section--emerald">
+        <header class="fac-section-head">
+          <span class="fac-section-badge">{{ esFactus() ? '4' : '3' }}</span>
+          <div>
+            <h2 class="fac-section-title">Reglas de negocio</h2>
+            <p class="fac-section-desc">Cómo se calculan y envían las facturas desde ARGO.</p>
+          </div>
+        </header>
+        <div class="fac-section-body">
+          <div class="fac-grid fac-grid--rules">
+            <label class="fac-field">
+              <span class="fac-label">Modo de emisión</span>
+              <select [ngModel]="form().modoEmision" (ngModelChange)="patch('modoEmision', $event)">
+                @for (m of catalogos().modosEmision; track m.id) {
+                  <option [value]="m.id">{{ m.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="fac-toggle fac-toggle--compact">
+              <input type="checkbox" [ngModel]="form().valorIncluyeIva" (ngModelChange)="patch('valorIncluyeIva', $event)" />
+              <span class="fac-toggle-box">
+                <span class="fac-toggle-title">Valor incluye IVA</span>
+                <span class="fac-toggle-desc">La liquidación del alumno ya trae IVA desglosado.</span>
+              </span>
+            </label>
+            <label class="fac-toggle fac-toggle--compact">
+              <input type="checkbox" [ngModel]="form().sendEmail" (ngModelChange)="patch('sendEmail', $event)" />
+              <span class="fac-toggle-box">
+                <span class="fac-toggle-title">Correo al cliente</span>
+                <span class="fac-toggle-desc">Factus envía la factura por email automáticamente.</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="fac-section fac-section--test">
+        <header class="fac-section-head">
+          <span class="fac-section-badge">✓</span>
+          <div>
+            <h2 class="fac-section-title">Probar conexión</h2>
+            <p class="fac-section-desc">Valida credenciales y alcance del token OAuth.</p>
+          </div>
+        </header>
+        <div class="fac-section-body fac-test-row">
+          <button type="button" class="ghost fac-test-btn" (click)="probar()" [disabled]="probando()">
+            {{ probando() ? 'Probando…' : 'Probar conexión con Factus' }}
+          </button>
+          @if (pruebaMsg(); as prueba) {
+            <p class="fac-prueba" [class.fac-prueba--ok]="pruebaOk()" [class.fac-prueba--err]="!pruebaOk()" role="status">
+              {{ prueba }}
+            </p>
+          }
+        </div>
+      </section>
+
+      <footer class="fac-actions">
+        <button type="button" class="primary" (click)="guardar()" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+        </button>
+      </footer>
+    </div>
+  }
+</section>

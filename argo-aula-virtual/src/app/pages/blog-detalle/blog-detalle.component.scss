@@ -1,0 +1,133 @@
+:host {
+  display: block;
+  font-family: var(--av-font-sans);
+}
+
+.blog-post-page {
+  background: var(--av-blog-page-bg);
+  color: #0f172a;
+  min-height: 50vh;
+}
+
+.blog-post-hero {
+  padding: clamp(1.75rem, 4vw, 2.75rem) 0 1.25rem;
+  background:
+    radial-gradient(ellipse at 80% 10%, var(--av-primary-a28), transparent 55%),
+    radial-gradient(ellipse at 15% 85%, var(--av-accent-a22), transparent 50%),
+    var(--av-page-hero-bg);
+  color: var(--av-page-hero-text, var(--av-text));
+
+  h1 {
+    margin: 0.5rem 0 0;
+    max-width: 48rem;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    line-height: 1.15;
+    font-weight: 800;
+    color: var(--av-page-hero-text, var(--av-text));
+  }
+}
+
+.blog-back {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: #a5b4fc;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+.blog-post-date {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--av-accent);
+}
+
+.blog-post-author {
+  margin: 0.65rem 0 0;
+  color: #cbd5e1;
+}
+
+.blog-muted {
+  color: #cbd5e1;
+}
+
+.blog-not-found {
+  padding: 1rem 0 2rem;
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+  }
+
+  p {
+    color: #cbd5e1;
+    margin: 0 0 1rem;
+  }
+}
+
+.blog-post-body {
+  padding: clamp(1.5rem, 3vw, 2.5rem) 1rem 3.5rem;
+  max-width: 46rem;
+}
+
+.blog-post-content {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: #334155;
+
+  p {
+    margin: 0 0 1rem;
+    white-space: pre-wrap;
+  }
+}
+
+.blog-post-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.blog-post-figure {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.88rem;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: #4338ca;
+  color: #fff;
+}

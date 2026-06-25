@@ -1,0 +1,31 @@
+@if (open) {
+  <div class="fm-layer" [style.paddingTop.px]="layerTopPx()" role="presentation">
+    <div class="fm-backdrop" (click)="close()"></div>
+    <div
+      #panel
+      class="fm-panel"
+      [class.wide]="wide && !xwide"
+      [class.xwide]="xwide"
+      [class.tall]="tall"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'fm-title'"
+      (click)="$event.stopPropagation()">
+      <header class="fm-header">
+        <div>
+          <h2 id="fm-title">{{ title }}</h2>
+          @if (subtitle) {
+            <p class="fm-subtitle">{{ subtitle }}</p>
+          }
+        </div>
+        <button type="button" class="fm-close" (click)="close()" aria-label="Cerrar">×</button>
+      </header>
+      <div class="fm-body argo-form-shell">
+        <ng-content></ng-content>
+      </div>
+      <footer class="fm-footer">
+        <ng-content select="[modal-actions]"></ng-content>
+      </footer>
+    </div>
+  </div>
+}

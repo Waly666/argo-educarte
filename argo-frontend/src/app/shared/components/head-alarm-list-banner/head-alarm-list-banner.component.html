@@ -1,0 +1,59 @@
+@if (visible()) {
+  <div class="hal-root">
+    <button type="button" class="head-alarm-close" (click)="onClose($event)" aria-label="Cerrar aviso">
+      Cerrar <span aria-hidden="true">×</span>
+    </button>
+    <section class="hal-banner" [ngClass]="theme()">
+      <span class="hal-wave" aria-hidden="true"></span>
+      <header class="hal-head">
+        @if (icon()) {
+          <span class="hal-icon" aria-hidden="true">{{ icon() }}</span>
+        }
+        <div class="hal-head-text">
+          <strong>{{ title() }}</strong>
+          @if (hint()) {
+            <span class="hal-hint">{{ hint() }}</span>
+          }
+        </div>
+      </header>
+      <ul class="hal-list">
+        @for (item of items(); track item.id) {
+          <li class="hal-row">
+            @if (itemDismissible()) {
+              <button
+                type="button"
+                class="hal-row-dismiss"
+                (click)="onDismissItem(item, $event)"
+                aria-label="Descartar aviso">
+                ×
+              </button>
+            }
+            @if (item.routerLink) {
+              <a
+                [routerLink]="item.routerLink"
+                [queryParams]="item.queryParams || null"
+                class="hal-link"
+                [ngClass]="item.rowClass">
+                <span class="hal-link-title">{{ item.title }}</span>
+                @if (item.meta) {
+                  <span class="hal-link-meta">{{ item.meta }}</span>
+                }
+              </a>
+            } @else {
+              <button
+                type="button"
+                class="hal-link hal-link--btn"
+                [ngClass]="item.rowClass"
+                (click)="onItemClick(item, $event)">
+                <span class="hal-link-title">{{ item.title }}</span>
+                @if (item.meta) {
+                  <span class="hal-link-meta">{{ item.meta }}</span>
+                }
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+}

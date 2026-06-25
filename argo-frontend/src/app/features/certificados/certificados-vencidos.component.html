@@ -1,0 +1,235 @@
+<section class="venc-page">
+
+  <!-- ══ HERO HEADER ══ -->
+  <div class="venc-hero">
+    <div class="hero-bg-stripe"></div>
+    <div class="hero-content">
+      <nav class="breadcrumb" aria-label="Ubicación">
+        <a routerLink="/app">Inicio</a>
+        <span>/</span>
+        <a routerLink="/app/certificados">Certificados</a>
+        <span>/</span>
+        <span>Vencidos</span>
+      </nav>
+
+      <div class="hero-title-row">
+        <div class="hero-icon-wrap">
+          <span class="hero-icon">⚠</span>
+        </div>
+        <div>
+          <h1 class="hero-title">Certificados Vencidos</h1>
+          <p class="hero-sub">Ordenados del más reciente al más antiguo · actualización automática diaria</p>
+        </div>
+        <button type="button" class="btn-refresh" (click)="cargar()" [disabled]="loading()" title="Actualizar">
+          <span [class.spinning]="loading()">↻</span>
+          Actualizar
+        </button>
+      </div>
+
+      <!-- Cápsulas de estadísticas -->
+      <div class="hero-stats">
+        <div class="stat-chip stat-chip--red">
+          <span class="stat-icon">📋</span>
+          <div>
+            <span class="stat-num">{{ totalRegistros() }}</span>
+            <span class="stat-label">vencido{{ totalRegistros() !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+        <div class="stat-chip stat-chip--amber">
+          <span class="stat-icon">📄</span>
+          <div>
+            <span class="stat-num">{{ totalPaginas() }}</span>
+            <span class="stat-label">{{ totalPaginas() !== 1 ? 'páginas' : 'página' }}</span>
+          </div>
+        </div>
+        <div class="stat-chip stat-chip--blue">
+          <span class="stat-icon">👁</span>
+          <div>
+            <span class="stat-num">{{ porPagina }}</span>
+            <span class="stat-label">por página</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (msg()) {
+    <div class="venc-alert">⚠ {{ msg() }}</div>
+  }
+
+  <!-- ══ FILTROS ══ -->
+  <div class="venc-filtros">
+    <div class="filtros-inner">
+      <div class="field-search">
+        <span class="search-icon">🔍</span>
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Nombre, código, documento, encabezado…"
+          [ngModel]="filtro()"
+          (ngModelChange)="onFiltroChange($event)"
+          autocomplete="off" />
+      </div>
+      <div class="field-select">
+        <select [ngModel]="tipoFormato()" (ngModelChange)="onTipoChange($event)">
+          <option value="">Todos los tipos</option>
+          @for (t of tiposFormato; track t.id) {
+            <option [value]="t.id">{{ t.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="field-select field-empresa">
+        <label class="sr-only">Empresa</label>
+        <div class="empresa-combo-wrap">
+          <input
+            type="search"
+            class="empresa-combo-input"
+            placeholder="Filtrar por empresa…"
+            [value]="empresaFiltroNombre()"
+            (input)="buscarEmpresaFiltro($any($event.target).value)"
+            (blur)="onEmpresaFiltroBlur()"
+            autocomplete="off" />
+          @if (empresaFiltroId()) {
+            <button type="button" class="empresa-combo-clear" (click)="seleccionarEmpresaFiltro(null)" title="Quitar filtro de empresa">✕</button>
+          }
+          @if (empresaDropdown() && empresaSugerencias().length > 0) {
+            <ul class="empresa-combo-dropdown">
+              @for (c of empresaSugerencias(); track c._id) {
+                <li (mousedown)="seleccionarEmpresaFiltro(c)">
+                  <span class="ec-nombre">{{ c.razonSocial || c.nombres || c.nombreComercial || '—' }}</span>
+                  <span class="ec-nit">{{ c.identificacion }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+      <button type="button" class="btn-export" (click)="exportarExcel()" [disabled]="loading() || exportando() || totalRegistros() <= 0">
+        {{ exportando() ? 'Exportando…' : 'Excel' }}
+      </button>
+      <button type="button" class="btn-limpiar" (click)="limpiar()" [disabled]="loading()">✕ Limpiar</button>
+    </div>
+    <div class="filtros-inner filtros-inner--fechas">
+      <div class="field-date">
+        <argo-date-input label="Venció desde" inputId="venc-desde" [ngModel]="vencimientoDesde()"
+          (ngModelChange)="onVencimientoDesdeChange($event)" ></argo-date-input>
+      </div>
+      <div class="field-date">
+        <argo-date-input label="Venció hasta" inputId="venc-hasta" [ngModel]="vencimientoHasta()"
+          (ngModelChange)="onVencimientoHastaChange($event)" ></argo-date-input>
+      </div>
+    </div>
+    @if (empresaFiltroId()) {
+      <div class="filtro-empresa-chip-row">
+        <span class="empresa-active-chip">🏢 {{ empresaFiltroNombre() }}</span>
+      </div>
+    }
+    <div class="filtros-pag-info">
+      @if (totalRegistros() > 0) {
+        Mostrando <strong>{{ (paginaActual()-1)*porPagina + 1 }}–{{ pagHasta() }}</strong>
+        de <strong>{{ totalRegistros() }}</strong> certificados
+        · <span class="pag-label">Pág. {{ paginaActual() }} / {{ totalPaginas() }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- ══ TABLA ══ -->
+  <div class="venc-table-wrap">
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner">⏳</span>
+        <p>Cargando certificados vencidos…</p>
+      </div>
+    } @else {
+      <table class="venc-table">
+        <thead>
+          <tr>
+            <th class="col-code">Código</th>
+            <th class="col-alumno">Alumno / titular</th>
+            <th class="col-doc">Documento</th>
+            <th class="col-empresa">Empresa</th>
+            <th class="col-enc">Encabezado / Programa</th>
+            <th class="col-emision">Emisión</th>
+            <th class="col-vencio">Venció</th>
+            <th class="col-dias">Hace</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of certificados(); track c._id) {
+            <tr class="row-venc">
+              <td>
+                <span class="code-badge">{{ c.codigoCert || '—' }}</span>
+              </td>
+              <td class="col-alumno">
+                @if (c.alumnoId) {
+                  <button type="button" class="alumno-link" (click)="abrirAlumno(c)">
+                    {{ c.nombreCompleto || '—' }}
+                  </button>
+                } @else {
+                  <span class="alumno-text">{{ c.nombreCompleto || '—' }}</span>
+                }
+              </td>
+              <td class="doc-cell">{{ c.numDoc || '—' }}</td>
+              <td class="col-empresa">
+                @if (c.empresaNombre) {
+                  <span class="emp-chip-cert">{{ c.empresaNombre }}</span>
+                } @else {
+                  <span class="text-dim">—</span>
+                }
+              </td>
+              <td class="enc-cell">{{ c.encabezado || c.nomCert || c.programaDescr || '—' }}</td>
+              <td class="fecha-cell">{{ fecha(c.fechaEmision) }}</td>
+              <td class="fecha-cell fecha-vencida">{{ fecha(c.fechaVencimiento) }}</td>
+              <td>
+                <span [ngClass]="claseDias(c.fechaVencimiento)">{{ etiquetaDias(c.fechaVencimiento) }}</span>
+              </td>
+            </tr>
+          }
+          @if (certificados().length === 0) {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                <span class="empty-icon">✅</span>
+                <span>No hay certificados vencidos</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- ══ PAGINADOR ══ -->
+      @if (totalPaginas() > 1) {
+        <nav class="paginador" aria-label="Paginación de resultados">
+          <button
+            type="button"
+            class="pag-btn pag-arrow"
+            [disabled]="paginaActual() <= 1"
+            (click)="irPagina(paginaActual() - 1)">
+            ‹ Anterior
+          </button>
+
+          <div class="pag-nums">
+            @for (p of paginasVisibles(); track p) {
+              @if (p === -1) {
+                <span class="pag-ellipsis">…</span>
+              } @else {
+                <button
+                  type="button"
+                  class="pag-btn pag-num"
+                  [class.active]="p === paginaActual()"
+                  (click)="irPagina(p)">{{ p }}</button>
+              }
+            }
+          </div>
+
+          <button
+            type="button"
+            class="pag-btn pag-arrow"
+            [disabled]="paginaActual() >= totalPaginas()"
+            (click)="irPagina(paginaActual() + 1)">
+            Siguiente ›
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</section>

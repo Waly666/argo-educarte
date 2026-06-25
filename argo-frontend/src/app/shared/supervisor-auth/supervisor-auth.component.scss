@@ -1,0 +1,62 @@
+.sup-auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.sup-auth-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1101;
+  width: min(420px, calc(100vw - 32px));
+  background: var(--surface, #0f172a);
+  border: 1px solid var(--line, rgba(148, 163, 184, 0.25));
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.sup-auth-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.sup-auth-msg {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: var(--text-soft, #94a3b8);
+}
+
+.sup-auth-field {
+  display: block;
+  margin-bottom: 12px;
+
+  span {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    color: var(--text-soft, #94a3b8);
+  }
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.sup-auth-error {
+  margin: 0 0 12px;
+  font-size: 0.83rem;
+  color: #fca5a5;
+}
+
+.sup-auth-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}

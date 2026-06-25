@@ -1,0 +1,358 @@
+<section class="aud-page admin-list-page card">
+  <header class="aud-head">
+    <div class="aud-head-main">
+      <h1>
+        Monitoreo y auditoría
+        @if (
+          autoRefresh() &&
+          (tab() === 'enLinea' || (tab() === 'historial' && historialPage() === 1))
+        ) {
+          <span class="aud-live" aria-live="polite">
+            <span class="aud-live-dot"></span>
+            En vivo
+          </span>
+        }
+      </h1>
+      <p>
+        Usuarios con sesión validada, qué están haciendo ahora y el historial de peticiones.
+        Los cambios en datos se registran en la pestaña de auditoría.
+      </p>
+      @if (ultimaActualizacion(); as ts) {
+        <p class="aud-sync">
+          Última actualización: {{ ts | date: 'HH:mm:ss' }}
+          @if (actualizando()) {
+            <span class="aud-sync-spin"> · actualizando…</span>
+          }
+        </p>
+      }
+    </div>
+    <div class="aud-badges">
+      @if (tab() === 'enLinea') {
+        <span class="aud-chip aud-chip--teal">{{ activos().length }} en línea</span>
+      }
+      @if (tab() === 'historial') {
+        <span class="aud-chip aud-chip--sky">{{ historialTotal() }} peticiones</span>
+      }
+      @if (tab() === 'cambios') {
+        <span class="aud-chip aud-chip--amber">{{ total() }} cambios</span>
+      }
+    </div>
+  </header>
+
+  <nav class="aud-tabs" role="tablist">
+    <button type="button" role="tab" class="aud-tab" [class.aud-tab--active]="tab() === 'enLinea'" (click)="setTab('enLinea')">
+      En línea ahora
+    </button>
+    <button type="button" role="tab" class="aud-tab" [class.aud-tab--active]="tab() === 'historial'" (click)="setTab('historial')">
+      Historial de peticiones
+    </button>
+    <button type="button" role="tab" class="aud-tab" [class.aud-tab--active]="tab() === 'cambios'" (click)="setTab('cambios')">
+      Cambios en datos
+    </button>
+  </nav>
+
+  @if (tab() === 'enLinea') {
+    <div class="aud-panel">
+      <div class="aud-toolbar">
+        <label class="aud-field aud-field--select">
+          <span class="aud-label">Ventana (minutos)</span>
+          <select [ngModel]="ventanaMinutos()" (ngModelChange)="ventanaMinutos.set($event); cargarActivos()" name="ventana">
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="15">15</option>
+            <option [ngValue]="30">30</option>
+          </select>
+        </label>
+        <button type="button" class="ghost" (click)="cargarActivos()">Actualizar</button>
+        <label class="aud-check">
+          <input type="checkbox" [checked]="autoRefresh()" (change)="toggleAutoRefresh()" />
+          Tiempo real (cada 3 s)
+        </label>
+      </div>
+
+      @if (cargandoActivos() && !activos().length) {
+        <p class="aud-hint">Cargando usuarios activos…</p>
+      } @else if (!activos().length) {
+        <div class="aud-empty">
+          <span class="aud-empty-icon" aria-hidden="true">👤</span>
+          <p>No hay usuarios con actividad en los últimos {{ ventanaMinutos() }} minutos.</p>
+        </div>
+      } @else {
+        <p class="aud-meta">{{ activos().length }} usuario(s) con sesión validada reciente</p>
+        <div class="aud-cards-grid">
+          @for (u of activos(); track u.idUsuario) {
+            <article class="aud-user-card">
+              <header class="aud-user-head">
+                <h3>{{ u.nombreUsuario || u.usuario }}</h3>
+                <span class="aud-badge aud-badge--live">En línea</span>
+              </header>
+              <dl class="aud-user-fields">
+                <div><dt>Usuario</dt><dd>{{ u.usuario }}</dd></div>
+                <div><dt>Rol</dt><dd>{{ u.rol || '—' }}</dd></div>
+                <div class="aud-span-2"><dt>Haciendo ahora</dt><dd class="aud-actividad">{{ u.ultimaActividad }}</dd></div>
+                <div><dt>Última petición</dt><dd>{{ u.ultimoMetodo }} {{ u.ultimaRuta }}</dd></div>
+                <div><dt>Hace</dt><dd>{{ u.ultimaFecha | date: 'dd/MM/yyyy HH:mm:ss' }}</dd></div>
+                <div><dt>Peticiones (ventana)</dt><dd>{{ u.peticionesRecientes }}</dd></div>
+                <div>
+                  <dt>HTTP</dt>
+                  <dd><span [class]="codigoClase(u.ultimoCodigo)">{{ u.ultimoCodigo }}</span></dd>
+                </div>
+              </dl>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'historial') {
+    <div class="aud-panel">
+      <form class="aud-filtros" (ngSubmit)="buscarHistorial()">
+        <label class="aud-field">
+          <span class="aud-label">Desde</span>
+          <argo-date-input [(ngModel)]="filtrosHistorial.desde" name="hDesde" ></argo-date-input>
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Hasta</span>
+          <argo-date-input [(ngModel)]="filtrosHistorial.hasta" name="hHasta" ></argo-date-input>
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Usuario</span>
+          <input type="text" [(ngModel)]="filtrosHistorial.usuario" name="hUsuario" placeholder="nick de login" />
+        </label>
+        <button type="submit" class="primary">Buscar</button>
+      </form>
+
+      <div class="aud-toolbar">
+        <label class="aud-check">
+          <input type="checkbox" [checked]="autoRefresh()" (change)="toggleAutoRefresh()" />
+          Tiempo real en página 1 (cada 3 s)
+        </label>
+        <button type="button" class="ghost" (click)="cargarHistorial()">Actualizar</button>
+      </div>
+
+      @if (!cargandoHistorial() || historialItems().length) {
+        <p class="aud-meta">
+          {{ historialTotal() }} peticiones — página {{ historialPage() }} / {{ historialPages() }}
+          <span class="aud-orden">(más reciente → más antiguo)</span>
+        </p>
+      }
+      @if (cargandoHistorial() && !historialItems().length) {
+        <p class="aud-hint">Cargando historial…</p>
+      }
+
+      <div class="aud-historial-feed">
+        @for (r of historialItems(); track r.idActividad) {
+          <article class="aud-hist-card">
+            <header class="aud-user-head">
+              <h3>{{ r.nombreUsuario || r.usuario || '—' }}</h3>
+              <span class="aud-badge aud-badge--metodo">{{ r.metodo }}</span>
+            </header>
+            <p class="aud-actividad">{{ r.actividad }}</p>
+            <dl class="aud-user-fields">
+              <div class="aud-span-2">
+                <dt>Fecha</dt>
+                <dd>{{ r.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+              </div>
+              <div class="aud-span-2">
+                <dt>Ruta</dt>
+                <dd class="aud-ruta">{{ r.rutaBase || r.ruta }}</dd>
+              </div>
+              <div>
+                <dt>HTTP</dt>
+                <dd><span [class]="codigoClase(r.codigoHttp)">{{ r.codigoHttp }}</span></dd>
+              </div>
+              <div>
+                <dt>Duración</dt>
+                <dd>{{ r.duracionMs }} ms</dd>
+              </div>
+            </dl>
+          </article>
+        }
+        @if (!historialItems().length && !cargandoHistorial()) {
+          <div class="aud-empty aud-empty--inline">
+            <p>Sin peticiones registradas.</p>
+          </div>
+        }
+      </div>
+
+      <div class="aud-pager">
+        <button type="button" class="ghost" (click)="historialAnterior()" [disabled]="historialPage() <= 1">← Anterior</button>
+        <button type="button" class="ghost" (click)="historialSiguiente()" [disabled]="historialPage() >= historialPages()">Siguiente →</button>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'cambios') {
+    <div class="aud-panel">
+      <form class="aud-filtros" (ngSubmit)="page.set(1); cargar()">
+        <label class="aud-field">
+          <span class="aud-label">Desde</span>
+          <argo-date-input [(ngModel)]="filtros.desde" name="desde" ></argo-date-input>
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Hasta</span>
+          <argo-date-input [(ngModel)]="filtros.hasta" name="hasta" ></argo-date-input>
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Usuario</span>
+          <input type="text" [(ngModel)]="filtros.usuario" name="usuario" placeholder="usuario" />
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Acción</span>
+          <select [(ngModel)]="filtros.accion" name="accion">
+            <option value="">Todas</option>
+            <option value="crear">crear</option>
+            <option value="modificar">modificar</option>
+            <option value="eliminar">eliminar</option>
+            <option value="apertura_caja">apertura_caja</option>
+            <option value="cierre_caja">cierre_caja</option>
+          </select>
+        </label>
+        <label class="aud-field">
+          <span class="aud-label">Entidad</span>
+          <input type="text" [(ngModel)]="filtros.entidad" name="entidad" placeholder="ingreso, egreso…" />
+        </label>
+        <button type="submit" class="primary">Buscar</button>
+        <div class="view-toggle" role="group" aria-label="Modo de vista">
+          <button type="button" class="view-btn" [class.active]="vista() === 'lista'" (click)="setVista('lista')">☰ Lista</button>
+          <button type="button" class="view-btn" [class.active]="vista() === 'cards'" (click)="setVista('cards')">▦ Cards</button>
+        </div>
+      </form>
+
+      @if (!cargando()) {
+        <p class="aud-meta">{{ total() }} registros — página {{ page() }} / {{ pages() }}</p>
+      }
+      @if (cargando()) {
+        <p class="aud-hint">Cargando…</p>
+      }
+
+      @if (!cargando() && vista() === 'lista') {
+        <div class="aud-table-wrap">
+          <table class="aud-table">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Fecha</th>
+                <th>Acción</th>
+                <th>Entidad</th>
+                <th>Usuario</th>
+                <th>Ruta</th>
+                <th>Resumen</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of items(); track r.idAuditoria) {
+                <tr>
+                  <td>{{ r.idAuditoria }}</td>
+                  <td class="aud-fecha">{{ r.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td><span class="aud-badge">{{ r.accion }}</span></td>
+                  <td>{{ r.entidad }} {{ r.idEntidad ? '#' + r.idEntidad : '' }}</td>
+                  <td>{{ r.usuario }}</td>
+                  <td class="aud-ruta-cell">{{ r.rutaBase || r.ruta }}</td>
+                  <td>{{ r.resumen }}</td>
+                  <td class="aud-td-r">
+                    <button type="button" class="ghost mini" (click)="verDetalle(r)">Detalle</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (!cargando() && vista() === 'cards') {
+        <div class="cards-grid">
+          @for (r of items(); track r.idAuditoria) {
+            <article class="list-card">
+              <header class="card-title"><h3>{{ r.accion }} — {{ r.entidad }}</h3></header>
+              <div class="card-body">
+                <div class="entity-badge-wrap">
+                  <div class="entity-badge tone-amber">#{{ r.idAuditoria }}</div>
+                </div>
+                <div class="card-main">
+                  <dl class="card-fields">
+                    <div><dt>Fecha</dt><dd>{{ r.fecha | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+                    <div><dt>Usuario</dt><dd>{{ r.usuario }}</dd></div>
+                    <div class="span-2"><dt>Resumen</dt><dd>{{ r.resumen }}</dd></div>
+                    <div class="span-2"><dt>Ruta</dt><dd class="truncate">{{ r.rutaBase || r.ruta }}</dd></div>
+                  </dl>
+                </div>
+              </div>
+              <footer class="card-foot">
+                <span class="card-hint">Auditoría del sistema</span>
+                <div class="card-actions">
+                  <button type="button" class="act open" (click)="verDetalle(r)">Detalle</button>
+                </div>
+              </footer>
+            </article>
+          }
+          @if (!items().length) {
+            <div class="empty cards-empty">Sin registros.</div>
+          }
+        </div>
+      }
+
+      <div class="aud-pager">
+        <button type="button" class="ghost" (click)="paginaAnterior()" [disabled]="page() <= 1">← Anterior</button>
+        <button type="button" class="ghost" (click)="paginaSiguiente()" [disabled]="page() >= pages()">Siguiente →</button>
+      </div>
+    </div>
+  }
+</section>
+
+@if (detalle(); as d) {
+  <div class="aud-modal-backdrop" (click)="cerrarDetalle()" role="presentation">
+    <div class="aud-modal card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <header class="aud-modal-head">
+        <h2>Auditoría #{{ d.idAuditoria }}</h2>
+        <button type="button" class="ghost" (click)="cerrarDetalle()">Cerrar</button>
+      </header>
+      <div class="aud-modal-body">
+        <p><strong>{{ d.accion }}</strong> — {{ d.fecha | date: 'full' }} — {{ d.usuario }}</p>
+        <p class="aud-ruta-full">{{ d.ruta }}</p>
+        <p>{{ d.resumen }}</p>
+
+        @if (d.cambios?.length) {
+          <section class="aud-modal-section">
+            <h3>Campos modificados</h3>
+            <div class="aud-table-wrap">
+              <table class="aud-table aud-table--sm">
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Antes</th>
+                    <th>Después</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of d.cambios; track c.campo) {
+                    <tr>
+                      <td>{{ c.campo }}</td>
+                      <td><pre class="aud-pre">{{ json(c.antes) }}</pre></td>
+                      <td><pre class="aud-pre">{{ json(c.despues) }}</pre></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+        @if (d.datosAntes) {
+          <details class="aud-details">
+            <summary>Datos antes</summary>
+            <pre class="aud-pre">{{ json(d.datosAntes) }}</pre>
+          </details>
+        }
+        @if (d.datosDespues) {
+          <details class="aud-details">
+            <summary>Datos después</summary>
+            <pre class="aud-pre">{{ json(d.datosDespues) }}</pre>
+          </details>
+        }
+      </div>
+    </div>
+  </div>
+}

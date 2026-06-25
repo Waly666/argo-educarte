@@ -1,0 +1,649 @@
+<section class="cea-page card admin-list-page">
+  <header class="cea-head cea-header">
+    <div class="cea-head-main">
+      <p class="breadcrumb"><a routerLink="/app">Inicio</a> / Programación CEA</p>
+      <h1>Programación CEA — Licencia de conducción</h1>
+      <p class="hint-block">
+        Configure horarios, defina temas por programa y rastree las horas de cada alumno (matrícula y horas prácticas adicionales).
+      </p>
+    </div>
+    <div class="cea-badges cea-flow" aria-label="Flujo">
+      @if (totalPendientes() > 0) {
+        <span class="cea-chip cea-chip--amber">{{ totalPendientes() }} pendiente{{ totalPendientes() === 1 ? '' : 's' }}</span>
+      }
+      <span class="cea-chip cea-chip--indigo">Configuración</span>
+      <span class="cea-arrow">→</span>
+      <span class="cea-chip cea-chip--sky">Temas</span>
+      <span class="cea-arrow">→</span>
+      <span class="cea-chip cea-chip--amber">Programar</span>
+      <span class="cea-arrow">→</span>
+      <span class="cea-chip cea-chip--emerald">Operar clase</span>
+    </div>
+  </header>
+
+  @if (msg(); as texto) {
+    <p
+      class="cea-msg"
+      [class.cea-msg--ok]="msgTipo() === 'ok'"
+      [class.cea-msg--err]="msgTipo() === 'error'"
+      role="alert">
+      {{ texto }}
+    </p>
+  }
+
+  @if (totalPendientes() > 0) {
+    <div class="cea-alerta-resumen" role="status">
+      <strong>{{ totalPendientes() }}</strong> registro(s) con horas sin programar.
+      <button type="button" class="linkish" (click)="setTab('pendientes')">Ver detalle</button>
+    </div>
+  }
+
+  <nav class="tabs tabs-flow" aria-label="Secciones programación CEA">
+    <button type="button" [class.active]="tab() === 'inicio'" (click)="setTab('inicio')">Inicio</button>
+    <button type="button" [class.active]="tab() === 'config'" (click)="setTab('config')" [disabled]="!puedeGestionar()">
+      Configuración
+    </button>
+    <button type="button" [class.active]="tab() === 'temas'" (click)="setTab('temas')" [disabled]="!puedeGestionar()">
+      Temas del programa
+    </button>
+    <button type="button" [class.active]="tab() === 'clases'" (click)="setTab('clases')">
+      Clases
+    </button>
+    <button type="button" [class.active]="tab() === 'pendientes'" (click)="setTab('pendientes')">
+      Pendientes
+      @if (totalPendientes() > 0) {
+        <span class="badge-warn">{{ totalPendientes() }}</span>
+      }
+    </button>
+  </nav>
+
+  @if (tab() === 'inicio') {
+    <div class="cea-panel">
+      <h3 class="sec">1. Guía rápida</h3>
+      <h2>¿Por dónde empiezo?</h2>
+      <ol class="cea-pasos">
+        <li>
+          <strong>Configuración</strong> — Horarios de vehículo, aula y taller; festivos Colombia; duraciones de práctica.
+        </li>
+        <li>
+          <strong>Temas</strong> — Por cada licencia (A2, B1…), cree temas de teoría y taller según las horas del programa.
+        </li>
+        <li>
+          <strong>Programar clases</strong> — Teoría, taller o práctica; el sistema valida conflictos de vehículo, aula, taller e instructor.
+        </li>
+        <li>
+          <strong>Operar</strong> — Inscribir alumnos, iniciar/finalizar con cronómetro; las horas se descuentan del rastreo.
+        </li>
+        <li>
+          <strong>Rastreo</strong> — Revise Pendientes para matrículas y horas prácticas adicionales sin programar.
+        </li>
+      </ol>
+
+      <div class="cea-cards">
+        <article class="cea-card">
+          <h3>Programas CEA</h3>
+          <p class="cea-stat">{{ programas().length }}</p>
+          <p class="hint">Licencias con horas teóricas, prácticas y de taller.</p>
+        </article>
+        <article class="cea-card" [class.warn]="totalPendientes() > 0">
+          <h3>Sin programar</h3>
+          <p class="cea-stat">{{ totalPendientes() }}</p>
+          <p class="hint">Matrículas o horas prácticas adicionales pendientes.</p>
+        </article>
+        <article class="cea-card">
+          <h3>Festivos {{ festivosAnio() }}</h3>
+          <p class="cea-stat">{{ festivos().length }}</p>
+          <p class="hint">Calendario Colombia integrado.</p>
+        </article>
+      </div>
+
+      <div class="cea-acciones-rapidas">
+        <h3>Accesos rápidos</h3>
+        <div class="cea-acciones-grid">
+          <button type="button" class="ghost sm" (click)="setTab('clases')">Programar y operar clases</button>
+          <a routerLink="/app/programacion-cea/clases-hoy" class="ghost sm link-btn">Clases de hoy</a>
+          <button type="button" class="ghost sm" (click)="setTab('pendientes')">Pendientes de programación</button>
+          @if (puedeGestionar()) {
+            <button type="button" class="ghost sm" (click)="setTab('config')">Configuración horarios</button>
+          }
+        </div>
+      </div>
+
+      @if (alertasPrograma().length) {
+        <div class="cea-prog-alertas" role="alert">
+          <h3>Programas sin temas definidos</h3>
+          <ul>
+            @for (a of alertasPrograma(); track a.idProg + a.mensaje) {
+              <li>{{ a.programaLabel }} — {{ a.mensaje }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'config' && config(); as cfg) {
+    <div class="cea-panel">
+      <p class="hint">Defina rangos horarios por tipo de espacio. Puede usar horarios distintos para día normal, sábado, domingo y festivo.</p>
+
+      <div class="subtabs">
+        <button type="button" [class.active]="bloqueConfig() === 'vehiculo'" (click)="bloqueConfig.set('vehiculo')">Vehículo (práctica)</button>
+        <button type="button" [class.active]="bloqueConfig() === 'aula'" (click)="bloqueConfig.set('aula')">Aula (teoría)</button>
+        <button type="button" [class.active]="bloqueConfig() === 'taller'" (click)="bloqueConfig.set('taller')">Taller / patio</button>
+        <button type="button" [class.active]="bloqueConfig() === 'planificacion'" (click)="bloqueConfig.set('planificacion'); cargarRecursosPlan()">Planificación clases</button>
+      </div>
+
+      @if (bloqueConfig() === 'vehiculo'; as _) {
+        <div class="config-grid">
+          @let b = cfg.vehiculo;
+          <fieldset class="field-block">
+            <legend>Días permitidos</legend>
+            <label><input type="checkbox" [ngModel]="b.permiteSabado" (ngModelChange)="patchConfigBloque('permiteSabado', $event)" /> Sábados</label>
+            <label><input type="checkbox" [ngModel]="b.permiteDomingo" (ngModelChange)="patchConfigBloque('permiteDomingo', $event)" /> Domingos</label>
+            <label><input type="checkbox" [ngModel]="b.permiteFestivo" (ngModelChange)="patchConfigBloque('permiteFestivo', $event)" /> Festivos</label>
+          </fieldset>
+          <fieldset class="field-block">
+            <legend>Duraciones de práctica (horas)</legend>
+            @for (h of [1, 2, 3, 4]; track h) {
+              <label><input type="checkbox" [checked]="duracionActiva(h)" (change)="toggleDuracion(h)" /> {{ h }} h</label>
+            }
+          </fieldset>
+          <div class="field">
+            <label>Duración por sesión (referencia, h)</label>
+            <input type="number" min="1" max="8" step="0.5" [ngModel]="b.duracionSesionHoras ?? 2" (ngModelChange)="patchConfigBloque('duracionSesionHoras', $event)" />
+            <span class="hint">Usada al liquidar prácticas individuales por alumno.</span>
+          </div>
+          <div class="field">
+            <label>Buffer post-clase (minutos)</label>
+            <input type="number" min="0" [ngModel]="b.bufferMinutos" (ngModelChange)="patchConfigBloque('bufferMinutos', $event)" />
+            <span class="hint">Tiempo antes de reutilizar el vehículo.</span>
+          </div>
+          @for (sub of subHorarios; track sub) {
+            <fieldset class="field-block">
+              <legend>{{ sub | titlecase }}</legend>
+              <label>Desde <input type="time" [ngModel]="horarioSub(b, sub).horaDesde" (ngModelChange)="patchConfigSub('vehiculo', sub, 'horaDesde', $event)" /></label>
+              <label>Hasta <input type="time" [ngModel]="horarioSub(b, sub).horaHasta" (ngModelChange)="patchConfigSub('vehiculo', sub, 'horaHasta', $event)" /></label>
+            </fieldset>
+          }
+        </div>
+      }
+
+      @if (bloqueConfig() === 'aula'; as _) {
+        @let b = cfg.aula;
+        <div class="config-grid">
+          <fieldset class="field-block">
+            <legend>Días permitidos</legend>
+            <label><input type="checkbox" [ngModel]="b.permiteSabado" (ngModelChange)="patchConfigBloque('permiteSabado', $event)" /> Sábados</label>
+            <label><input type="checkbox" [ngModel]="b.permiteDomingo" (ngModelChange)="patchConfigBloque('permiteDomingo', $event)" /> Domingos</label>
+            <label><input type="checkbox" [ngModel]="b.permiteFestivo" (ngModelChange)="patchConfigBloque('permiteFestivo', $event)" /> Festivos</label>
+          </fieldset>
+          <div class="field">
+            <label>Cupo grupal por defecto</label>
+            <input type="number" min="1" [ngModel]="b.cupoMaximoDefault" (ngModelChange)="patchConfigBloque('cupoMaximoDefault', $event)" />
+          </div>
+          <div class="field">
+            <label>Duración por sesión teórica (h)</label>
+            <input type="number" min="1" max="8" step="0.5" [ngModel]="b.duracionSesionHoras ?? 2" (ngModelChange)="patchConfigBloque('duracionSesionHoras', $event)" />
+          </div>
+          @for (sub of subHorarios; track sub) {
+            <fieldset class="field-block">
+              <legend>{{ sub | titlecase }}</legend>
+              <label>Desde <input type="time" [ngModel]="horarioSub(b, sub).horaDesde" (ngModelChange)="patchConfigSub('aula', sub, 'horaDesde', $event)" /></label>
+              <label>Hasta <input type="time" [ngModel]="horarioSub(b, sub).horaHasta" (ngModelChange)="patchConfigSub('aula', sub, 'horaHasta', $event)" /></label>
+            </fieldset>
+          }
+        </div>
+      }
+
+      @if (bloqueConfig() === 'taller'; as _) {
+        @let b = cfg.taller;
+        <div class="config-grid">
+          <fieldset class="field-block">
+            <legend>Días permitidos</legend>
+            <label><input type="checkbox" [ngModel]="b.permiteSabado" (ngModelChange)="patchConfigBloque('permiteSabado', $event)" /> Sábados</label>
+            <label><input type="checkbox" [ngModel]="b.permiteDomingo" (ngModelChange)="patchConfigBloque('permiteDomingo', $event)" /> Domingos</label>
+            <label><input type="checkbox" [ngModel]="b.permiteFestivo" (ngModelChange)="patchConfigBloque('permiteFestivo', $event)" /> Festivos</label>
+          </fieldset>
+          <div class="field">
+            <label>Cupo grupal por defecto</label>
+            <input type="number" min="1" [ngModel]="b.cupoMaximoDefault" (ngModelChange)="patchConfigBloque('cupoMaximoDefault', $event)" />
+          </div>
+          <div class="field">
+            <label>Duración por sesión de taller (h)</label>
+            <input type="number" min="1" max="8" step="0.5" [ngModel]="b.duracionSesionHoras ?? 2" (ngModelChange)="patchConfigBloque('duracionSesionHoras', $event)" />
+          </div>
+          @for (sub of subHorarios; track sub) {
+            <fieldset class="field-block">
+              <legend>{{ sub | titlecase }}</legend>
+              <label>Desde <input type="time" [ngModel]="horarioSub(b, sub).horaDesde" (ngModelChange)="patchConfigSub('taller', sub, 'horaDesde', $event)" /></label>
+              <label>Hasta <input type="time" [ngModel]="horarioSub(b, sub).horaHasta" (ngModelChange)="patchConfigSub('taller', sub, 'horaHasta', $event)" /></label>
+            </fieldset>
+          }
+        </div>
+      }
+
+      @if (bloqueConfig() === 'planificacion') {
+        <div class="planificacion-panel">
+          <p class="hint">
+            Genere clases <strong>teóricas y de taller vacías</strong> distribuidas en un periodo, según horas del programa y temas.
+            Al liquidar, los alumnos se inscriben en estas clases si hay cupo. La práctica sigue siendo individual por alumno.
+          </p>
+
+          <div class="config-grid plan-form-grid">
+            <div class="field">
+              <label>Programa (licencia)</label>
+              <select [ngModel]="planForm().idProg" (ngModelChange)="onPlanProgChange($event)">
+                @for (p of programas(); track p.idProg) {
+                  <option [value]="p.idProg">{{ p.nombre }} (T {{ p.horasTeoria }} · Ta {{ p.horasTaller }} h)</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Programas completos en el periodo</label>
+              <input type="number" min="1" max="99" [ngModel]="planForm().programasPorPeriodo" (ngModelChange)="onPlanProgramasPorPeriodoChange($event)" />
+              <span class="hint">Ej.: 1 = un ciclo teórico+taller del programa; 2 = el doble de clases.</span>
+            </div>
+            <div class="field">
+              <label>Primera clase desde (días después de hoy)</label>
+              <input type="number" min="0" [ngModel]="cfg.planificacion?.diasInicioDesdeGeneracion ?? 5" (ngModelChange)="patchPlanificacionConfig('diasInicioDesdeGeneracion', $event)" />
+            </div>
+            <div class="field">
+              <argo-date-input label="Periodo — desde" [ngModel]="planForm().fechaDesde" (ngModelChange)="patchPlanForm('fechaDesde', $event)" ></argo-date-input>
+            </div>
+            <div class="field">
+              <argo-date-input label="Periodo — hasta" [ngModel]="planForm().fechaHasta" (ngModelChange)="patchPlanForm('fechaHasta', $event)" ></argo-date-input>
+            </div>
+            <div class="field">
+              <label>Aula teórica (opcional)</label>
+              <select [ngModel]="planForm().idAula" (ngModelChange)="patchPlanForm('idAula', $event)">
+                <option value="">Automático — todas las aulas por disponibilidad</option>
+                @for (a of recursosPlan()?.aulas || []; track a.id) {
+                  <option [value]="a.id">{{ a.nombre }}</option>
+                }
+              </select>
+              <span class="hint">Sin selección, rota entre aulas libres en cada franja (luego puede cambiarse en la clase).</span>
+            </div>
+            <div class="field">
+              <label>Taller / patio</label>
+              <select [ngModel]="planForm().idTaller" (ngModelChange)="patchPlanForm('idTaller', $event)">
+                <option value="">— Seleccione —</option>
+                @for (t of recursosPlan()?.talleres || []; track t.id) {
+                  <option [value]="t.id">{{ t.nombre }}</option>
+                }
+              </select>
+            </div>
+            <fieldset class="field-block">
+              <legend>Incluir</legend>
+              <label><input type="checkbox" [ngModel]="planForm().incluirTeoria" (ngModelChange)="patchPlanForm('incluirTeoria', $event)" /> Teoría</label>
+              <label><input type="checkbox" [ngModel]="planForm().incluirTaller" (ngModelChange)="patchPlanForm('incluirTaller', $event)" /> Taller</label>
+            </fieldset>
+          </div>
+
+          <div class="actions plan-actions">
+            <button type="button" class="ghost" [disabled]="planPreviewLoading() || !puedeGestionar()" (click)="previewPlanificacion()">
+              {{ planPreviewLoading() ? 'Calculando…' : 'Vista previa' }}
+            </button>
+            <button type="button" class="primary" [disabled]="planGenerando() || !puedeGestionar()" (click)="generarPlanificacion()">
+              {{ planGenerando() ? 'Generando…' : 'Generar clases del periodo' }}
+            </button>
+          </div>
+
+          @if (planPreview(); as prev) {
+            <div #planResultado class="plan-preview" [class.plan-preview-ok]="planListadoGenerado()">
+              @if (planListadoGenerado() && !prev.preview) {
+                <h3>Clases generadas — {{ prev.programaLabel }}</h3>
+                <p class="hint ok-text">
+                  <strong>{{ prev.clasesGeneradas ?? planClasesLista(prev).length }}</strong> clase(s) creadas en estado PROGRAMADA (vacías, listas para inscribir alumnos).
+                </p>
+              } @else {
+                <h3>Vista previa — {{ prev.programaLabel }}</h3>
+                <p class="hint">
+                  Del {{ prev.fechaDesde }} al {{ prev.fechaHasta }}
+                  · inicio efectivo {{ prev.fechaInicioEfectiva }}
+                  · {{ prev.resumen.programasPorPeriodo }} ciclo(s) del programa
+                </p>
+              }
+              <div class="plan-resumen-chips">
+                <span class="cap cap-blue cap-sm">{{ prev.resumen.teoria }} teoría</span>
+                <span class="cap cap-amber cap-sm">{{ prev.resumen.taller }} taller</span>
+                <span class="cap cap-emerald cap-sm">{{ prev.resumen.total }} total</span>
+                @if (prev.resumen.sinCupos > 0) {
+                  <span class="cap cap-warn cap-sm">{{ prev.resumen.sinCupos }} sin cupo en periodo</span>
+                }
+                @if (prev.resumen.aulasUsadas != null && prev.resumen.aulasDisponibles != null) {
+                  <span class="cap cap-indigo cap-sm">{{ prev.resumen.aulasUsadas }}/{{ prev.resumen.aulasDisponibles }} aula(s)</span>
+                }
+              </div>
+              @if (planListadoGenerado() && !prev.preview) {
+                <div class="plan-post-actions">
+                  <a routerLink="/app/programacion-cea/clases-grupales" [queryParams]="{ fecha: prev.fechaInicioEfectiva }" class="ghost sm link-btn">
+                    Ver en clases grupales
+                  </a>
+                  <a routerLink="/app/programacion-cea/clases-hoy" [queryParams]="{ fecha: prev.fechaInicioEfectiva }" class="ghost sm link-btn">
+                    Ver en clases del día
+                  </a>
+                </div>
+              }
+              @if (prev.advertencias?.length) {
+                <ul class="plan-warn-list">
+                  @for (w of prev.advertencias; track w) {
+                    <li>{{ w }}</li>
+                  }
+                </ul>
+              }
+              @if (planClasesLista(prev).length) {
+                <div class="plan-list-scroll">
+                  <table class="argo data-table compact">
+                    <thead>
+                      <tr>
+                        @if (planListadoGenerado() && !prev.preview) {
+                          <th>#</th>
+                        }
+                        <th>Tipo</th>
+                        <th>Tema</th>
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Aula / Taller</th>
+                        <th>h</th>
+                        <th>Ciclo</th>
+                        @if (planListadoGenerado() && !prev.preview) {
+                          <th>Estado</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (m of planClasesLista(prev); track m._id || $index) {
+                        <tr>
+                          @if (planListadoGenerado() && !prev.preview) {
+                            <td>{{ $index + 1 }}</td>
+                          }
+                          <td>{{ labelTipoClasePlan(m.tipoClase) }}</td>
+                          <td>{{ m.temaNombre || '—' }}</td>
+                          <td>{{ m.fechaClase }}</td>
+                          <td>{{ m.horaDesde }} – {{ m.horaHasta }}</td>
+                          <td>
+                            @if (m.tipoClase === 'teoria') {
+                              {{ nombreRecursoPlan(m.idAula, 'aula') }}
+                            } @else {
+                              {{ nombreRecursoPlan(m.idTaller, 'taller') }}
+                            }
+                          </td>
+                          <td>{{ m.horas }}</td>
+                          <td>{{ m.ciclo }}</td>
+                          @if (planListadoGenerado() && !prev.preview) {
+                            <td>{{ m.estado || 'PROGRAMADA' }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <p class="hint">{{ planClasesLista(prev).length }} clase(s) en el listado.</p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="actions">
+        <button type="button" class="primary" [disabled]="saving() || !puedeGestionar()" (click)="guardarConfig()">
+          {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+        </button>
+      </div>
+
+      <details class="festivos-box">
+        <summary>Festivos Colombia {{ festivosAnio() }} ({{ festivos().length }})</summary>
+        <p class="hint">Integrados desde el calendario oficial del sistema.</p>
+        <ul class="festivos-list">
+          @for (f of festivos(); track f) {
+            <li>{{ f }}</li>
+          }
+        </ul>
+      </details>
+    </div>
+  }
+
+  @if (tab() === 'temas') {
+    <div class="cea-panel">
+      <div class="row filter-compact prog-temas-head">
+        <div class="field">
+          <label>Programa CEA</label>
+          <select [ngModel]="progTemasSel()" (ngModelChange)="onProgTemasChange($event)">
+            @for (p of programas(); track p.idProg) {
+              <option [value]="p.idProg">{{ p.codigoProg || p.idProg }} — {{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+        @if (progSelInfo(); as prog) {
+          <div class="prog-info-chips" aria-label="Horas configuradas en el programa">
+            <span class="prog-info-chip teoria">
+              <span class="prog-info-label">Clase teórica</span>
+              <strong>{{ fmtHoras(prog.horasTeoria || 0) }} h</strong>
+            </span>
+            <span class="prog-info-chip taller">
+              <span class="prog-info-label">Clase taller</span>
+              <strong>{{ fmtHoras(prog.horasTaller || 0) }} h</strong>
+            </span>
+          </div>
+        }
+      </div>
+
+      @if (progSelInfo(); as prog) {
+        <div class="horas-resumen card-inner">
+          <div class="horas-resumen-title">
+            <h3>Control de horas del programa</h3>
+            <p class="prog-info-inline">
+              <span>{{ prog.codigoProg || prog.idProg }} — {{ prog.nombre }}</span>
+              <span class="sep">·</span>
+              <span>Teoría: <strong>{{ fmtHoras(prog.horasTeoria || 0) }} h</strong></span>
+              <span class="sep">·</span>
+              <span>Taller: <strong>{{ fmtHoras(prog.horasTaller || 0) }} h</strong></span>
+            </p>
+          </div>
+          <p class="hint">Las horas de los temas no pueden superar las horas definidas en el programa académico.</p>
+          <div class="horas-resumen-grid">
+            @if (resumenHorasTeoria(); as rt) {
+              <article class="horas-resumen-item" [class.warn]="rt.excede" [class.ok]="rt.completo">
+                <div class="horas-resumen-head">
+                  <strong>Teoría</strong>
+                  @if (rt.limite > 0) {
+                    <span>{{ fmtHoras(rt.proyectado) }} / {{ fmtHoras(rt.limite) }} h</span>
+                  } @else {
+                    <span>Sin horas en programa</span>
+                  }
+                </div>
+                @if (rt.limite > 0) {
+                  <div class="horas-bar" aria-hidden="true"><span [style.width.%]="rt.pct"></span></div>
+                  <p class="horas-resumen-detail">
+                    Registradas: {{ fmtHoras(rt.usado) }} h
+                    @if (rt.borrador > 0) { · este tema: {{ fmtHoras(rt.borrador) }} h }
+                    · restante: {{ fmtHoras(rt.restante) }} h
+                  </p>
+                  @if (rt.excede) {
+                    <p class="warn-text">Supera el tope permitido para teoría.</p>
+                  }
+                }
+              </article>
+            }
+            @if (resumenHorasTaller(); as rl) {
+              <article class="horas-resumen-item" [class.warn]="rl.excede" [class.ok]="rl.completo">
+                <div class="horas-resumen-head">
+                  <strong>Taller</strong>
+                  @if (rl.limite > 0) {
+                    <span>{{ fmtHoras(rl.proyectado) }} / {{ fmtHoras(rl.limite) }} h</span>
+                  } @else {
+                    <span>Sin horas en programa</span>
+                  }
+                </div>
+                @if (rl.limite > 0) {
+                  <div class="horas-bar" aria-hidden="true"><span [style.width.%]="rl.pct"></span></div>
+                  <p class="horas-resumen-detail">
+                    Registradas: {{ fmtHoras(rl.usado) }} h
+                    @if (rl.borrador > 0) { · este tema: {{ fmtHoras(rl.borrador) }} h }
+                    · restante: {{ fmtHoras(rl.restante) }} h
+                  </p>
+                  @if (rl.excede) {
+                    <p class="warn-text">Supera el tope permitido para taller.</p>
+                  }
+                }
+              </article>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="tema-form card-inner">
+        <h3>{{ editTemaId() ? 'Editar tema' : 'Nuevo tema' }}</h3>
+        <div class="row row-fields">
+          <div class="field">
+            <label>Tipo</label>
+            <select [ngModel]="formTema().tipo" (ngModelChange)="patchTema('tipo', $event)">
+              <option value="teoria">Teoría (aula)</option>
+              <option value="taller">Taller / patio</option>
+            </select>
+          </div>
+          <div class="field grow">
+            <label>Nombre del tema</label>
+            <input type="text" [ngModel]="formTema().nombre" (ngModelChange)="patchTema('nombre', $event)" placeholder="Ej. Señales de tránsito" />
+          </div>
+          <div class="field narrow">
+            <label>Orden</label>
+            <input type="number" min="1" [ngModel]="formTema().orden" (ngModelChange)="patchTema('orden', $event)" />
+          </div>
+          <div class="field narrow">
+            <label>Horas @if (formTema().tipo === 'taller' ? resumenHorasTaller().limite > 0 : resumenHorasTeoria().limite > 0) { * }</label>
+            <input
+              type="number"
+              min="0"
+              [attr.max]="maxHorasFormulario()"
+              step="0.5"
+              [ngModel]="formTema().horasTema"
+              (ngModelChange)="patchTema('horasTema', $event)"
+              placeholder="Ej. 2" />
+          </div>
+        </div>
+        @if (excedeHorasFormulario()) {
+          <p class="warn-text">Las horas de este tema superan el tope del programa. Ajuste el valor antes de guardar.</p>
+        }
+        <div class="actions">
+          <button type="button" class="primary" [disabled]="saving() || !puedeGestionar() || !progTemasSel() || excedeHorasFormulario()" (click)="guardarTema()">{{ editTemaId() ? 'Actualizar' : 'Agregar tema' }}</button>
+          @if (editTemaId()) {
+            <button type="button" class="ghost" (click)="cancelarEdicionTema()">Cancelar</button>
+          }
+        </div>
+      </div>
+
+      <div class="temas-grid">
+        <section>
+          <h3>Temas de teoría ({{ temasTeoria().length }})</h3>
+          @if (!temasTeoria().length) {
+            <p class="hint warn-text">Sin temas — requerido si el programa tiene horas de teoría.</p>
+          }
+          <ul class="tema-list">
+            @for (t of temasTeoria(); track t._id) {
+              <li>
+                <span>{{ t.orden }}. {{ t.nombre }} @if (t.horasTema) { ({{ t.horasTema }} h) }</span>
+                <span class="tema-actions">
+                  <button type="button" class="ghost sm" (click)="editarTema(t)">Editar</button>
+                  <button type="button" class="ghost sm danger" (click)="eliminarTema(t)">Eliminar</button>
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+        <section>
+          <h3>Temas de taller ({{ temasTaller().length }})</h3>
+          @if (!temasTaller().length) {
+            <p class="hint warn-text">Sin temas — requerido si el programa tiene horas de taller.</p>
+          }
+          <ul class="tema-list">
+            @for (t of temasTaller(); track t._id) {
+              <li>
+                <span>{{ t.orden }}. {{ t.nombre }} @if (t.horasTema) { ({{ t.horasTema }} h) }</span>
+                <span class="tema-actions">
+                  <button type="button" class="ghost sm" (click)="editarTema(t)">Editar</button>
+                  <button type="button" class="ghost sm danger" (click)="eliminarTema(t)">Eliminar</button>
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
+
+      <p class="hint">
+        Catálogo de ubicaciones de taller:
+        <a routerLink="/app/configuracion/catalogos">Administrar talleres / patios</a>
+      </p>
+    </div>
+  }
+
+  @if (tab() === 'clases') {
+    <div class="cea-panel cea-link-clases">
+      <p class="hint">La programación de clases (lista, formulario, inscripción y rastreo de horas) está en el menú lateral.</p>
+      <a routerLink="/app/programacion-cea/clases-grupales" class="primary sm link-btn">Teoría y taller</a>
+      <a routerLink="/app/programacion-cea/clases-practica" class="ghost sm link-btn">Práctica en vehículo</a>
+    </div>
+  }
+
+  @if (tab() === 'pendientes') {
+    <div class="cea-panel">
+      <p class="hint">
+        Incluye horas de la <strong>matrícula del programa</strong> y las vendidas como
+        <strong>HORA CLASE PRÁCTICA</strong> (servicio adicional con cantidad).
+        Use «Generar clases pendientes» para crear o completar clases según la configuración CEA
+        (duraciones, temas y partición de práctica).
+      </p>
+      <div class="actions pendientes-actions">
+        @if (puedeGestionar()) {
+          <button
+            type="button"
+            class="primary sm"
+            [disabled]="generandoPendientes() || !rastreo().length"
+            (click)="generarClasesPendientes()">
+            {{ generandoPendientes() ? 'Generando…' : 'Generar clases pendientes' }}
+          </button>
+        }
+        <button type="button" class="ghost sm" (click)="cargarRastreo(true)">Actualizar</button>
+      </div>
+
+      @if (!rastreo().length) {
+        <p class="cea-empty ok-text">No hay registros pendientes de programación.</p>
+      } @else {
+        <div class="table-wrap content-wrap">
+          <table class="argo data-table">
+            <thead>
+              <tr>
+                <th>Alumno</th>
+                <th>Servicio</th>
+                <th>Origen</th>
+                <th>Tipo</th>
+                <th>Req.</th>
+                <th>Insc.</th>
+                <th>Prog.</th>
+                <th>Ejec.</th>
+                <th>Pend.</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of rastreo(); track trackRastreo(f)) {
+                <tr>
+                  <td>{{ f.alumnoNombre || f.numDoc }}</td>
+                  <td>{{ f.servicioLabel }}</td>
+                  <td>{{ labelOrigen(f.origenHoras) }}</td>
+                  <td>{{ labelTipo(f.tipoHoras) }}</td>
+                  <td>{{ f.requeridas }}</td>
+                  <td>{{ f.inscritas ?? 0 }}</td>
+                  <td>{{ f.programadas }}</td>
+                  <td>{{ f.ejecutadas }}</td>
+                  <td [class.warn-text]="f.pendientes > 0"><strong>{{ f.pendientes }}</strong></td>
+                  <td><button type="button" class="ghost sm" (click)="irAlumno(f)">Ficha</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</section>

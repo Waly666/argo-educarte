@@ -1,0 +1,84 @@
+<div class="modal-backdrop" (click)="cerrar.emit()">
+  <div class="modal card fe-modal" (click)="$event.stopPropagation()">
+    <header class="fe-modal-head">
+      <h3>Nota crédito — factura {{ factura.numeroFactura || factura.referenceCode }}</h3>
+      <button type="button" class="close" (click)="cerrar.emit()">×</button>
+    </header>
+
+    @if (msg()) {
+      <p class="msg" [class.err]="msgError()">{{ msg() }}</p>
+    }
+
+    <section class="fe-section">
+      <h4>1. Tipo de nota crédito</h4>
+      <div class="fe-radios">
+        <label>
+          <input type="radio" name="nctipo" [checked]="tipo() === 'total'" (change)="cambiarTipo('total')" />
+          Anulación total (revierte toda la factura)
+        </label>
+        <label>
+          <input type="radio" name="nctipo" [checked]="tipo() === 'parcial'" (change)="cambiarTipo('parcial')" />
+          Devolución parcial (algunos ítems)
+        </label>
+      </div>
+    </section>
+
+    @if (tipo() === 'parcial') {
+      <section class="fe-section">
+        <h4>2. Ítems a devolver</h4>
+        <ul class="fe-items">
+          @for (it of items(); track it.idLiquidacion) {
+            <li>
+              <label class="fe-item">
+                <input type="checkbox" [checked]="estaSel(it.idLiquidacion)" (change)="toggle(it.idLiquidacion)" />
+                <span class="fe-item-desc">{{ it.descripcion }}</span>
+                <span class="fe-item-val">{{ fmt(it.total) }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="fe-section">
+      <h4>{{ tipo() === 'parcial' ? '3.' : '2.' }} Concepto y motivo</h4>
+      <select [ngModel]="concepto()" (ngModelChange)="concepto.set($event)">
+        @for (c of conceptos(); track c.id) {
+          <option [value]="c.id">{{ c.label }}</option>
+        }
+      </select>
+      <input
+        type="text"
+        class="fe-buscar"
+        placeholder="Motivo / observación (opcional)"
+        [ngModel]="motivo()"
+        (ngModelChange)="motivo.set($event)" />
+    </section>
+
+    @if (preview(); as p) {
+      <section class="fe-section fe-totales">
+        <h4>Resumen nota crédito</h4>
+        <div class="fe-tot-row"><span>Base</span><span>{{ fmt(p.totales.base) }}</span></div>
+        <div class="fe-tot-row"><span>IVA</span><span>{{ fmt(p.totales.valorIva) }}</span></div>
+        <div class="fe-tot-row total"><span>Total a revertir</span><span>{{ fmt(p.totales.total) }}</span></div>
+      </section>
+    }
+
+    <p class="hint">
+      La nota crédito es solo el documento fiscal que revierte la factura. La devolución del dinero al alumno se maneja
+      aparte con un egreso/devolución en caja.
+    </p>
+
+    <footer class="fe-actions">
+      @if (notaEmitida()) {
+        <button type="button" class="primary" (click)="verDocumentoEmitido()">Ver / Imprimir PDF</button>
+        <button type="button" class="ghost" (click)="cerrar.emit()">Cerrar</button>
+      } @else {
+        <button type="button" class="ghost" (click)="verPreview()">Calcular resumen</button>
+        <button type="button" class="primary" (click)="emitir()" [disabled]="emitiendo()">
+          {{ emitiendo() ? 'Emitiendo…' : (tipo() === 'total' ? 'Anular factura' : 'Emitir nota crédito') }}
+        </button>
+      }
+    </footer>
+  </div>
+</div>

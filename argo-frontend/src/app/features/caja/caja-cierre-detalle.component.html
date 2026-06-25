@@ -1,0 +1,300 @@
+<div class="caja-page" *ngIf="!loading(); else cargando">
+  <header class="caja-head page-head no-print card">
+    <div class="caja-head-main">
+      <p class="breadcrumb">
+        <a routerLink="/app/caja">Caja</a> /
+        <a [routerLink]="backLink()">{{ backLabel() }}</a> /
+        Sesión #{{ sesion()?.idSesion }}
+      </p>
+      <h1>Cierre de caja #{{ sesion()?.idSesion }}</h1>
+      <p class="hint">
+        {{ sesion()?.usuario }}
+        <ng-container *ngIf="sedeLabel()"> · Sede {{ sedeLabel() }}</ng-container>
+        · {{ sesion()?.fechaCierre | date: 'fullDate' }}
+      </p>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="ghost sm danger-outline" *ngIf="puedeReabrir()" [disabled]="saving()" (click)="reabrirCaja()">
+        Reabrir caja
+      </button>
+      <a class="ghost sm link-nav" [routerLink]="['/app/caja/ingresos-todos']" [queryParams]="{ idSesion: idSesion() }">Ingresos sesión</a>
+      <a class="ghost sm link-nav" [routerLink]="['/app/caja/egresos-todos']" [queryParams]="{ idSesion: idSesion() }">Egresos sesión</a>
+      <button type="button" class="ghost sm" (click)="imprimir()">🖨 Imprimir</button>
+    </div>
+  </header>
+
+  <p class="caja-msg" *ngIf="msg()" [class.caja-msg--err]="msgError()">{{ msg() }}</p>
+
+  <div class="alerta admin-hint no-print" *ngIf="isAdmin()">
+    <strong>Gestión del descuadre</strong>
+    <p>
+      <strong>Editar egresos</strong> o <strong>anular ingresos</strong> en las tablas. Si el cajero repone efectivo,
+      use <strong>Reposición caja</strong> (una por sesión). Los totales se actualizan solos al guardar.
+    </p>
+  </div>
+
+  <div class="alerta ok-hint no-print" *ngIf="sesionReabierta()">
+    <strong>Caja reabierta</strong> — Los movimientos pueden editarse. Al terminar, el cajero o usted debe cerrar la sesión de nuevo.
+  </div>
+
+  <div class="alert-descuadre" *ngIf="descuadrePendiente() || (montoDebe() > 0 && !cuadreCuadrado())">
+    <span class="alert-icon">⚠</span>
+    <div>
+      <strong>{{ estadoDescuadreLabel() }}</strong>
+      <p *ngIf="montoDebe() > 0 && descuadre()?.estado === 'pendiente'">
+        Faltante: {{ montoDebe() | currency: 'COP':'symbol-narrow':'1.0-0' }}.
+        Puede registrar un ingreso en efectivo o corregir movimientos de esta sesión.
+      </p>
+    </div>
+  </div>
+
+  <div class="alerta ok-hint" *ngIf="cuadreCuadrado() && !descuadrePendiente()">
+    <strong>Caja cuadrada</strong> — Sin diferencia entre efectivo contado y esperado al cierre.
+  </div>
+
+  <section class="panel cuadre-resumen" *ngIf="sesion()?.estado === 'cerrada'">
+    <h2>Cuadre al cierre (arqueo)</h2>
+    <p class="hint" *ngIf="descuadrePendiente()">
+      Descuadre pendiente: los totales de cuadre se actualizan con los movimientos actuales de la sesión.
+    </p>
+    <dl class="cuadre-dl">
+      <div>
+        <dt>Base inicial</dt>
+        <dd>{{ saldoInicial() | currency: 'COP':'symbol-narrow':'1.0-0' }}</dd>
+      </div>
+      <div>
+        <dt>Efectivo esperado en caja</dt>
+        <dd>{{ efectivoEsperado() | currency: 'COP':'symbol-narrow':'1.0-0' }}</dd>
+      </div>
+      <div class="destacado">
+        <dt>Efectivo contado (arqueo)</dt>
+        <dd>
+          {{
+            efectivoContado() != null
+              ? (efectivoContado() | currency: 'COP':'symbol-narrow':'1.0-0')
+              : '—'
+          }}
+        </dd>
+      </div>
+      <div *ngIf="arqueoTotal() != null">
+        <dt>Total arqueo billetes/monedas</dt>
+        <dd>{{ arqueoTotal() | currency: 'COP':'symbol-narrow':'1.0-0' }}</dd>
+      </div>
+      <div>
+        <dt>Diferencia (contado − esperado)</dt>
+        <dd [class.neg]="diferencia() != null && diferencia()! < -1" [class.pos]="diferencia() != null && diferencia()! > 1">
+          {{
+            diferencia() != null ? (diferencia() | currency: 'COP':'symbol-narrow':'1.0-0') : '—'
+          }}
+        </dd>
+      </div>
+      <div *ngIf="sesion()?.fechaCierre">
+        <dt>Fecha y hora de cierre</dt>
+        <dd>{{ sesion()?.fechaCierre | date: 'dd/MM/yyyy HH:mm' }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <div class="kpi-grid">
+    <article class="kpi-card">
+      <span class="kpi-icon ventas">📈</span>
+      <div>
+        <h3>Ventas brutas</h3>
+        <p class="kpi-val">{{ ventasBrutas() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+        <p class="kpi-sub">{{ cantidadRecibos() }} recibo(s)</p>
+      </div>
+    </article>
+    <article class="kpi-card highlight">
+      <span class="kpi-icon esperado">🧮</span>
+      <div>
+        <h3>Efectivo esperado</h3>
+        <p class="kpi-val">{{ efectivoEsperado() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon base">💵</span>
+      <div>
+        <h3>Efectivo contado</h3>
+        <p class="kpi-val">
+          {{
+            efectivoContado() != null
+              ? (efectivoContado() | currency: 'COP':'symbol-narrow':'1.0-0')
+              : '—'
+          }}
+        </p>
+      </div>
+    </article>
+    <article
+      class="kpi-card"
+      [class.warn]="diferencia() != null && diferencia()! < -1"
+      [class.ok]="cuadreCuadrado()">
+      <span class="kpi-icon">±</span>
+      <div>
+        <h3>Diferencia</h3>
+        <p class="kpi-val">
+          {{
+            diferencia() != null ? (diferencia() | currency: 'COP':'symbol-narrow':'1.0-0') : '—'
+          }}
+        </p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon gastos">📤</span>
+      <div>
+        <h3>Gastos efectivo</h3>
+        <p class="kpi-val">{{ totalGastos() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon base">🏦</span>
+      <div>
+        <h3>Base inicial</h3>
+        <p class="kpi-val">{{ saldoInicial() | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+      </div>
+    </article>
+  </div>
+
+  <argo-caja-resumen-servicios
+    class="panel-wrap"
+    *ngIf="ingresosPorServicio().length"
+    [servicios]="ingresosPorServicio()"
+  />
+
+  <section class="panel" *ngIf="metodosPago().length">
+    <h2>Ventas por método de pago</h2>
+    <div class="metodos-grid">
+      <article class="metodo-card" *ngFor="let m of metodosPago()">
+        <span>{{ m.icon }}</span>
+        <h4>{{ m.label }}</h4>
+        <p>{{ m.total | currency: 'COP':'symbol-narrow':'1.0-0' }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel cuadre-panel no-print" *ngIf="puedeCuadrar()">
+    <h2>Reposición caja</h2>
+    <p class="hint">
+      Registre el efectivo que repone el cajero (tipo de ingreso <strong>REPOSICION CAJA</strong>). Un solo registro por
+      sesión.
+    </p>
+    <div class="cuadre-form">
+      <label>
+        Valor en efectivo
+        <input type="number" min="1" [max]="montoDebe()" [ngModel]="valorCuadre()" (ngModelChange)="valorCuadre.set(+$event || 0)" />
+        <small>Máximo: {{ montoDebe() | currency: 'COP':'symbol-narrow':'1.0-0' }}</small>
+      </label>
+      <label>
+        Observaciones
+        <textarea rows="2" [ngModel]="obsCuadre()" (ngModelChange)="obsCuadre.set($event)"></textarea>
+      </label>
+      <button type="button" class="primary" [disabled]="saving()" (click)="registrarCuadre()">
+        Registrar reposición caja
+      </button>
+    </div>
+  </section>
+
+  <section class="panel no-print" *ngIf="tieneIngresoCuadre() && montoDebe() > 0">
+    <p class="hint">
+      Ya hay una reposición registrada. Si fue incorrecta, anúlela en la tabla de ingresos (botón Anular).
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Ingresos del cierre ({{ ingresos().length }})</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Recibo</th>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Pago</th>
+            <th>Valor</th>
+            <th *ngIf="isAdmin()"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of ingresos()" [class.row-cuadre]="i.cuadreDescuadre">
+            <td>{{ i.numRecibo }}</td>
+            <td>{{ i.fecha | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ i.concepto || i.tipoIngresoDescr || '—' }}</td>
+            <td>{{ formaPagoLabel(i) }}</td>
+            <td class="num">{{ i.valor | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td *ngIf="isAdmin()">
+              <button
+                type="button"
+                class="danger sm"
+                *ngIf="i._id"
+                (click)="anularIngreso(i)"
+              >
+                Anular
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!ingresos().length">
+            <td [attr.colspan]="isAdmin() ? 6 : 5" class="empty">Sin ingresos</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Egresos del cierre ({{ egresos().length }})</h2>
+
+    <div class="warn-docs" *ngIf="cantSinSoporte() > 0">
+      <strong>Aviso: egresos sin soporte adjunto ({{ cantSinSoporte() }})</strong>
+      <p class="hint">Falta imagen de factura, voucher o comprobante en estos movimientos del cierre.</p>
+      <ul>
+        <li *ngFor="let e of egresosSinSoporte() | slice: 0 : 5">
+          {{ e.numRecibo || '—' }} — {{ e.concepto }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Recibo</th>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Valor</th>
+            <th class="col-alertas">Alertas</th>
+            <th *ngIf="isAdmin()"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of egresos()" [class.fila-sin-soporte]="!tieneSoporte(e)">
+            <td>{{ e.numRecibo || e.idEgreso }}</td>
+            <td>{{ e.fechaEgreso | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ e.concepto }}</td>
+            <td class="num">{{ e.valorEgreso | currency: 'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td class="col-alertas">
+              <button
+                type="button"
+                class="row-alarm doc-alarm"
+                *ngIf="!tieneSoporte(e)"
+                (click)="onAlarmaSoporte(e, $event)"
+                [attr.title]="tituloSoporte(e)"
+                [attr.aria-label]="tituloSoporte(e)">
+                <span class="row-alarm-pulse" aria-hidden="true"></span>
+                <span class="row-alarm-icon">!</span>
+                <span class="row-alarm-label">Sop.</span>
+              </button>
+              <span *ngIf="tieneSoporte(e)" class="dim">—</span>
+            </td>
+            <td *ngIf="isAdmin()">
+              <button type="button" class="ghost sm" (click)="editarEgreso(e)">Editar</button>
+            </td>
+          </tr>
+          <tr *ngIf="!egresos().length"><td [attr.colspan]="isAdmin() ? 6 : 5" class="empty">Sin egresos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<ng-template #cargando>
+  <p class="loading">Cargando cierre…</p>
+</ng-template>
