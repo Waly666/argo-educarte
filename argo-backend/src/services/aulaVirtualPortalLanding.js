@@ -239,7 +239,7 @@ function normalizarFundacion(src, d) {
       kicker: str(heroSrc.kicker, d.hero?.kicker),
       titulo: str(heroSrc.titulo, d.hero?.titulo),
       lead: str(heroSrc.lead, d.hero?.lead),
-      imagenUrl: str(heroSrc.imagenUrl, d.hero?.imagenUrl),
+      imagenUrl: str(heroSrc.imagenUrl) || str(d.hero?.imagenUrl),
       imagenAlt: str(heroSrc.imagenAlt, d.hero?.imagenAlt),
       imagenCaption: str(heroSrc.imagenCaption, d.hero?.imagenCaption),
       btnSitioUrl: str(heroSrc.btnSitioUrl, d.hero?.btnSitioUrl),

@@ -292,7 +292,11 @@ function mergeFundacionLanding(raw?: Partial<PortalFundacionLanding> | null): Po
   const d = PORTAL_LANDING_FALLBACK.fundacion;
   if (!raw) return JSON.parse(JSON.stringify(d)) as PortalFundacionLanding;
   return {
-    hero: { ...d.hero, ...raw.hero },
+    hero: {
+      ...d.hero,
+      ...raw.hero,
+      imagenUrl: raw.hero?.imagenUrl?.trim() || d.hero.imagenUrl,
+    },
     quienes: {
       ...d.quienes,
       ...raw.quienes,

@@ -58,6 +58,7 @@
             class="portal-img-reveal"
             [class.portal-img-reveal--shown]="heroImgLoaded()"
             (load)="heroImgLoaded.set(true)"
+            (error)="heroImgLoaded.set(true)"
           />
         }
 

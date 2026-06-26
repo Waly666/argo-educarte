@@ -1,5 +1,8 @@
 <div class="fund-page">
-  <section class="fund-hero">
+  <section class="fund-hero" [class.fund-hero--educarte]="educarteHero()">
+    @if (educarteHero()) {
+      <div class="educarte-hero-bg" aria-hidden="true"></div>
+    }
     <div class="container fund-hero__inner">
       <div class="fund-hero__copy">
         <p class="fund-kicker">{{ fund().hero.kicker }}</p>
@@ -23,6 +26,7 @@
             class="portal-img-reveal"
             [class.portal-img-reveal--shown]="heroImgLoaded()"
             (load)="heroImgLoaded.set(true)"
+            (error)="heroImgLoaded.set(true)"
           />
         }
         @if (fund().hero.imagenCaption) {

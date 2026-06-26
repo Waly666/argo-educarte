@@ -4,7 +4,8 @@ import { RouterLink } from '@angular/router';
 import { mergePortalLanding } from '../../core/portal-landing';
 import { PortalConfigStore } from '../../core/portal-config.store';
 import { PortalSeoService } from '../../core/portal-seo.service';
-import { resolveUploadUrl, withUploadCacheBust } from '../../core/upload-url.util';
+import { resolvePortalMediaUrl, resolveUploadUrl } from '../../core/upload-url.util';
+import { PortalThemeService } from '../../core/portal-theme.service';
 import { ContactoFormComponent } from '../../shared/contacto-form/contacto-form.component';
 import { FUNDACION_CONTACTO } from './fundacion-content';
 
@@ -18,6 +19,7 @@ import { FUNDACION_CONTACTO } from './fundacion-content';
 export class FundacionComponent implements OnInit {
   private store = inject(PortalConfigStore);
   private seo = inject(PortalSeoService);
+  private theme = inject(PortalThemeService);
 
   config = this.store.config;
   heroImgLoaded = signal(false);
@@ -29,18 +31,14 @@ export class FundacionComponent implements OnInit {
 
   heroTitulo = computed(() => this.fund().hero.titulo?.trim() || this.nombreCea());
 
+  educarteHero = computed(() => this.theme.educarteBrandingActive());
+
   heroImagen = computed(() => {
-    if (!this.config()) return null;
+    const cfg = this.config();
+    if (!cfg) return null;
     const url = this.fund().hero.imagenUrl?.trim();
-    if (!url) return null;
-    const resolved =
-      resolveUploadUrl(url) ||
-      (url.startsWith('http') || url.startsWith('//')
-        ? url
-        : url.startsWith('/')
-          ? url
-          : `/${url}`);
-    return withUploadCacheBust(resolved);
+    if (url) return resolvePortalMediaUrl(url);
+    return this.theme.heroImageUrl(cfg);
   });
 
   telefono = computed(() => this.config()?.telefono?.trim() || FUNDACION_CONTACTO.telefono);

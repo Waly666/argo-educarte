@@ -44,6 +44,20 @@ function extractUploadsPath(raw: string): string | null {
   return raw.replace(/^\/+/, '') || null;
 }
 
+/** Ruta servible para imágenes del portal: /uploads/, /images/ o URL absoluta. */
+export function resolvePortalMediaUrl(raw?: string | null): string | null {
+  const r = String(raw || '').trim();
+  if (!r) return null;
+
+  const fromUpload = resolveUploadUrl(r);
+  if (fromUpload) return withUploadCacheBust(fromUpload);
+
+  if (/^https?:\/\//i.test(r) || r.startsWith('//')) return withUploadCacheBust(r);
+
+  const path = r.startsWith('/') ? r : `/${r}`;
+  return withUploadCacheBust(path);
+}
+
 /** Evita caché del navegador/CDN cuando se reemplaza un archivo en /uploads/ con el mismo nombre. */
 export function withUploadCacheBust(url: string | null | undefined): string | null {
   if (!url) return null;
