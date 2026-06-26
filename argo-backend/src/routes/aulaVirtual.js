@@ -8,6 +8,7 @@ const {
   aulaVirtualMateriales,
   aulaVirtualLogo,
   aulaVirtualHero,
+  aulaVirtualFundacionHero,
   aulaVirtualBlog,
   aulaVirtualApk,
   programasVirtual,
@@ -136,6 +137,19 @@ router.post(
   admin.subirImagenHeroPortal,
 );
 router.delete('/admin/portal/hero-imagen', requireAuth, configPortal, admin.quitarImagenHeroPortal);
+router.post(
+  '/admin/portal/fundacion-hero-imagen',
+  requireAuth,
+  configPortal,
+  aulaVirtualFundacionHero.single('imagen'),
+  admin.subirImagenFundacionPortal,
+);
+router.delete(
+  '/admin/portal/fundacion-hero-imagen',
+  requireAuth,
+  configPortal,
+  admin.quitarImagenFundacionPortal,
+);
 router.post(
   '/admin/portal/apk-aula',
   requireAuth,

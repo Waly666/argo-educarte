@@ -42,11 +42,47 @@
         <span>Texto introductorio</span>
         <textarea class="psb-input" rows="3" [(ngModel)]="fundacion.hero.lead"></textarea>
       </label>
+      <div class="pfe-hero-image">
+        <span class="pfe-field-label">Imagen del encabezado (Quiénes somos)</span>
+        <p class="psb-hint">
+          Foto que aparece a la derecha del título en la página institucional (/fundacion). Se guarda al instante;
+          no necesita publicar cambios. PNG, JPG o WEBP. Máx. 8 MB.
+        </p>
+        <div class="pfe-hero-image__row">
+          @if (fundacionHeroPreviewUrl(); as heroUrl) {
+            <figure class="pfe-hero-image__preview">
+              <img [src]="heroUrl" alt="Vista previa imagen institucional" />
+            </figure>
+          } @else {
+            <div class="pfe-hero-image__preview pfe-hero-image__preview--empty">
+              Sin imagen — se usará la del inicio o la predeterminada
+            </div>
+          }
+          <div class="pfe-hero-image__actions">
+            <label class="pfe-btn pfe-btn--file" [class.pfe-btn--disabled]="heroUploading()">
+              {{ heroUploading() ? 'Subiendo…' : 'Elegir imagen' }}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                (change)="onFundacionHeroImagen($event)"
+                [disabled]="heroUploading()"
+              />
+            </label>
+            @if (tieneImagenFundacion()) {
+              <button
+                type="button"
+                class="pfe-btn"
+                [disabled]="heroUploading()"
+                (click)="quitarImagenFundacion()"
+              >
+                Quitar imagen
+              </button>
+            }
+          </div>
+        </div>
+      </div>
       <div class="psb-grid2">
-        <label class="psb-field">
-          <span>Imagen (ruta o URL)</span>
-          <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.imagenUrl" />
-        </label>
         <label class="psb-field">
           <span>Texto alternativo imagen</span>
           <input type="text" class="psb-input" [(ngModel)]="fundacion.hero.imagenAlt" />

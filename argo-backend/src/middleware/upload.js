@@ -173,6 +173,7 @@ module.exports = {
   zipMaxMb: ZIP_MAX_MB,
   aulaVirtualLogo: buildImagen('aula-virtual-logo', 3),
   aulaVirtualHero: buildImagen('aula-virtual-hero', 8),
+  aulaVirtualFundacionHero: buildImagen('aula-virtual-fundacion-hero', 8),
   aulaVirtualBlog: buildImagen('aula-virtual-blog', 8),
   aulaVirtualApk: buildApk('aula-virtual-apk', 150),
   evidenciasCap: buildEvidenciaCap(),

@@ -318,6 +318,9 @@
         <argo-portal-fundacion-editor
           [fundacion]="landing.fundacion"
           [nombreEmpresa]="portalForm.nombreEmpresa || ''"
+          [portalUrl]="portalUrl"
+          (portalConfigUpdated)="applyPortalConfig($event)"
+          (avNotice)="avNotice.emit($event)"
         />
       }
 

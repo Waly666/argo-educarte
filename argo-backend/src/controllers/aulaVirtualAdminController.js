@@ -266,6 +266,61 @@ exports.quitarImagenHeroPortal = async (req, res, next) => {
   }
 };
 
+async function guardarImagenFundacionPortal(imagenUrl, usuario) {
+  const aula = await obtenerConfigAula();
+  const landing = mergeLanding(aula.landing);
+  landing.fundacion = {
+    ...landing.fundacion,
+    hero: {
+      ...landing.fundacion.hero,
+      imagenUrl: String(imagenUrl || '').trim(),
+    },
+  };
+  await guardarConfigAula({ landing }, usuario);
+}
+
+function quitarImagenFundacionAnterior(imagenUrl) {
+  const rel = String(imagenUrl || '').replace(/^\/uploads\//, '').trim();
+  if (!rel.startsWith('aula-virtual-fundacion-hero/')) return;
+  const p = resolvePath(rel);
+  if (p && fs.existsSync(p)) fs.unlinkSync(p);
+}
+
+exports.subirImagenFundacionPortal = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Seleccione una imagen (PNG, JPG o WEBP)' });
+    }
+    const aula = await obtenerConfigAula();
+    const landing = mergeLanding(aula.landing);
+    quitarImagenFundacionAnterior(landing.fundacion?.hero?.imagenUrl);
+
+    const imagenUrl = publicUrl('aula-virtual-fundacion-hero', req.file.filename);
+    await guardarImagenFundacionPortal(imagenUrl, req.user);
+    res.json({
+      config: await obtenerConfigPortalAdmin(),
+      message: 'Imagen de la página institucional actualizada en el sitio',
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.quitarImagenFundacionPortal = async (req, res, next) => {
+  try {
+    const aula = await obtenerConfigAula();
+    const landing = mergeLanding(aula.landing);
+    quitarImagenFundacionAnterior(landing.fundacion?.hero?.imagenUrl);
+    await guardarImagenFundacionPortal('', req.user);
+    res.json({
+      config: await obtenerConfigPortalAdmin(),
+      message: 'Imagen institucional eliminada; se usará la del inicio o la predeterminada',
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 function quitarApkAnterior(apkUrl) {
   const rel = String(apkUrl || '').replace(/^\/uploads\//, '').trim();
   if (!rel.startsWith('aula-virtual-apk/')) return;
