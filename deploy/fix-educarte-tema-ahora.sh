@@ -18,7 +18,11 @@ echo -n "Marker en contenedor: "
 curl -sf http://127.0.0.1:8085/portal-build-marker.txt 2>/dev/null | head -1 || echo "(404 o index.html — build viejo)"
 
 echo -n "MongoDB colorPrimario: "
-curl -sf http://127.0.0.1:8085/api/aula-virtual/config 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{console.log(JSON.parse(s).site.tema.colorPrimario)}catch{console.log('?')}})" || echo "?"
+if command -v node >/dev/null 2>&1; then
+  curl -sf http://127.0.0.1:8085/api/aula-virtual/config 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{console.log(JSON.parse(s).site.tema.colorPrimario)}catch{console.log('?')}})" || echo "?"
+else
+  curl -sf http://127.0.0.1:8085/api/aula-virtual/config 2>/dev/null | "${COMPOSE[@]}" exec -T argo-backend node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{console.log(JSON.parse(s).site.tema.colorPrimario)}catch{console.log('?')}})" 2>/dev/null || echo "(use docker backend)"
+fi
 
 echo ""
 echo "Contenedores:"
