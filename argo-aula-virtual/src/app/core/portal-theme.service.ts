@@ -30,16 +30,22 @@ export class PortalThemeService {
     return false;
   }
 
+  /** Skin Educarte: localhost (dev), build Educarte (prod) o data-portal-skin ya aplicado. */
+  educarteSkinActive(): boolean {
+    if ((environment as { forceEducarteSkin?: boolean }).forceEducarteSkin) return true;
+    return this.localEducartePreview() || this.doc.documentElement.dataset['portalSkin'] === 'educarte';
+  }
+
   educarteBrandingActive(): boolean {
-    return (
-      this.localEducartePreview() ||
-      this.doc.documentElement.dataset['portalSkin'] === 'educarte'
-    );
+    return this.educarteSkinActive();
   }
 
   apply(config: PortalConfig | null) {
     const preview = this.localEducartePreview();
-    const tema = preview ? PORTAL_TEMA_EDUCARTE : (config?.site?.tema ?? PORTAL_TEMA_EDUCARTE);
+    const forceSkin =
+      (environment as { forceEducarteSkin?: boolean }).forceEducarteSkin === true;
+    const tema =
+      preview || forceSkin ? PORTAL_TEMA_EDUCARTE : (config?.site?.tema ?? PORTAL_TEMA_EDUCARTE);
     const root = this.doc.documentElement;
 
     const vars = buildPortalThemeCssVars(tema);
@@ -47,7 +53,7 @@ export class PortalThemeService {
       if (val) root.style.setProperty(key, val);
     }
 
-    if (preview || isEducarteTema(tema) || !config?.site?.tema) {
+    if (preview || forceSkin || isEducarteTema(tema) || !config?.site?.tema) {
       root.dataset['portalSkin'] = 'educarte';
     } else {
       delete root.dataset['portalSkin'];
@@ -71,7 +77,12 @@ export class PortalThemeService {
       if (rel.includes('fondo-hero-educarte')) return EDUCARTE_HERO_PERSONA;
       return rel;
     }
-    if (this.localEducartePreview() || isEducarteTema(t ?? null) || !t) {
+    if (
+      this.localEducartePreview() ||
+      (environment as { forceEducarteSkin?: boolean }).forceEducarteSkin ||
+      isEducarteTema(t ?? null) ||
+      !t
+    ) {
       return EDUCARTE_HERO_PERSONA;
     }
     return null;

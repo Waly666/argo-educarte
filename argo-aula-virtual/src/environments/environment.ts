@@ -24,6 +24,7 @@ function socketBase(): string {
 /** Desarrollo: API por proxy; socket directo al backend en LAN. */
 export const environment = {
   production: false,
+  forceEducarteSkin: false,
   apiUrl: '/api',
   uploadsUrl: '/uploads',
   socketUrl: socketBase(),
