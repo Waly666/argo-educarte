@@ -30,6 +30,20 @@ dig +short app.educartecolombia.com A
 
 Firewall Hostinger: permitir **22**, **80**, **443**.
 
+### Si `dig` muestra IPs 104.x / 172.x (Cloudflare)
+
+El dominio usa **proxy Cloudflare** (nube naranja). Es normal que no vea `2.25.199.98` en `dig`.
+
+En **Cloudflare → DNS**, confirme que `@`, `www` y `app` apuntan a **`2.25.199.98`** (con proxy activado).
+
+**SSL/TLS → Overview:** use **Full** al emitir el certificado; luego **Full (strict)**.
+
+En el VPS use:
+
+```bash
+sudo CLOUDFLARE_PROXY=1 ./deploy/setup-educarte-dominio.sh
+```
+
 ---
 
 ## 2. nginx + SSL en el VPS
@@ -39,6 +53,8 @@ cd /opt/argo-educarte
 git pull origin main
 chmod +x deploy/*.sh
 sudo ./deploy/setup-educarte-dominio.sh
+# Con Cloudflare proxied:
+# sudo CLOUDFLARE_PROXY=1 ./deploy/setup-educarte-dominio.sh
 ```
 
 El script:

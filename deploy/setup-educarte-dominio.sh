@@ -6,7 +6,9 @@
 #   - Docker Educarte corriendo (8083 ERP, 8085 aula)
 #   - DNS A → IP del VPS: educartecolombia.com, www, app
 #
-# Uso: sudo ./deploy/setup-educarte-dominio.sh
+# Uso:
+#   sudo ./deploy/setup-educarte-dominio.sh
+#   sudo CLOUDFLARE_PROXY=1 ./deploy/setup-educarte-dominio.sh   # DNS proxied (nube naranja)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,20 +20,36 @@ PORTAL_DOMAIN="educartecolombia.com"
 ERP_DOMAIN="app.educartecolombia.com"
 HOSTS=("$PORTAL_DOMAIN" "www.$PORTAL_DOMAIN" "$ERP_DOMAIN")
 
-echo "==> Comprobando DNS (deben resolver a este VPS)..."
+echo "==> Comprobando DNS..."
 THIS_IP="$(curl -4 -sf ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')"
-for h in "${HOSTS[@]}"; do
-  RES="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1; exit}' || true)"
-  if [[ -z "$RES" ]]; then
-    echo "ERROR: $h no tiene registro A IPv4. Configure DNS en Hostinger y espere propagación."
-    exit 1
-  fi
-  if [[ "$RES" != "$THIS_IP" ]]; then
-    echo "ERROR: $h → $RES pero este VPS es $THIS_IP"
-    exit 1
-  fi
-  echo "  OK $h → $RES"
-done
+echo "  IP pública del VPS: $THIS_IP"
+
+if [[ "${CLOUDFLARE_PROXY:-0}" == "1" ]]; then
+  echo "  Modo Cloudflare: se omite comprobación A → VPS (dig público muestra IPs de Cloudflare)."
+  echo "  En Cloudflare → DNS, los registros A de @, www y app deben apuntar a $THIS_IP (proxied)."
+  for h in "${HOSTS[@]}"; do
+    RES="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1; exit}' || true)"
+    echo "  $h → ${RES:-?} (público; OK si es IP Cloudflare)"
+  done
+else
+  echo "  Deben resolver directamente a $THIS_IP (sin proxy Cloudflare)."
+  for h in "${HOSTS[@]}"; do
+    RES="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1; exit}' || true)"
+    if [[ -z "$RES" ]]; then
+      echo "ERROR: $h no tiene registro A IPv4."
+      exit 1
+    fi
+    if [[ "$RES" != "$THIS_IP" ]]; then
+      echo "ERROR: $h → $RES pero este VPS es $THIS_IP"
+      echo ""
+      echo "Si usa Cloudflare con proxy (nube naranja), los dominios muestran IPs 104.x / 172.x."
+      echo "Vuelva a ejecutar: sudo CLOUDFLARE_PROXY=1 ./deploy/setup-educarte-dominio.sh"
+      echo "Y en Cloudflare → SSL/TLS → Full (strict), con registros A → $THIS_IP en el panel DNS."
+      exit 1
+    fi
+    echo "  OK $h → $RES"
+  done
+fi
 
 echo ""
 echo "==> Instalando nginx (si falta)..."
