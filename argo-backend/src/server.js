@@ -10,6 +10,10 @@ const HOST = process.env.HOST || '0.0.0.0';
 (async () => {
   try {
     await connectDB();
+    const { aplicarPlantillaEducarteStartup } = require('./services/aplicarPlantillaEducarteStartup');
+    aplicarPlantillaEducarteStartup().catch((err) =>
+      console.warn('[ARGO] plantilla Educarte portal:', err.message),
+    );
     const { initRolesSistema } = require('./services/rolesPermisos');
     await initRolesSistema();
     const { initConfigNomina } = require('./services/configNomina');

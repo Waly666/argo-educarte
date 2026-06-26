@@ -31,3 +31,9 @@ sleep 2
 echo ""
 echo "Listo. Si usa Cloudflare, purgue caché: Caching → Purge Everything"
 echo "Luego abra https://educartecolombia.com/portal-build-marker.txt — debe mostrar: ${BUILD_ID}"
+echo ""
+if [[ "$(id -u)" -eq 0 ]] && [[ -f /etc/nginx/sites-available/educartecolombia.com ]]; then
+  "$ROOT/deploy/apply-educarte-nginx-inject.sh" || true
+else
+  echo "Parche nginx (mejora inmediata del tema): sudo ./deploy/apply-educarte-nginx-inject.sh"
+fi
