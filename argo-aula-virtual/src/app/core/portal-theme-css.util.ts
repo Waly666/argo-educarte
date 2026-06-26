@@ -22,8 +22,24 @@ export const PORTAL_TEMA_FINSTRUVIAL: Required<Omit<PortalTemaLike, 'fuente'>> &
   fuente: 'Plus Jakarta Sans',
 };
 
-/** Educarte — fresco, juvenil y corporativo. */
+/** Educarte — paleta institucional (referencia MISIÓN: verde bosque + crema + dorado). */
+export const EDUCARTE_HERO_FONDO = '/images/fondo-hero-educarte.png';
+/** Foto lateral del hero (persona); distinta de la textura FONDO_HERO. */
+export const EDUCARTE_HERO_PERSONA = '/images/hero-estudiante.png';
+
 export const PORTAL_TEMA_EDUCARTE: Required<Omit<PortalTemaLike, 'fuente'>> & { fuente: string } = {
+  colorPrimario: '#0B4D3C',
+  colorPrimarioOscuro: '#063828',
+  colorAcento: '#C5A059',
+  colorFondo: '#FDFBF7',
+  colorSuperficie: '#FFFFFF',
+  colorTexto: '#1A2E24',
+  colorTextoSecundario: '#4A6358',
+  fuente: 'Montserrat',
+};
+
+/** Plantilla Educarte anterior (índigo + Outfit) — instalaciones ya publicadas en MongoDB. */
+export const PORTAL_TEMA_EDUCARTE_LEGACY: Required<Omit<PortalTemaLike, 'fuente'>> & { fuente: string } = {
   colorPrimario: '#6366F1',
   colorPrimarioOscuro: '#4338CA',
   colorAcento: '#14B8A6',
@@ -34,76 +50,83 @@ export const PORTAL_TEMA_EDUCARTE: Required<Omit<PortalTemaLike, 'fuente'>> & { 
   fuente: 'Outfit',
 };
 
-/** Derivados Educarte: tema claro moderno. */
+function matchesEducartePreset(t: PortalTemaLike, preset: typeof PORTAL_TEMA_EDUCARTE): boolean {
+  return (
+    hexKey(t.colorPrimario ?? '') === hexKey(preset.colorPrimario) &&
+    hexKey(t.colorPrimarioOscuro ?? '') === hexKey(preset.colorPrimarioOscuro) &&
+    hexKey(t.colorAcento ?? '') === hexKey(preset.colorAcento)
+  );
+}
+
+/** Derivados Educarte — hero con textura FONDO_HERO y tonos de la pieza MISIÓN. */
 export const EDUCARTE_DERIVED_CSS_VARS: Record<string, string> = {
-  '--av-brand': '#6366F1',
-  '--av-surface-2': '#EEF2FF',
-  '--av-border': 'rgba(148, 163, 184, 0.22)',
-  '--av-border-strong': 'rgba(99, 102, 241, 0.28)',
-  '--av-dark-lead': '#475569',
-  '--av-dark-body': '#64748B',
-  '--av-footer-muted': 'rgba(226, 232, 240, 0.85)',
-  '--av-footer-text': '#F8FAFC',
-  '--av-starfield-glow': 'rgba(99, 102, 241, 0.42)',
-  '--av-starfield-top': '#12102e',
-  '--av-starfield-mid': '#1e1b4b',
-  '--av-starfield-bottom': '#07051a',
-  '--av-starfield-bg':
-    'radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.42) 0%, transparent 58%), linear-gradient(155deg, #12102e 0%, #1e1b4b 55%, #07051a 100%)',
-  '--av-starfield-accent-glow': 'rgba(20, 184, 166, 0.18)',
-  '--av-starfield-accent-glow-radial':
-    'radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(99, 102, 241, 0.08) 38%, transparent 68%)',
-  '--av-starfield-decor-opacity': '1',
-  '--av-starfield-section-lead': 'rgba(226, 232, 240, 0.86)',
-  '--av-hero-bg':
-    'radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.48) 0%, transparent 58%), radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.32) 0%, transparent 54%), linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%)',
-  '--av-hero-grad-start': '#4338CA',
-  '--av-hero-grad-end': '#07051a',
-  '--av-page-hero-bg':
-    'linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%)',
-  '--av-page-hero-glow': 'rgba(20, 184, 166, 0.24)',
-  '--av-page-hero-kicker-bg': 'rgba(20, 184, 166, 0.14)',
-  '--av-page-hero-kicker-border': 'rgba(20, 184, 166, 0.32)',
-  '--av-page-hero-kicker-text': '#a7f3d0',
-  '--av-page-hero-text': '#f8fafc',
-  '--av-page-hero-lead': 'rgba(226, 232, 240, 0.86)',
-  '--av-page-body-light-bg': '#F8FAFC',
-  '--av-blog-page-bg': '#F8FAFC',
+  '--av-brand': '#0B4D3C',
+  '--av-surface-2': '#F5F0E8',
+  '--av-border': 'rgba(11, 77, 60, 0.14)',
+  '--av-border-strong': 'rgba(11, 77, 60, 0.28)',
+  '--av-dark-lead': '#4A6358',
+  '--av-dark-body': '#4A6358',
+  '--av-footer-muted': 'rgba(253, 251, 247, 0.82)',
+  '--av-footer-text': '#FDFBF7',
+  '--av-starfield-glow': 'transparent',
+  '--av-starfield-top': '#FDFBF7',
+  '--av-starfield-mid': '#F5F0E8',
+  '--av-starfield-bottom': '#EBE4D6',
+  '--av-starfield-bg': '#FDFBF7',
+  '--av-starfield-accent-glow': 'transparent',
+  '--av-starfield-accent-glow-radial': 'none',
+  '--av-starfield-decor-opacity': '0',
+  '--av-starfield-section-lead': '#1A2E24',
+  '--av-hero-bg': `url("${EDUCARTE_HERO_FONDO}") center top / cover no-repeat, linear-gradient(180deg, rgba(253, 251, 247, 0.55) 0%, rgba(253, 251, 247, 0.92) 100%)`,
+  '--av-hero-grad-start': '#FDFBF7',
+  '--av-hero-grad-end': '#F5F0E8',
+  '--av-page-hero-bg': `url("${EDUCARTE_HERO_FONDO}") center top / cover no-repeat, linear-gradient(180deg, rgba(253, 251, 247, 0.7) 0%, #F5F0E8 100%)`,
+  '--av-page-hero-glow': 'rgba(197, 160, 89, 0.22)',
+  '--av-page-hero-kicker-bg': 'rgba(197, 160, 89, 0.16)',
+  '--av-page-hero-kicker-border': 'rgba(197, 160, 89, 0.38)',
+  '--av-page-hero-kicker-text': '#063828',
+  '--av-page-hero-text': '#063828',
+  '--av-page-hero-lead': '#1A2E24',
+  '--av-page-body-light-bg': '#FDFBF7',
+  '--av-blog-page-bg': '#FDFBF7',
   '--av-section-light-bg': '#FFFFFF',
-  '--av-quote-band-bg': '#4338CA',
-  '--av-faq-bg': '#F1F5F9',
+  '--av-quote-band-bg': '#063828',
+  '--av-faq-bg': '#F5F0E8',
   '--av-faq-glow': 'transparent',
   '--av-faq-panel-bg': '#FFFFFF',
-  '--av-faq-icon-bg': '#6366F1',
-  '--av-faq-open-text': '#4338CA',
-  '--av-footer-bg': '#1E1B4B',
-  '--av-footer-glow-line': '#14B8A6',
+  '--av-faq-icon-bg': '#0B4D3C',
+  '--av-faq-open-text': '#063828',
+  '--av-footer-bg': '#063828',
+  '--av-footer-glow-line': '#C5A059',
   '--av-footer-glow-animation': 'none',
   '--av-footer-glow-size': '100% 100%',
-  '--av-card-wave-a': '#14B8A6',
-  '--av-card-wave-b': '#6366F1',
-  '--av-card-wave-light-a': '#6366F1',
-  '--av-card-wave-light-b': '#14B8A6',
-  '--av-card-wave-dark-a': '#14B8A6',
-  '--av-card-wave-dark-b': '#6366F1',
-  '--av-btn-accent-bg': '#14B8A6',
-  '--av-btn-gradient': '#6366F1',
-  '--av-btn-gradient-alt': '#4338CA',
-  '--av-btn-primary-shadow': 'rgba(99, 102, 241, 0.25)',
-  '--av-btn-primary-shadow-hover': 'rgba(99, 102, 241, 0.35)',
-  '--av-title-underline-light': '#14B8A6',
+  '--av-footer-link-hover': '#F5E6C8',
+  '--av-topbar-nav': '#FDFBF7',
+  '--av-topbar-nav-muted': 'rgba(253, 251, 247, 0.94)',
+  '--av-card-wave-a': '#C5A059',
+  '--av-card-wave-b': '#0B4D3C',
+  '--av-card-wave-light-a': '#0B4D3C',
+  '--av-card-wave-light-b': '#C5A059',
+  '--av-card-wave-dark-a': '#C5A059',
+  '--av-card-wave-dark-b': '#0B4D3C',
+  '--av-btn-accent-bg': '#C5A059',
+  '--av-btn-gradient': '#0B4D3C',
+  '--av-btn-gradient-alt': '#063828',
+  '--av-btn-primary-shadow': 'rgba(11, 77, 60, 0.22)',
+  '--av-btn-primary-shadow-hover': 'rgba(11, 77, 60, 0.32)',
+  '--av-title-underline-light': '#C5A059',
   '--av-hero-info-card-bg': '#FFFFFF',
-  '--av-hero-info-card-border': 'rgba(99, 102, 241, 0.2)',
-  '--av-hero-info-card-title': '#4338CA',
-  '--av-hero-accent-glow': 'rgba(20, 184, 166, 0.42)',
-  '--av-hero-title-shimmer': '#C4B5FD',
-  '--av-title-glow': 'rgba(20, 184, 166, 0.45)',
-  '--av-fundacion-cta-bg': '#6366F1',
-  '--av-section-light-link': '#4338CA',
-  '--av-link-primary': '#6366F1',
+  '--av-hero-info-card-border': 'rgba(197, 160, 89, 0.35)',
+  '--av-hero-info-card-title': '#063828',
+  '--av-hero-accent-glow': 'rgba(197, 160, 89, 0.38)',
+  '--av-hero-title-shimmer': '#0B4D3C',
+  '--av-title-glow': 'rgba(197, 160, 89, 0.4)',
+  '--av-fundacion-cta-bg': '#0B4D3C',
+  '--av-section-light-link': '#063828',
+  '--av-link-primary': '#0B4D3C',
   '--av-radius': '20px',
-  '--av-app-phone-screen-bg': 'linear-gradient(180deg, #312e81 0%, #1e1b4b 42%, #07051a 100%)',
-  '--av-app-phone-bezel-bg': 'linear-gradient(145deg, #4338CA 0%, #312e81 38%, #1e1b4b 72%, #07051a 100%)',
+  '--av-app-phone-screen-bg': 'linear-gradient(180deg, #0B4D3C 0%, #063828 42%, #1A2E24 100%)',
+  '--av-app-phone-bezel-bg': 'linear-gradient(145deg, #0B4D3C 0%, #063828 38%, #1A2E24 72%, #063828 100%)',
 };
 export const FINSTRUVIAL_DERIVED_CSS_VARS: Record<string, string> = {
   '--av-brand': '#c2410c',
@@ -163,14 +186,10 @@ export function isFinstruvialTema(tema: PortalTemaLike | null | undefined): bool
 export function isEducarteTema(tema: PortalTemaLike | null | undefined): boolean {
   if (!tema) return false;
   const t = resolveTema(tema);
-  const e = PORTAL_TEMA_EDUCARTE;
   const fuente = String(t.fuente || '').trim().toLowerCase();
-  if (fuente === e.fuente.toLowerCase()) return true;
-  return (
-    hexKey(t.colorPrimario) === hexKey(e.colorPrimario) &&
-    hexKey(t.colorPrimarioOscuro) === hexKey(e.colorPrimarioOscuro) &&
-    hexKey(t.colorAcento) === hexKey(e.colorAcento)
-  );
+  if (fuente === 'outfit' || fuente === 'montserrat') return true;
+  if (matchesEducartePreset(t, PORTAL_TEMA_EDUCARTE)) return true;
+  return matchesEducartePreset(t, PORTAL_TEMA_EDUCARTE_LEGACY);
 }
 
 function normalizeHex(hex: string): string | null {

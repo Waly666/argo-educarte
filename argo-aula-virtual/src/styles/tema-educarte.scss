@@ -5,74 +5,478 @@
 html[data-portal-skin='educarte'] {
   --av-radius: 20px;
   --av-max: 1200px;
+  --av-text: #1a2e24;
+  --av-dim: #4a6358;
+  --av-ink: #063828;
+  --av-ink-muted: #4a6358;
+  --av-page-hero-text: #063828;
+  --av-page-hero-lead: #1a2e24;
+  --av-link-primary: #0b4d3c;
+  --av-section-light-text: #1a2e24;
+  --av-section-light-muted: #4a6358;
+  --av-section-light-link: #0b4d3c;
   --av-shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.06);
-  --av-shadow-md: 0 12px 32px rgba(99, 102, 241, 0.12);
+  --av-shadow-md: 0 12px 32px rgba(11, 77, 60, 0.12);
   --av-shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.1);
 
-  /* —— Barra superior oscura (coherente con hero) —— */
-  .topbar {
-    background: rgba(7, 5, 26, 0.92);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.22);
-    box-shadow: inset 0 1px 0 rgba(20, 184, 166, 0.1);
+  color: #1a2e24;
+
+  /* —— Tipografía oscura en héroes institucionales (fondo claro) —— */
+  av-acerca .acerca-hero h1,
+  av-consulta-certificados .consulta-hero h1,
+  av-cursos .catalog-hero h1,
+  av-blog .blog-hero h1,
+  av-fundacion .fund-hero h1 {
+    color: #063828 !important;
   }
 
-  .brand-name {
+  av-acerca .acerca-hero__lead,
+  av-consulta-certificados .consulta-lead,
+  av-cursos .catalog-hero .page-lead,
+  av-blog .blog-hero .page-lead,
+  av-fundacion .fund-hero [class*='__lead'] {
+    color: #1a2e24 !important;
+  }
+
+  av-acerca .acerca-kicker:not(.acerca-kicker--light),
+  av-consulta-certificados .consulta-kicker {
+    color: #063828 !important;
+  }
+
+  .section-head h2,
+  .section-head .title-reveal--h2,
+  .starfield-head h2,
+  .starfield-head .title-reveal--h2,
+  .carreras-head h2,
+  .carreras-head .title-reveal--h2 {
+    color: #063828 !important;
+  }
+
+  .section-head .section-lead,
+  .starfield-head .section-lead,
+  .carreras-head .section-lead {
+    color: #1a2e24 !important;
+    font-weight: 500;
+  }
+
+  .section--light,
+  .section--white {
+    color: #1a2e24;
+
+    h2,
+    h3,
+    h4,
+    .title-reveal--h2,
+    .title-reveal--h3 {
+      color: #063828;
+    }
+
+    p,
+    li,
+    .section-lead {
+      color: #1a2e24;
+    }
+
+    .muted,
+    .lead {
+      color: #4a6358;
+    }
+  }
+
+  body,
+  main.main {
+    color: #1a2e24;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #063828;
+  }
+
+  p,
+  li,
+  label,
+  td,
+  th {
+    color: #1a2e24;
+  }
+
+  .muted {
+    color: #4a6358;
+  }
+
+  a:not(.btn):not(.dash-nav-item):not(.dash-link):not(.nav a):not(.quote-phone):not(
+      .site-footer__ext
+    ) {
+    color: #0b4d3c;
+
+    &:hover {
+      color: #063828;
+    }
+  }
+
+  av-acerca {
+    --a-ink: #063828;
+    --a-muted: #4a6358;
+  }
+
+  av-acerca .acerca-panel__head h2,
+  av-acerca .acerca-valores__head h2,
+  av-acerca .acerca-valor h3 {
+    color: #063828;
+  }
+
+  av-acerca .acerca-texto p,
+  av-acerca .acerca-valores__lead,
+  av-acerca .acerca-valor p {
+    color: #1a2e24;
+  }
+
+  av-acerca .acerca-contact-list strong {
+    color: #0b4d3c;
+  }
+
+  av-acerca .acerca-link {
+    color: #0b4d3c;
+  }
+
+  av-fundacion {
+    --fund-ink: #063828;
+    --fund-border: rgba(11, 77, 60, 0.14);
+    --fund-warm: #f5f0e8;
+    --fund-sky: #fdfbf7;
+  }
+
+  av-fundacion .fund-hero h1 {
+    color: #063828 !important;
+    text-shadow: none !important;
+  }
+
+  av-fundacion .fund-hero .fund-btn-outline {
+    color: #063828;
+    border-color: rgba(11, 77, 60, 0.35);
+
+    &:hover {
+      color: #063828;
+      background: rgba(197, 160, 89, 0.14);
+    }
+  }
+
+  av-fundacion .fund-kicker {
+    color: #063828;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+
+  av-fundacion .fund-kicker--dark {
+    color: #063828;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+
+  /* Quiénes somos */
+  av-fundacion .fund-section--about {
+    background: linear-gradient(180deg, #fdfbf7 0%, #f5f0e8 100%);
+    border-bottom: 1px solid rgba(11, 77, 60, 0.1);
+  }
+
+  av-fundacion .fund-about__head h2,
+  av-fundacion .fund-about__bloque h3 {
+    color: #063828;
+  }
+
+  av-fundacion .fund-about__lead,
+  av-fundacion .fund-about__bloque p {
+    color: #1a2e24;
+  }
+
+  av-fundacion .fund-about__stat {
+    background: #fff;
+    border-color: rgba(11, 77, 60, 0.12);
+  }
+
+  av-fundacion .fund-about__bloque {
+    background: #fff;
+    border-color: rgba(11, 77, 60, 0.12);
+    border-left-color: #0b4d3c;
+  }
+
+  av-fundacion .fund-about__bloque-icon {
+    background: rgba(197, 160, 89, 0.14);
+  }
+
+  /* Misión / Visión */
+  av-fundacion .fund-section--soft {
+    background: linear-gradient(180deg, #f5f0e8 0%, #fdfbf7 100%);
+  }
+
+  av-fundacion .fund-card:first-child {
+    background: linear-gradient(145deg, #fdfbf7 0%, #fff 100%);
+    border-color: rgba(11, 77, 60, 0.22);
+    box-shadow: 0 10px 28px rgba(11, 77, 60, 0.08);
+
+    .fund-card__label {
+      color: #063828;
+      background: rgba(11, 77, 60, 0.1);
+    }
+  }
+
+  av-fundacion .fund-card:last-child {
+    background: linear-gradient(145deg, rgba(197, 160, 89, 0.1) 0%, #fff 100%);
+    border-color: rgba(197, 160, 89, 0.35);
+    box-shadow: 0 10px 28px rgba(197, 160, 89, 0.12);
+
+    .fund-card__label {
+      color: #063828;
+      background: rgba(197, 160, 89, 0.2);
+    }
+  }
+
+  av-fundacion .fund-card h2 {
+    color: #063828;
+  }
+
+  /* Nuestro compromiso */
+  av-fundacion .fund-section--warm {
+    background: linear-gradient(180deg, #fdfbf7 0%, #fff 100%);
+  }
+
+  av-fundacion .fund-commit {
     background: linear-gradient(
-      105deg,
-      var(--av-primary-dark, #4338ca) 0%,
-      var(--av-primary, #6366f1) 48%,
-      var(--av-accent, #14b8a6) 100%
+      135deg,
+      rgba(11, 77, 60, 0.06) 0%,
+      rgba(197, 160, 89, 0.14) 48%,
+      #fdfbf7 100%
     );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: 0.02em;
-  }
+    border: 2px solid rgba(197, 160, 89, 0.35);
+    box-shadow: 0 12px 32px rgba(11, 77, 60, 0.08);
 
-  .nav a {
-    color: rgba(226, 232, 240, 0.82);
-    font-weight: 600;
-    border-radius: 999px;
-    padding: 0.45rem 0.75rem;
+    h2 {
+      color: #063828;
+    }
 
-    &:hover,
-    &.active {
-      color: #a7f3d0;
-      background: rgba(20, 184, 166, 0.14);
+    .fund-commit__text {
+      color: #1a2e24;
     }
   }
 
-  .menu-toggle {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(99, 102, 241, 0.28);
+  av-fundacion .fund-section__lead,
+  av-fundacion .fund-card p,
+  av-fundacion .fund-muted {
+    color: #1a2e24;
+  }
 
-    .menu-toggle-bar {
-      background: #f8fafc;
+  av-pqr .pqr-tipo p {
+    color: #4a6358;
+  }
+
+  av-pqr .pqr-tipo h3 {
+    color: #063828;
+  }
+
+  av-consulta-certificados .consulta-kicker {
+    color: #0b4d3c !important;
+  }
+
+  av-cursos .curso-desc,
+  av-cursos .catalog-page .muted {
+    color: #4a6358;
+  }
+
+  av-cursos .curso-card h3 {
+    color: #063828;
+  }
+
+  av-aula .aula-dashboard {
+    --dash-text: #063828;
+    --dash-muted: #4a6358;
+  }
+
+  av-aula .dash-page-head h1,
+  av-aula .dash-section-head h2 {
+    color: #063828;
+  }
+
+  av-aula .dash-welcome,
+  av-aula .dash-course-date,
+  av-aula .dash-course-detail {
+    color: #4a6358;
+  }
+
+  av-aula .dash-course-info h3 {
+    color: #063828;
+  }
+
+  /* —— Header y footer: texto claro sobre verde bosque —— */
+  av-shell {
+    .topbar {
+      background: rgba(6, 56, 40, 0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(197, 160, 89, 0.28);
+      box-shadow: inset 0 1px 0 rgba(253, 251, 247, 0.08);
+      color: #fdfbf7;
     }
-  }
 
-  .topbar-menu--mobile {
-    background: rgba(7, 5, 26, 0.98);
-    border-bottom-color: rgba(99, 102, 241, 0.22);
-  }
-
-  .topbar .actions .btn-ghost {
-    color: #f8fafc;
-    border-color: rgba(255, 255, 255, 0.45);
-    background: rgba(255, 255, 255, 0.07);
-
-    &:hover:not(:disabled) {
-      color: #fff;
-      border-color: var(--av-accent);
-      background: rgba(20, 184, 166, 0.16);
+    .brand-name {
+      background: linear-gradient(
+        105deg,
+        #fdfbf7 0%,
+        #e8d4a8 42%,
+        #fdfbf7 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.02em;
     }
-  }
 
-  .topbar-menu--mobile .actions .btn-ghost {
-    color: #f8fafc;
-    border-color: rgba(255, 255, 255, 0.45);
-    background: rgba(255, 255, 255, 0.07);
+    .nav a {
+      color: var(--av-topbar-nav-muted, rgba(253, 251, 247, 0.94)) !important;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 0.45rem 0.75rem;
+
+      &:hover {
+        color: #fff !important;
+        background: rgba(197, 160, 89, 0.16);
+      }
+
+      &.active {
+        color: #f5e6c8 !important;
+        background: rgba(197, 160, 89, 0.2);
+      }
+    }
+
+    .menu-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(197, 160, 89, 0.28);
+
+      .menu-toggle-bar {
+        background: #fdfbf7;
+      }
+    }
+
+    .topbar-menu--mobile {
+      background: rgba(6, 56, 40, 0.98);
+      border-bottom-color: rgba(197, 160, 89, 0.28);
+    }
+
+    .topbar .actions .btn-ghost,
+    .topbar-menu--mobile .actions .btn-ghost {
+      color: #fdfbf7;
+      border-color: rgba(253, 251, 247, 0.42);
+      background: rgba(255, 255, 255, 0.07);
+
+      &:hover:not(:disabled) {
+        color: #fff;
+        border-color: var(--av-accent);
+        background: rgba(197, 160, 89, 0.18);
+      }
+    }
+
+    .site-footer {
+      color: #fdfbf7;
+    }
+
+    .site-footer__logo-link {
+      color: #fdfbf7 !important;
+
+      &:hover {
+        color: var(--av-footer-link-hover, #f5e6c8) !important;
+      }
+    }
+
+    .site-footer__brand-name {
+      background: linear-gradient(
+        105deg,
+        #fdfbf7 0%,
+        #e8d4a8 45%,
+        #fdfbf7 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent !important;
+    }
+
+    .site-footer__badge {
+      color: #fdfbf7 !important;
+      background: rgba(197, 160, 89, 0.22) !important;
+      border-color: rgba(245, 230, 200, 0.45) !important;
+    }
+
+    .site-footer__about {
+      color: rgba(253, 251, 247, 0.88) !important;
+    }
+
+    .site-footer__ext {
+      color: #f5e6c8 !important;
+
+      &:hover {
+        color: #fff !important;
+      }
+    }
+
+    .site-footer__title {
+      color: #fdfbf7 !important;
+    }
+
+    .site-footer__links {
+      a {
+        color: rgba(253, 251, 247, 0.92) !important;
+
+        &:hover {
+          color: var(--av-footer-link-hover, #f5e6c8) !important;
+        }
+
+        &::before {
+          background: #c5a059;
+        }
+      }
+
+      span {
+        color: rgba(253, 251, 247, 0.72) !important;
+      }
+    }
+
+    .site-footer__contact-body {
+      strong {
+        color: rgba(253, 251, 247, 0.72) !important;
+      }
+
+      a,
+      span {
+        color: rgba(253, 251, 247, 0.92) !important;
+      }
+
+      a:hover {
+        color: var(--av-footer-link-hover, #f5e6c8) !important;
+      }
+    }
+
+    .site-footer__contact-icon {
+      background: rgba(197, 160, 89, 0.22) !important;
+    }
+
+    .site-footer__copy {
+      color: rgba(253, 251, 247, 0.78) !important;
+    }
+
+    .site-footer__legal a {
+      color: rgba(253, 251, 247, 0.9) !important;
+
+      &:hover {
+        color: var(--av-footer-link-hover, #f5e6c8) !important;
+      }
+    }
+
+    .site-footer__bottom {
+      background: rgba(4, 40, 29, 0.65);
+      border-top-color: rgba(197, 160, 89, 0.22);
+    }
   }
 
   /* —— Botones globales —— */
@@ -94,7 +498,7 @@ html[data-portal-skin='educarte'] {
 
   .btn-accent {
     background: var(--av-accent);
-    color: #fff;
+    color: #063828;
     box-shadow: var(--av-shadow-sm);
   }
 
@@ -104,83 +508,89 @@ html[data-portal-skin='educarte'] {
     border-color: rgba(148, 163, 184, 0.2);
   }
 
-  /* —— Hero oscuro + textura geométrica (inspiración tejidos andinos) —— */
-  --av-educarte-hero-weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M0 28 L28 0 L56 28 L28 56 Z' fill='none' stroke='%2314B8A6' stroke-opacity='0.09' stroke-width='0.65'/%3E%3Cpath d='M14 28 L28 14 L42 28 L28 42 Z' fill='none' stroke='%236366F1' stroke-opacity='0.07' stroke-width='0.5'/%3E%3Ccircle cx='28' cy='28' r='1.6' fill='%23F59E0B' fill-opacity='0.1'/%3E%3C/svg%3E");
+  /* —— Hero MISIÓN: crema + textura FONDO_HERO + verde institucional —— */
+  .educarte-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #fdfbf7;
+    background-image:
+      linear-gradient(
+        165deg,
+        rgba(253, 251, 247, 0.72) 0%,
+        rgba(245, 240, 232, 0.55) 48%,
+        rgba(11, 77, 60, 0.08) 100%
+      ),
+      url('/images/fondo-hero-educarte.png');
+    background-size: cover, contain;
+    background-position: center top, center center;
+    background-repeat: no-repeat;
+  }
+
+  .hero--educarte {
+    min-height: clamp(540px, 78vh, 720px);
+    padding: 4.75rem 0 4.25rem;
+    border-bottom: 4px solid #c5a059;
+    box-shadow: inset 0 -12px 0 #063828;
+
+    .hero-inner {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      max-width: var(--av-max);
+    }
+
+    .hero-visual {
+      display: flex;
+      z-index: 1;
+    }
+
+    .hero-copy {
+      max-width: 640px;
+    }
+
+    .btn-primary {
+      background: #0b4d3c;
+      border-color: #0b4d3c;
+      color: #fdfbf7;
+
+      &:hover:not(:disabled) {
+        background: #063828;
+        border-color: #063828;
+      }
+    }
+  }
 
   .hero,
   .hero.section-starfield {
     position: relative;
     overflow: visible;
-    background-color: #07051a;
-    background-image:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.48) 0%, transparent 58%),
-      radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.32) 0%, transparent 54%),
-      radial-gradient(ellipse 42% 38% at 52% 48%, rgba(245, 158, 11, 0.07) 0%, transparent 68%),
-      linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%);
-    color: #f8fafc;
+    background: transparent !important;
+    color: #063828;
     border-bottom: none;
-    box-shadow:
-      inset 0 -1px 0 rgba(20, 184, 166, 0.22),
-      inset 0 -5px 0 rgba(99, 102, 241, 0.12);
+    box-shadow: none;
 
     .starfield-bg {
-      display: block;
-      opacity: 1;
+      display: none;
     }
 
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      width: auto;
-      height: auto;
-      top: 0;
-      right: 0;
-      border-radius: 0;
-      pointer-events: none;
-      background:
-        repeating-linear-gradient(
-          62deg,
-          rgba(20, 184, 166, 0.04) 0 1px,
-          transparent 1px 20px
-        ),
-        repeating-linear-gradient(
-          -62deg,
-          rgba(99, 102, 241, 0.045) 0 1px,
-          transparent 1px 20px
-        );
-      opacity: 0.85;
-      mix-blend-mode: soft-light;
-    }
-
+    &::before,
     &::after {
-      content: '';
-      position: absolute;
-      width: min(560px, 72vw);
-      height: min(560px, 72vw);
-      top: auto;
-      left: auto;
-      right: -140px;
-      bottom: -220px;
-      border-radius: 50%;
-      pointer-events: none;
-      background: radial-gradient(circle, rgba(20, 184, 166, 0.24) 0%, transparent 68%);
+      display: none;
     }
   }
 
   .hero-title--done::after {
     background: linear-gradient(90deg, var(--av-accent), var(--av-primary), transparent);
-    box-shadow: 0 0 22px var(--av-hero-accent-glow);
+    box-shadow: 0 0 18px var(--av-hero-accent-glow);
   }
 
-  /* Título hero: texto claro + shimmer suave sobre fondo oscuro */
   .hero-title,
   .hero-title--typing,
   .hero-title--done,
   .hero-title--typewriter {
-    color: #f8fafc !important;
-    text-shadow: 0 2px 24px rgba(15, 23, 42, 0.35) !important;
+    color: #063828 !important;
+    font-family: 'Merriweather', Georgia, serif;
+    text-shadow: none !important;
   }
 
   .hero-title--done,
@@ -188,12 +598,7 @@ html[data-portal-skin='educarte'] {
     animation: heroTitleShimmerText 4.5s ease-in-out infinite !important;
 
     &::before {
-      display: block !important;
-      background: radial-gradient(
-        ellipse at 20% 50%,
-        rgba(20, 184, 166, 0.22),
-        transparent 65%
-      );
+      display: none !important;
     }
   }
 
@@ -202,36 +607,37 @@ html[data-portal-skin='educarte'] {
   }
 
   .hero .eyebrow {
-    color: rgba(167, 243, 208, 0.95);
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    color: #0b4d3c;
+    font-weight: 800;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
   .hero .lead {
-    color: rgba(226, 232, 240, 0.86);
+    color: #1a2e24;
+    font-weight: 500;
   }
 
   .hero .btn-outline {
-    border-color: rgba(255, 255, 255, 0.42);
-    color: #fff;
-    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(11, 77, 60, 0.35);
+    color: #063828;
+    background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(10px);
 
     &:hover {
       border-color: var(--av-accent);
-      background: rgba(20, 184, 166, 0.18);
-      color: #fff;
+      background: rgba(197, 160, 89, 0.14);
+      color: #063828;
     }
   }
 
   .hero .btn-ghost {
-    color: rgba(226, 232, 240, 0.9);
-    border-color: rgba(255, 255, 255, 0.18);
+    color: #4a6358;
+    border-color: rgba(11, 77, 60, 0.18);
 
     &:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+      color: #063828;
+      background: rgba(11, 77, 60, 0.06);
     }
   }
 
@@ -257,9 +663,9 @@ html[data-portal-skin='educarte'] {
 
   .kicker,
   .hero-kicker {
-    background: rgba(20, 184, 166, 0.14);
-    border: 1px solid rgba(20, 184, 166, 0.32);
-    color: #a7f3d0;
+    background: rgba(197, 160, 89, 0.16);
+    border: 1px solid rgba(197, 160, 89, 0.38);
+    color: #063828;
     border-radius: 999px;
     font-weight: 700;
   }
@@ -268,7 +674,7 @@ html[data-portal-skin='educarte'] {
   .info-card {
     border-radius: calc(var(--av-radius) + 4px);
     box-shadow: var(--av-shadow-md);
-    border: 1px solid rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(197, 160, 89, 0.22);
     background: #fff;
     position: relative;
     z-index: 4;
@@ -289,14 +695,14 @@ html[data-portal-skin='educarte'] {
   }
 
   #carreras-tecnicas.section-carreras {
-    background-color: #07051a;
+    background-color: #fdfbf7;
   }
 
   #somos-mejor-opcion {
     background: #fff;
-    color: #0f172a;
-    border-top: 1px solid rgba(148, 163, 184, 0.18);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    color: #063828;
+    border-top: 1px solid rgba(11, 77, 60, 0.1);
+    border-bottom: 1px solid rgba(11, 77, 60, 0.1);
 
     .starfield-bg {
       display: none;
@@ -304,11 +710,115 @@ html[data-portal-skin='educarte'] {
 
     .starfield-head h2,
     .starfield-head .title-reveal--h2 {
-      color: #0f172a;
+      color: #063828;
+      font-weight: 800;
     }
 
     .starfield-head .section-lead {
-      color: #475569;
+      color: #1a2e24;
+      font-weight: 500;
+    }
+
+    .starfield-head .kicker {
+      color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.16);
+      border-color: rgba(197, 160, 89, 0.35);
+    }
+
+    .valores-grid .dark-card {
+      border-radius: var(--av-radius);
+      box-shadow: var(--av-shadow-md);
+      transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        border-color: rgba(197, 160, 89, 0.58);
+      }
+
+      .dark-card__titulo {
+        color: #fdfbf7;
+      }
+
+      .dark-card__meta {
+        color: rgba(253, 251, 247, 0.9);
+      }
+
+      .dark-card__plus {
+        color: rgba(253, 251, 247, 0.45);
+      }
+
+      &:hover .dark-card__plus {
+        transform: rotate(90deg);
+      }
+    }
+
+    .valores-grid .dark-card:nth-child(3n + 1) {
+      background: linear-gradient(152deg, #063828 0%, #0b4d3c 52%, #0a4234 100%);
+      border: 1px solid rgba(197, 160, 89, 0.32);
+
+      &:hover {
+        box-shadow: 0 16px 40px rgba(6, 56, 40, 0.35);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #fdfbf7, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.35);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #c5a059;
+      }
+    }
+
+    .valores-grid .dark-card:nth-child(3n + 2) {
+      background: linear-gradient(152deg, #0b4d3c 0%, #1a5c48 48%, #c5a059 100%);
+      border: 1px solid rgba(197, 160, 89, 0.38);
+
+      &:hover {
+        box-shadow: 0 16px 40px rgba(11, 77, 60, 0.32);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #f5f0e8, #c5a059);
+        box-shadow: 0 6px 16px rgba(11, 77, 60, 0.35);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #fdfbf7;
+      }
+    }
+
+    .valores-grid .dark-card:nth-child(3n + 3) {
+      background: linear-gradient(152deg, #1a2e24 0%, #063828 42%, #0b4d3c 100%);
+      border: 1px solid rgba(197, 160, 89, 0.4);
+
+      &:hover {
+        box-shadow: 0 16px 40px rgba(26, 46, 36, 0.34);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #c5a059, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.32);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #c5a059;
+      }
     }
   }
 
@@ -323,7 +833,7 @@ html[data-portal-skin='educarte'] {
   #carreras-tecnicas .carreras-head .title-reveal--h2,
   #app-mobile .starfield-head h2,
   #app-mobile h2 {
-    color: #fff;
+    color: #063828;
   }
 
   .starfield-head .section-lead,
@@ -334,21 +844,22 @@ html[data-portal-skin='educarte'] {
 
   #carreras-tecnicas .carreras-head .section-lead,
   #app-mobile .section-lead {
-    color: rgba(226, 232, 240, 0.86);
+    color: #1a2e24;
+    font-weight: 500;
   }
 
   .starfield-head .kicker,
   .carreras-head .kicker {
     color: var(--av-primary-dark);
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.22);
+    background: rgba(197, 160, 89, 0.12);
+    border-color: rgba(197, 160, 89, 0.28);
   }
 
   #carreras-tecnicas .carreras-head .kicker,
   #app-mobile .kicker {
-    color: #a7f3d0;
-    background: rgba(20, 184, 166, 0.14);
-    border-color: rgba(20, 184, 166, 0.32);
+    color: #0b4d3c;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
   }
 
   /* —— Secciones claras —— */
@@ -377,12 +888,22 @@ html[data-portal-skin='educarte'] {
     }
   }
 
-  /* —— Testimonios: tarjetas con colores distintos del tema Educarte —— */
+  /* —— Testimonios: verde institucional + dorado Educarte —— */
   #testimonios {
     .kicker {
-      color: var(--av-primary-dark);
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.22);
+      color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.16);
+      border: 1px solid rgba(197, 160, 89, 0.35);
+    }
+
+    .section-head h2,
+    .section-head .title-reveal--h2 {
+      color: #063828;
+    }
+
+    .section-lead {
+      color: #1a2e24;
+      font-weight: 500;
     }
 
     .dark-card {
@@ -398,15 +919,15 @@ html[data-portal-skin='educarte'] {
       }
 
       &__titulo {
-        color: #fff;
+        color: #fdfbf7;
       }
 
       &__meta {
-        color: rgba(241, 245, 249, 0.88);
+        color: rgba(253, 251, 247, 0.9);
       }
 
       &__plus {
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(253, 251, 247, 0.45);
       }
 
       &:hover &__plus {
@@ -414,84 +935,87 @@ html[data-portal-skin='educarte'] {
       }
     }
 
+    /* Verde bosque profundo */
     .dark-card:nth-child(3n + 1) {
-      background: linear-gradient(152deg, #4338ca 0%, #6366f1 52%, #4f46e5 100%);
-      border: 1px solid rgba(165, 180, 252, 0.35);
+      background: linear-gradient(152deg, #063828 0%, #0b4d3c 52%, #0a4234 100%);
+      border: 1px solid rgba(197, 160, 89, 0.32);
 
       &:hover {
-        border-color: rgba(199, 210, 254, 0.65);
-        box-shadow: 0 16px 40px rgba(99, 102, 241, 0.35);
+        border-color: rgba(197, 160, 89, 0.58);
+        box-shadow: 0 16px 40px rgba(6, 56, 40, 0.35);
       }
 
       .dark-card__icono {
-        background: linear-gradient(145deg, #eef2ff, #c7d2fe);
-        box-shadow: 0 6px 16px rgba(67, 56, 202, 0.35);
+        background: linear-gradient(145deg, #fdfbf7, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.35);
 
         svg {
-          color: #3730a3;
+          color: #063828;
         }
       }
 
       &:hover .dark-card__plus {
-        color: #e0e7ff;
+        color: #c5a059;
       }
 
       .testimonio-rol {
-        color: #c7d2fe;
+        color: #c5a059;
       }
     }
 
+    /* Verde con acento dorado */
     .dark-card:nth-child(3n + 2) {
-      background: linear-gradient(152deg, #0f766e 0%, #14b8a6 50%, #2dd4bf 100%);
-      border: 1px solid rgba(153, 246, 228, 0.35);
+      background: linear-gradient(152deg, #0b4d3c 0%, #1a5c48 48%, #c5a059 100%);
+      border: 1px solid rgba(197, 160, 89, 0.38);
 
       &:hover {
-        border-color: rgba(204, 251, 241, 0.65);
-        box-shadow: 0 16px 40px rgba(20, 184, 166, 0.32);
+        border-color: rgba(253, 251, 247, 0.45);
+        box-shadow: 0 16px 40px rgba(11, 77, 60, 0.32);
       }
 
       .dark-card__icono {
-        background: linear-gradient(145deg, #ecfdf5, #99f6e4);
-        box-shadow: 0 6px 16px rgba(15, 118, 110, 0.35);
+        background: linear-gradient(145deg, #f5f0e8, #c5a059);
+        box-shadow: 0 6px 16px rgba(11, 77, 60, 0.35);
 
         svg {
-          color: #0f766e;
+          color: #063828;
         }
       }
 
       &:hover .dark-card__plus {
-        color: #ccfbf1;
+        color: #fdfbf7;
       }
 
       .testimonio-rol {
-        color: #99f6e4;
+        color: #fdfbf7;
       }
     }
 
+    /* Dorado sobre verde oscuro */
     .dark-card:nth-child(3n + 3) {
-      background: linear-gradient(152deg, #312e81 0%, #6366f1 42%, #14b8a6 100%);
-      border: 1px solid rgba(129, 140, 248, 0.35);
+      background: linear-gradient(152deg, #1a2e24 0%, #063828 42%, #0b4d3c 100%);
+      border: 1px solid rgba(197, 160, 89, 0.4);
 
       &:hover {
-        border-color: rgba(167, 243, 208, 0.55);
-        box-shadow: 0 16px 40px rgba(49, 46, 129, 0.34);
+        border-color: rgba(197, 160, 89, 0.65);
+        box-shadow: 0 16px 40px rgba(26, 46, 36, 0.34);
       }
 
       .dark-card__icono {
-        background: linear-gradient(145deg, #f5f3ff, #a5f3fc);
-        box-shadow: 0 6px 16px rgba(49, 46, 129, 0.32);
+        background: linear-gradient(145deg, #c5a059, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.32);
 
         svg {
-          color: #4338ca;
+          color: #063828;
         }
       }
 
       &:hover .dark-card__plus {
-        color: #a7f3d0;
+        color: #c5a059;
       }
 
       .testimonio-rol {
-        color: #a5f3fc;
+        color: #e8dcc4;
       }
     }
   }
@@ -522,8 +1046,76 @@ html[data-portal-skin='educarte'] {
   .chip-lift {
     border-radius: 999px;
     font-weight: 600;
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(11, 77, 60, 0.18);
     background: #fff;
+    color: #1a2e24;
+  }
+
+  #beneficios-cursos {
+    .starfield-bg {
+      display: none;
+    }
+
+    .starfield-head h2,
+    .starfield-head .title-reveal--h2 {
+      color: #063828;
+    }
+
+    .starfield-head .section-lead {
+      color: #1a2e24;
+      font-weight: 500;
+    }
+
+    .oferta-card {
+      border-color: rgba(11, 77, 60, 0.14);
+
+      &:hover {
+        border-color: rgba(197, 160, 89, 0.45);
+        box-shadow: 0 18px 40px rgba(11, 77, 60, 0.1);
+      }
+
+      h3 {
+        color: #063828;
+      }
+
+      p {
+        color: #1a2e24;
+      }
+    }
+  }
+
+  .oferta-card:hover {
+    border-color: rgba(197, 160, 89, 0.45);
+  }
+
+  .paso-card {
+    border-color: rgba(11, 77, 60, 0.14);
+
+    h3 {
+      color: #063828;
+    }
+
+    p {
+      color: #1a2e24;
+    }
+  }
+
+  .paso-num {
+    background: linear-gradient(145deg, #0b4d3c, #063828);
+    color: #fdfbf7;
+    box-shadow: 0 4px 14px rgba(11, 77, 60, 0.25);
+  }
+
+  #como-funciona {
+    .section-head h2,
+    .section-head .title-reveal--h2 {
+      color: #063828;
+    }
+
+    .section-lead {
+      color: #1a2e24;
+      font-weight: 500;
+    }
   }
 
   .valores-grid > *,
@@ -534,45 +1126,39 @@ html[data-portal-skin='educarte'] {
     box-shadow: var(--av-shadow-sm);
   }
 
-  /* —— FAQ oscura (familia del hero, matiz propio) —— */
+  /* —— FAQ: verde institucional + crema —— */
   .section-faq {
     position: relative;
     overflow: hidden;
-    background-color: #0a0822;
+    background-color: #063828;
     background-image:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 75% 55% at 18% 22%, rgba(20, 184, 166, 0.22) 0%, transparent 58%),
-      radial-gradient(ellipse 68% 60% at 88% 78%, rgba(99, 102, 241, 0.38) 0%, transparent 55%),
-      linear-gradient(168deg, #0a0822 0%, #14102e 28%, #1a2744 52%, #1e1b4b 78%, #12102e 100%);
-    color: #f8fafc;
-    border-top: 1px solid rgba(99, 102, 241, 0.18);
-    box-shadow: inset 0 1px 0 rgba(20, 184, 166, 0.08);
+      radial-gradient(ellipse 75% 55% at 18% 22%, rgba(197, 160, 89, 0.2) 0%, transparent 58%),
+      radial-gradient(ellipse 68% 60% at 88% 78%, rgba(11, 77, 60, 0.45) 0%, transparent 55%),
+      linear-gradient(168deg, #063828 0%, #0b4d3c 32%, #1a2e24 58%, #063828 100%);
+    color: #fdfbf7;
+    border-top: 1px solid rgba(197, 160, 89, 0.22);
+    box-shadow: inset 0 1px 0 rgba(253, 251, 247, 0.06);
   }
 
   .faq-bg {
-    display: block;
-    opacity: 0.45;
-
-    &::after {
-      background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, transparent 68%);
-    }
+    display: none;
   }
 
   .section-faq__head {
     .kicker {
-      color: #a7f3d0;
-      background: rgba(20, 184, 166, 0.12);
-      border: 1px solid rgba(20, 184, 166, 0.28);
+      color: #063828;
+      background: rgba(197, 160, 89, 0.22);
+      border: 1px solid rgba(197, 160, 89, 0.4);
       border-radius: 999px;
     }
 
     h2,
     .title-reveal--h2 {
-      color: #f8fafc;
+      color: #fdfbf7;
     }
 
     .section-lead {
-      color: rgba(226, 232, 240, 0.82);
+      color: rgba(253, 251, 247, 0.88);
     }
   }
 
@@ -581,15 +1167,15 @@ html[data-portal-skin='educarte'] {
   }
 
   .section-faq .faq-item.dark-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(99, 102, 241, 0.28);
+    background: rgba(253, 251, 247, 0.08);
+    border: 1px solid rgba(197, 160, 89, 0.28);
     border-radius: var(--av-radius);
-    box-shadow: 0 12px 32px rgba(7, 5, 26, 0.35);
+    box-shadow: 0 12px 32px rgba(6, 56, 40, 0.28);
     backdrop-filter: blur(10px);
 
     &:hover {
-      border-color: rgba(20, 184, 166, 0.45);
-      box-shadow: 0 16px 36px rgba(99, 102, 241, 0.2);
+      border-color: rgba(197, 160, 89, 0.52);
+      box-shadow: 0 16px 36px rgba(6, 56, 40, 0.35);
     }
   }
 
@@ -598,111 +1184,288 @@ html[data-portal-skin='educarte'] {
     background: transparent;
     border: none;
     box-shadow: none;
-    color: #f1f5f9;
+    color: #fdfbf7;
 
     &--open {
-      color: #a7f3d0;
+      color: #c5a059;
     }
   }
 
   .faq-icon {
-    background: linear-gradient(145deg, var(--av-primary), var(--av-accent));
-    color: #fff;
+    background: linear-gradient(145deg, #c5a059, #0b4d3c);
+    color: #fdfbf7;
     border-radius: 10px;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 4px 14px rgba(197, 160, 89, 0.32);
   }
 
   .faq-pregunta--open .faq-icon {
-    background: linear-gradient(145deg, var(--av-accent), var(--av-primary));
+    background: linear-gradient(145deg, #0b4d3c, #c5a059);
   }
 
   .faq-respuesta {
-    border-top-color: rgba(99, 102, 241, 0.22);
+    border-top-color: rgba(197, 160, 89, 0.22);
 
     p {
-      color: rgba(226, 232, 240, 0.78);
+      color: rgba(253, 251, 247, 0.82);
     }
   }
 
   .faq-contacto {
     border-radius: var(--av-radius);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(99, 102, 241, 0.28);
-    box-shadow: 0 14px 36px rgba(7, 5, 26, 0.4);
+    background: rgba(253, 251, 247, 0.08);
+    border: 1px solid rgba(197, 160, 89, 0.28);
+    box-shadow: 0 14px 36px rgba(6, 56, 40, 0.32);
     backdrop-filter: blur(12px);
 
     p {
-      color: rgba(241, 245, 249, 0.92);
+      color: rgba(253, 251, 247, 0.92);
     }
   }
 
   .section-faq .btn-outline {
-    border-color: rgba(255, 255, 255, 0.42);
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(253, 251, 247, 0.42);
+    color: #fdfbf7;
+    background: rgba(253, 251, 247, 0.06);
 
     &:hover:not(:disabled) {
       border-color: var(--av-accent);
-      background: rgba(20, 184, 166, 0.16);
-      color: #fff;
+      background: rgba(197, 160, 89, 0.18);
+      color: #fdfbf7;
     }
   }
 
-  /* —— App móvil + Líneas de formación: fondo oscuro Educarte (como el hero) —— */
+  /* —— Líneas de formación (pilares) — fondo claro, texto legible —— */
+  .section--light.section--white:has(.pilares-tabs) {
+    color: #1a2e24;
+
+    .pilares-tabs button {
+      color: #4a6358;
+      font-weight: 600;
+
+      &.active {
+        color: #063828;
+        font-weight: 700;
+        border-bottom-color: #0b4d3c;
+      }
+    }
+
+    .pilares-list,
+    .pilares-list .pilar-item {
+      color: #1a2e24;
+      font-weight: 500;
+    }
+  }
+
+  /* —— Líneas de formación + Aula virtual: fondo claro Educarte —— */
   #carreras-tecnicas,
   #app-mobile {
     position: relative;
     overflow: hidden;
-    background-color: #07051a;
-    background-image:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.42) 0%, transparent 58%),
-      radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.28) 0%, transparent 54%),
-      radial-gradient(ellipse 42% 38% at 52% 48%, rgba(245, 158, 11, 0.06) 0%, transparent 68%),
-      linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%);
-    color: #f8fafc;
-    border-top: 1px solid rgba(99, 102, 241, 0.18);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+    background: #fdfbf7;
+    background-image: none;
+    color: #1a2e24;
+    border-top: 1px solid rgba(11, 77, 60, 0.12);
+    border-bottom: 1px solid rgba(11, 77, 60, 0.12);
+    box-shadow: none;
 
     .starfield-bg {
-      opacity: 1;
+      display: none;
+    }
+  }
+
+  #carreras-tecnicas {
+    .carreras-head h2,
+    .carreras-head .title-reveal--h2 {
+      color: #063828;
+      font-weight: 800;
+    }
+
+    .carreras-head .section-lead,
+    .carreras-head .kicker {
+      color: #1a2e24;
+    }
+
+    .carreras-head .kicker {
+      color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.16);
+      border-color: rgba(197, 160, 89, 0.35);
+    }
+
+    .carreras-orbita__lineas line {
+      stroke: rgba(11, 77, 60, 0.22);
+    }
+
+    .carreras-orbita__halo {
+      background: radial-gradient(
+        circle,
+        rgba(197, 160, 89, 0.35) 0%,
+        rgba(11, 77, 60, 0.12) 45%,
+        transparent 70%
+      );
+    }
+
+    .carreras-orbita__nucleo {
+      background: linear-gradient(160deg, #063828 0%, #0b4d3c 55%, #1a2e24 100%);
+      border: 1px solid rgba(197, 160, 89, 0.45);
+      box-shadow:
+        0 0 0 1px rgba(253, 251, 247, 0.06) inset,
+        0 0 32px rgba(197, 160, 89, 0.28),
+        0 18px 40px rgba(6, 56, 40, 0.35);
+
+      svg {
+        color: #c5a059;
+        filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.45));
+      }
+    }
+
+    .carrera-nodo.dark-card {
+      border-radius: var(--av-radius);
+      box-shadow: var(--av-shadow-md);
+      transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease;
+
+      .dark-card__titulo {
+        color: #fdfbf7;
+      }
+
+      .dark-card__meta {
+        color: rgba(253, 251, 247, 0.88);
+      }
+
+      .dark-card__plus {
+        color: rgba(253, 251, 247, 0.45);
+      }
+
+      &:hover .dark-card__plus {
+        transform: rotate(90deg);
+      }
+    }
+
+    .carrera-nodo-pos:nth-child(3n + 3) .carrera-nodo.dark-card {
+      background: linear-gradient(152deg, #063828 0%, #0b4d3c 52%, #0a4234 100%);
+      border: 1px solid rgba(197, 160, 89, 0.32);
+
+      &:hover {
+        border-color: rgba(197, 160, 89, 0.58);
+        box-shadow: 0 16px 40px rgba(6, 56, 40, 0.35);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #fdfbf7, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.35);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #c5a059;
+      }
+    }
+
+    .carrera-nodo-pos:nth-child(3n + 4) .carrera-nodo.dark-card {
+      background: linear-gradient(152deg, #0b4d3c 0%, #1a5c48 48%, #c5a059 100%);
+      border: 1px solid rgba(197, 160, 89, 0.38);
+
+      &:hover {
+        border-color: rgba(253, 251, 247, 0.45);
+        box-shadow: 0 16px 40px rgba(11, 77, 60, 0.32);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #f5f0e8, #c5a059);
+        box-shadow: 0 6px 16px rgba(11, 77, 60, 0.35);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #fdfbf7;
+      }
+    }
+
+    .carrera-nodo-pos:nth-child(3n + 5) .carrera-nodo.dark-card {
+      background: linear-gradient(152deg, #1a2e24 0%, #063828 42%, #0b4d3c 100%);
+      border: 1px solid rgba(197, 160, 89, 0.4);
+
+      &:hover {
+        border-color: rgba(197, 160, 89, 0.65);
+        box-shadow: 0 16px 40px rgba(26, 46, 36, 0.34);
+      }
+
+      .dark-card__icono {
+        background: linear-gradient(145deg, #c5a059, #e8dcc4);
+        box-shadow: 0 6px 16px rgba(197, 160, 89, 0.32);
+
+        svg {
+          color: #063828;
+        }
+      }
+
+      &:hover .dark-card__plus {
+        color: #c5a059;
+      }
     }
   }
 
   #app-mobile {
+    .app-mobile-copy h2,
+    .starfield-head h2,
+    h2 {
+      color: #063828 !important;
+      font-weight: 800;
+    }
+
+    .section-lead,
     .app-mobile-note,
     .app-mobile-feature p {
-      color: rgba(226, 232, 240, 0.78);
+      color: #1a2e24;
+      font-weight: 500;
+    }
+
+    .app-mobile-feature strong {
+      color: #063828;
+    }
+
+    .kicker {
+      color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.16);
+      border-color: rgba(197, 160, 89, 0.35);
     }
 
     .app-phone__bezel {
-      background: linear-gradient(145deg, #4338ca 0%, #312e81 38%, #1e1b4b 72%, #07051a 100%);
+      background: linear-gradient(145deg, #0b4d3c 0%, #063828 38%, #1a2e24 72%, #063828 100%);
       box-shadow:
-        0 24px 64px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(99, 102, 241, 0.35),
+        0 24px 64px rgba(6, 56, 40, 0.35),
+        0 0 0 1px rgba(197, 160, 89, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     .app-phone__screen {
       background:
-        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(99, 102, 241, 0.35) 0%, transparent 62%),
-        linear-gradient(180deg, #312e81 0%, #1e1b4b 42%, #07051a 100%);
-      border-color: rgba(99, 102, 241, 0.28);
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(11, 77, 60, 0.35) 0%, transparent 62%),
+        linear-gradient(180deg, #0b4d3c 0%, #063828 42%, #1a2e24 100%);
+      border-color: rgba(197, 160, 89, 0.28);
     }
 
     .app-phone__logo {
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(197, 160, 89, 0.25);
     }
 
     .app-phone__menu li {
       background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(99, 102, 241, 0.22);
+      border-color: rgba(197, 160, 89, 0.22);
     }
   }
 
   .section-app-mobile {
-    color: #f8fafc;
+    color: #1a2e24;
   }
 
   .app-mobile-download {
@@ -716,13 +1479,15 @@ html[data-portal-skin='educarte'] {
 
   /* —— Inst bar —— */
   .inst-bar {
-    background: var(--av-brand);
+    background: #063828;
+    color: #fdfbf7;
     font-weight: 700;
     letter-spacing: 0.06em;
+    border-bottom: 2px solid #c5a059;
   }
 
-  /* —— Footer —— */
-  .site-footer {
+  /* —— Footer (fondo; texto claro en av-shell arriba) —— */
+  av-shell .site-footer {
     background: var(--av-footer-bg);
     border-top: none;
 
@@ -731,18 +1496,13 @@ html[data-portal-skin='educarte'] {
     }
   }
 
-  .site-footer__glow {
+  av-shell .site-footer__glow {
     height: 4px;
     background: var(--av-accent);
     animation: none;
   }
 
-  .site-footer__badge {
-    border-radius: 999px;
-    font-weight: 700;
-  }
-
-  .site-footer__contact-card {
+  av-shell .site-footer__contact-card {
     border-radius: var(--av-radius);
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -755,7 +1515,7 @@ html[data-portal-skin='educarte'] {
     border-radius: 999px;
   }
 
-  /* —— Páginas internas: mismo hero oscuro que el inicio —— */
+  /* —— Páginas internas: crema + verde (como el hero) —— */
   .page-hero,
   .fund-hero,
   .catalog-hero,
@@ -764,61 +1524,24 @@ html[data-portal-skin='educarte'] {
   .consulta-hero,
   .blog-post-hero,
   .catalog-page__head,
-  .pqr-page__hero,
   .detail-top {
     position: relative;
     overflow: hidden;
-    color: var(--av-page-hero-text, #f8fafc);
-    background-color: #07051a;
-    background-image:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 88% 62% at 82% 12%, rgba(99, 102, 241, 0.48) 0%, transparent 58%),
-      radial-gradient(ellipse 72% 58% at 8% 92%, rgba(20, 184, 166, 0.32) 0%, transparent 54%),
-      radial-gradient(ellipse 42% 38% at 52% 48%, rgba(245, 158, 11, 0.07) 0%, transparent 68%),
-      linear-gradient(155deg, #07051a 0%, #12102e 22%, #1e1b4b 48%, #312e81 68%, #1a2744 100%);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.22);
-    box-shadow:
-      inset 0 -1px 0 rgba(20, 184, 166, 0.18),
-      inset 0 -4px 0 rgba(99, 102, 241, 0.1);
+    color: var(--av-page-hero-text, #063828);
+    background-color: #fdfbf7;
+    background-image: var(--av-page-hero-bg);
+    border-bottom: 4px solid #c5a059;
+    box-shadow: inset 0 -10px 0 #063828;
 
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        repeating-linear-gradient(
-          62deg,
-          rgba(20, 184, 166, 0.04) 0 1px,
-          transparent 1px 20px
-        ),
-        repeating-linear-gradient(
-          -62deg,
-          rgba(99, 102, 241, 0.045) 0 1px,
-          transparent 1px 20px
-        );
-      opacity: 0.85;
-      mix-blend-mode: soft-light;
-    }
-
+    &::before,
     &::after {
-      content: '';
-      position: absolute;
-      width: min(420px, 65vw);
-      height: min(420px, 65vw);
-      top: auto;
-      left: auto;
-      right: -120px;
-      bottom: -180px;
-      border-radius: 50%;
-      pointer-events: none;
-      background: radial-gradient(circle, rgba(20, 184, 166, 0.22) 0%, transparent 68%);
+      display: none;
     }
 
     h1,
     .page-head h1 {
-      color: var(--av-page-hero-text, #f8fafc);
-      text-shadow: 0 2px 20px rgba(15, 23, 42, 0.35);
+      color: var(--av-page-hero-text, #063828);
+      text-shadow: none;
     }
 
     [class*='__lead'],
@@ -826,41 +1549,41 @@ html[data-portal-skin='educarte'] {
     .page-lead,
     .consulta-lead,
     .pqr-page__sub {
-      color: var(--av-page-hero-lead, rgba(226, 232, 240, 0.86));
+      color: var(--av-page-hero-lead, #1a2e24);
     }
 
     [class*='kicker'],
     .fund-kicker {
-      color: var(--av-page-hero-kicker-text, #a7f3d0);
-      background: var(--av-page-hero-kicker-bg, rgba(20, 184, 166, 0.14));
-      border-color: var(--av-page-hero-kicker-border, rgba(20, 184, 166, 0.32));
+      color: var(--av-page-hero-kicker-text, #063828);
+      background: var(--av-page-hero-kicker-bg, rgba(197, 160, 89, 0.16));
+      border-color: var(--av-page-hero-kicker-border, rgba(197, 160, 89, 0.38));
     }
 
     .acerca-kicker--light {
-      color: #a7f3d0;
-      background: rgba(20, 184, 166, 0.14);
-      border-color: rgba(20, 184, 166, 0.32);
+      color: #063828;
+      background: rgba(197, 160, 89, 0.16);
+      border-color: rgba(197, 160, 89, 0.38);
     }
 
     .btn-outline,
     .fund-btn-outline {
-      border-color: rgba(255, 255, 255, 0.42);
-      color: #fff;
-      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(11, 77, 60, 0.35);
+      color: #063828;
+      background: rgba(255, 255, 255, 0.72);
 
       &:hover {
         border-color: var(--av-accent);
-        background: rgba(20, 184, 166, 0.18);
-        color: #fff;
+        background: rgba(197, 160, 89, 0.14);
+        color: #063828;
       }
     }
 
     .detail-back,
     .blog-back {
-      color: #a7f3d0;
+      color: #0b4d3c;
 
       &:hover {
-        color: #fff;
+        color: #063828;
       }
     }
 
@@ -870,11 +1593,11 @@ html[data-portal-skin='educarte'] {
 
     .blog-post-author,
     .blog-muted {
-      color: rgba(226, 232, 240, 0.78);
+      color: #4a6358;
     }
 
     .fund-hero__caption {
-      color: rgba(148, 163, 184, 0.92);
+      color: #4a6358;
     }
   }
 
@@ -885,26 +1608,28 @@ html[data-portal-skin='educarte'] {
   .catalog-page__head {
     .search input {
       background: rgba(255, 255, 255, 0.96);
+      border-color: rgba(11, 77, 60, 0.18);
     }
 
     .chip {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.22);
-      color: rgba(226, 232, 240, 0.88);
+      background: rgba(255, 255, 255, 0.88);
+      border-color: rgba(11, 77, 60, 0.18);
+      color: #1a2e24;
 
       &.active,
       &:hover {
-        background: rgba(20, 184, 166, 0.18);
-        border-color: rgba(20, 184, 166, 0.45);
-        color: #fff;
+        background: rgba(197, 160, 89, 0.16);
+        border-color: rgba(197, 160, 89, 0.45);
+        color: #063828;
       }
     }
   }
 
   .consulta-hero__icon {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(20, 184, 166, 0.35);
-    box-shadow: 0 8px 24px rgba(7, 5, 26, 0.45);
+    background: rgba(197, 160, 89, 0.14);
+    border-color: rgba(197, 160, 89, 0.35);
+    box-shadow: 0 8px 24px rgba(11, 77, 60, 0.12);
+    color: #063828;
   }
 
   .acerca-hero__inner,
@@ -921,41 +1646,406 @@ html[data-portal-skin='educarte'] {
 
   .acerca-page,
   .blog-page {
-    background: linear-gradient(180deg, #07051a 0%, #f8fafc 12%, #fff 100%);
+    background: linear-gradient(180deg, #fdfbf7 0%, #fff 12%, #fff 100%);
   }
 
   .consulta {
-    background: linear-gradient(180deg, #07051a 0%, var(--av-page-body-light-bg) 10%);
+    background: linear-gradient(180deg, #fdfbf7 0%, var(--av-page-body-light-bg) 10%);
   }
 
   .acerca-hero__logo {
     background: rgba(255, 255, 255, 0.96);
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(197, 160, 89, 0.28);
   }
 
-  /* Registro / login: ambiente oscuro arriba como el inicio */
+  /* Registro / login: ambiente crema + verde */
   .registro-page {
     background:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(99, 102, 241, 0.35) 0%, transparent 62%),
-      linear-gradient(180deg, #07051a 0%, #12102e 14%, #1e1b4b 22%, #f8fafc 32%, #f8fafc 100%);
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(197, 160, 89, 0.12) 0%, transparent 62%),
+      linear-gradient(180deg, #fdfbf7 0%, #f5f0e8 22%, #fdfbf7 32%, #fdfbf7 100%);
   }
 
   .registro-head {
     background: rgba(255, 255, 255, 0.96);
-    border-color: rgba(99, 102, 241, 0.18);
+    border-color: rgba(11, 77, 60, 0.14);
   }
 
   main.main:has(.auth) {
     background:
-      var(--av-educarte-hero-weave),
-      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99, 102, 241, 0.38) 0%, transparent 58%),
-      linear-gradient(180deg, #07051a 0%, #12102e 20%, #eef2ff 45%, #f8fafc 100%);
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(197, 160, 89, 0.1) 0%, transparent 58%),
+      linear-gradient(180deg, #fdfbf7 0%, #f5f0e8 20%, #fdfbf7 45%, #fdfbf7 100%);
   }
 
   .auth.card {
     border-radius: calc(var(--av-radius) + 4px);
     box-shadow: var(--av-shadow-lg);
-    border: 1px solid rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(11, 77, 60, 0.14);
+  }
+
+  .auth.card a {
+    color: #0b4d3c;
+
+    &:hover {
+      color: #c5a059;
+    }
+  }
+
+  .testimonio-rol {
+    color: #c5a059;
+  }
+
+  .dark-card:hover {
+    border-color: rgba(197, 160, 89, 0.55);
+    box-shadow:
+      0 0 26px rgba(197, 160, 89, 0.14),
+      0 18px 40px rgba(6, 56, 40, 0.35);
+  }
+
+  .dark-card:hover .dark-card__plus {
+    color: #c5a059;
+  }
+
+  /* —— Acerca de: cuerpo institucional —— */
+  av-acerca .acerca-page {
+    background: linear-gradient(180deg, #fdfbf7 0%, #fff 35%, #fff 100%);
+  }
+
+  av-acerca .acerca-kicker--light {
+    color: #063828;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+
+  av-acerca .acerca-panel--main {
+    border-top-color: #0b4d3c;
+    box-shadow: 0 8px 28px rgba(11, 77, 60, 0.08);
+  }
+
+  av-acerca .acerca-panel--side {
+    border-top-color: #c5a059;
+  }
+
+  av-acerca .acerca-contact-list strong {
+    color: #0b4d3c;
+  }
+
+  av-acerca .acerca-link {
+    color: #0b4d3c;
+
+    &:hover {
+      color: #063828;
+    }
+  }
+
+  av-acerca .acerca-valor--0,
+  av-acerca .acerca-valor--1,
+  av-acerca .acerca-valor--2,
+  av-acerca .acerca-valor--3,
+  av-acerca .acerca-valor--4,
+  av-acerca .acerca-valor--5 {
+    border-top-color: #c5a059;
+
+    &:nth-child(3n + 1) {
+      border-top-color: #0b4d3c;
+    }
+
+    &:nth-child(3n + 2) {
+      border-top-color: #063828;
+    }
+
+    .acerca-valor__icon {
+      background: rgba(197, 160, 89, 0.14);
+    }
+  }
+
+  /* —— Consulta certificados: formulario y tabla —— */
+  av-consulta-certificados .consulta-form {
+    background: #fff;
+    border: 1px solid rgba(11, 77, 60, 0.16);
+
+    label {
+      color: #063828;
+    }
+
+    input {
+      border-color: rgba(11, 77, 60, 0.22);
+
+      &:focus {
+        border-color: #0b4d3c;
+        box-shadow: 0 0 0 4px rgba(11, 77, 60, 0.12);
+      }
+    }
+  }
+
+  av-consulta-certificados .consulta-btn {
+    box-shadow: 0 6px 20px rgba(11, 77, 60, 0.28);
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 10px 28px rgba(197, 160, 89, 0.32);
+    }
+  }
+
+  av-consulta-certificados .consulta-table-wrap {
+    border-color: rgba(11, 77, 60, 0.18);
+    box-shadow: 0 8px 24px rgba(11, 77, 60, 0.08);
+  }
+
+  av-consulta-certificados .consulta-table th {
+    background: linear-gradient(90deg, #063828, #0b4d3c);
+  }
+
+  av-consulta-certificados .consulta-table tbody tr:nth-child(even) {
+    background: #fdfbf7;
+  }
+
+  av-consulta-certificados .consulta-table tbody tr:hover {
+    background: rgba(197, 160, 89, 0.1);
+  }
+
+  av-consulta-certificados .consulta-id {
+    color: #063828;
+    background: rgba(197, 160, 89, 0.16);
+  }
+
+  av-consulta-certificados .consulta-total {
+    color: #063828;
+  }
+
+  av-pqr .pqr-page__hero {
+    background: linear-gradient(135deg, #063828 0%, #0b4d3c 45%, #1a2e24 100%);
+    border-bottom: 4px solid #c5a059;
+    box-shadow: inset 0 -8px 0 rgba(6, 56, 40, 0.85);
+  }
+
+  /* —— Aula virtual / dashboard —— */
+  av-aula .aula-dashboard {
+    --dash-bg: #fdfbf7;
+    --dash-border: rgba(11, 77, 60, 0.14);
+    background:
+      radial-gradient(ellipse 80% 50% at 0% 0%, rgba(197, 160, 89, 0.1), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(11, 77, 60, 0.08), transparent),
+      var(--dash-bg);
+  }
+
+  av-aula .aula-gate {
+    background: linear-gradient(145deg, #fdfbf7 0%, #f5f0e8 45%, #fff 100%);
+  }
+
+  av-aula .aula-gate-card {
+    border-color: rgba(11, 77, 60, 0.14);
+    box-shadow: 0 20px 50px rgba(11, 77, 60, 0.1);
+  }
+
+  av-aula .dash-sidebar {
+    background: linear-gradient(180deg, #063828 0%, #0b4d3c 52%, #1a2e24 100%);
+    box-shadow: 4px 0 24px rgba(6, 56, 40, 0.28);
+    color: rgba(253, 251, 247, 0.9);
+  }
+
+  av-aula .dash-logo-fallback {
+    background: linear-gradient(135deg, #c5a059, #0b4d3c);
+  }
+
+  av-aula .dash-user-chip {
+    color: #063828;
+    background: linear-gradient(90deg, #c5a059, #e8dcc4);
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.35);
+  }
+
+  av-aula .dash-nav-item {
+    color: rgba(253, 251, 247, 0.78);
+
+    &.active {
+      background: linear-gradient(90deg, #0b4d3c, #c5a059);
+      box-shadow: 0 4px 14px rgba(197, 160, 89, 0.28);
+    }
+  }
+
+  av-aula .dash-back:hover {
+    color: #c5a059;
+  }
+
+  av-aula .dash-sidebar-toggle {
+    border-color: rgba(197, 160, 89, 0.45);
+    color: #063828;
+  }
+
+  av-aula .dash-page-head--hero {
+    background: linear-gradient(135deg, #fff 0%, #f5f0e8 55%, #fdfbf7 100%);
+    border-color: rgba(11, 77, 60, 0.14);
+    box-shadow: 0 8px 24px rgba(11, 77, 60, 0.08);
+  }
+
+  av-aula .dash-kicker {
+    color: #0b4d3c;
+  }
+
+  av-aula .dash-page-head--puntajes {
+    background: linear-gradient(135deg, #fff 0%, #f5f0e8 50%, #fdfbf7 100%) !important;
+    border-color: rgba(197, 160, 89, 0.28) !important;
+
+    h1 {
+      background: linear-gradient(90deg, #063828, #0b4d3c, #c5a059);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+
+  av-aula .dash-kicker--warm {
+    color: #063828 !important;
+    background: rgba(197, 160, 89, 0.16) !important;
+    border-color: rgba(197, 160, 89, 0.35) !important;
+  }
+
+  av-aula .dash-stat-card-click:hover {
+    border-color: rgba(197, 160, 89, 0.55);
+    box-shadow: 0 4px 12px rgba(11, 77, 60, 0.12);
+  }
+
+  av-aula .dash-stat-icon-indigo {
+    background: rgba(197, 160, 89, 0.14);
+    color: #0b4d3c;
+  }
+
+  av-aula .dash-stat-icon-violet {
+    background: rgba(11, 77, 60, 0.1);
+    color: #063828;
+  }
+
+  av-aula .dash-course-row {
+    box-shadow: 0 4px 16px rgba(11, 77, 60, 0.06);
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(11, 77, 60, 0.1);
+    }
+  }
+
+  av-aula .dash-course-thumb-fallback {
+    background: linear-gradient(135deg, #0b4d3c, #c5a059);
+  }
+
+  av-aula .dash-tag {
+    color: #063828;
+    border-color: rgba(197, 160, 89, 0.35);
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.12), rgba(11, 77, 60, 0.08));
+  }
+
+  av-aula .dash-progress-fill {
+    background: linear-gradient(90deg, #063828, #0b4d3c, #c5a059);
+  }
+
+  av-aula .dash-capsule--violet,
+  av-aula .dash-capsule--violet-lg {
+    color: #063828;
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.18), rgba(11, 77, 60, 0.08));
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+
+  av-aula .dash-capsule--cyan {
+    color: #0b4d3c;
+    background: linear-gradient(135deg, #f5f0e8, rgba(11, 77, 60, 0.08));
+    border-color: rgba(11, 77, 60, 0.18);
+  }
+
+  av-aula .dash-btn-primary {
+    box-shadow: 0 4px 14px rgba(11, 77, 60, 0.28);
+
+    &:hover {
+      box-shadow: 0 6px 22px rgba(11, 77, 60, 0.36);
+    }
+  }
+
+  av-aula .dash-btn-outline {
+    border-color: rgba(11, 77, 60, 0.28);
+    color: #063828;
+
+    &:hover {
+      border-color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.1);
+    }
+  }
+
+  av-aula .dash-cert-card.dash-cert-virtual {
+    border-color: rgba(197, 160, 89, 0.28);
+    background: linear-gradient(180deg, #fdfbf7, #fff);
+  }
+
+  av-aula .dash-scores-kpi--violet {
+    background: linear-gradient(145deg, #f5f0e8, #fff);
+    border-color: rgba(197, 160, 89, 0.28);
+  }
+
+  av-aula .dash-scores-kpi--cyan {
+    background: linear-gradient(145deg, rgba(11, 77, 60, 0.06), #fff);
+    border-color: rgba(11, 77, 60, 0.18);
+  }
+
+  av-aula .dash-score-card {
+    box-shadow: 0 12px 36px rgba(11, 77, 60, 0.1);
+
+    &--0 {
+      border-top-color: #0b4d3c;
+    }
+
+    &--1 {
+      border-top-color: #c5a059;
+    }
+
+    &--2 {
+      border-top-color: #063828;
+    }
+
+    &--3 {
+      border-top-color: #1a5c48;
+    }
+
+    &__head {
+      background: linear-gradient(135deg, #fdfbf7 0%, #f5f0e8 50%, #fff 100%);
+
+      h3 {
+        color: #063828;
+      }
+    }
+  }
+
+  av-aula .dash-capsule--indigo {
+    color: #063828;
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.16), rgba(11, 77, 60, 0.08));
+    border-color: rgba(197, 160, 89, 0.32);
+  }
+
+  av-aula .dash-score-block--warm h4 {
+    background: linear-gradient(90deg, #063828, #c5a059);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  av-aula .dash-table--warm th {
+    background: linear-gradient(90deg, #063828, #0b4d3c);
+    color: #fdfbf7;
+  }
+
+  av-aula .dash-table-wrap--warm {
+    border-color: rgba(11, 77, 60, 0.18);
+  }
+
+  av-aula .dash-table-total td {
+    background: linear-gradient(90deg, #f5f0e8, #fdfbf7) !important;
+  }
+
+  av-aula .dash-btn--warm {
+    background: linear-gradient(90deg, #0b4d3c, #c5a059) !important;
+    box-shadow: 0 6px 18px rgba(11, 77, 60, 0.28) !important;
+
+    &:hover {
+      background: linear-gradient(90deg, #063828, #b8924a) !important;
+    }
+  }
+
+  av-aula .dash-empty--warm {
+    background: linear-gradient(135deg, #fdfbf7, #f5f0e8);
+    border-color: rgba(197, 160, 89, 0.28);
   }
 }

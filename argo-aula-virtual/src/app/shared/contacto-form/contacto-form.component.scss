@@ -3,17 +3,17 @@
 }
 
 .contacto-form {
-  --cf-ink: #0f172a;
-  --cf-muted: #475569;
-  --cf-border: #e2e8f0;
+  --cf-ink: #063828;
+  --cf-muted: #4a6358;
+  --cf-border: rgba(11, 77, 60, 0.18);
   position: relative;
   overflow: visible;
   margin-top: 2rem;
   padding: clamp(1.25rem, 3vw, 1.75rem);
   border-radius: 18px;
-  background: linear-gradient(135deg, #eef2ff 0%, #ecfeff 55%, #ecfdf5 100%);
-  border: 1px solid rgba(99, 102, 241, 0.18);
-  box-shadow: 0 12px 36px rgba(79, 70, 229, 0.08);
+  background: #fff;
+  border: 1px solid var(--cf-border);
+  box-shadow: 0 12px 36px rgba(11, 77, 60, 0.08);
 
   &--acerca {
     margin-top: 0;
@@ -41,9 +41,9 @@
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #4338ca;
-  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
-  border: 1px solid #c7d2fe;
+  color: #063828;
+  background: rgba(197, 160, 89, 0.16);
+  border: 1px solid rgba(197, 160, 89, 0.35);
 }
 
 .contacto-form__lead {
@@ -84,8 +84,8 @@
 
     &:focus {
       outline: none;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      border-color: #0b4d3c;
+      box-shadow: 0 0 0 3px rgba(11, 77, 60, 0.14);
     }
   }
 

@@ -48,11 +48,11 @@
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: #063828;
     background: none;
     -webkit-background-clip: unset;
     background-clip: unset;
-    text-shadow: 0 0 28px var(--av-title-glow);
+    text-shadow: none;
   }
 
   .fund-hero__lead {
@@ -60,7 +60,7 @@
     max-width: 34rem;
     font-size: clamp(1rem, 2vw, 1.1rem);
     line-height: 1.65;
-    color: var(--av-page-hero-lead, var(--av-dim));
+    color: #1a2e24;
   }
 
   .fund-btn-outline {
@@ -102,9 +102,9 @@
   border: 1px solid #93c5fd;
 
   &--dark {
-    color: #c2410c;
-    background: linear-gradient(135deg, #ffedd5, #fef3c7);
-    border-color: #fdba74;
+    color: #063828;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
   }
 }
 
@@ -164,11 +164,11 @@
   }
 
   &--soft {
-    background: linear-gradient(180deg, #f0f9ff 0%, #fff 100%);
+    background: linear-gradient(180deg, #f5f0e8 0%, #fdfbf7 100%);
   }
 
   &--warm {
-    background: linear-gradient(180deg, #fff7ed 0%, #fffbeb 100%);
+    background: linear-gradient(180deg, #fdfbf7 0%, #fff 100%);
   }
 
   &--cta {
@@ -241,8 +241,8 @@
 
 /* —— Quiénes somos —— */
 .fund-section--about {
-  background: linear-gradient(180deg, #fff 0%, #f0f9ff 100%);
-  border-bottom: 1px solid #e0f2fe;
+  background: linear-gradient(180deg, #fdfbf7 0%, #f5f0e8 100%);
+  border-bottom: 1px solid rgba(11, 77, 60, 0.1);
 }
 
 .fund-about__head {
@@ -261,7 +261,7 @@
   margin: 0;
   font-size: 1.12rem;
   line-height: 1.65;
-  color: #475569;
+  color: #1a2e24;
   font-weight: 500;
 }
 
@@ -375,17 +375,17 @@
   padding: 1.2rem 1.25rem;
   border-radius: 16px;
   background: #fff;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid #3b82f6;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(11, 77, 60, 0.12);
+  border-left: 4px solid #0b4d3c;
+  box-shadow: 0 6px 20px rgba(11, 77, 60, 0.06);
   transition: box-shadow 0.2s;
 
   &:nth-child(2) {
-    border-left-color: var(--av-accent);
+    border-left-color: #063828;
   }
 
   &:nth-child(3) {
-    border-left-color: #f97316;
+    border-left-color: #c5a059;
   }
 
   &.card-wave-host:hover {
@@ -403,7 +403,7 @@
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.65;
-    color: #475569;
+    color: #1a2e24;
   }
 }
 
@@ -436,22 +436,22 @@
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 
   &:first-child {
-    background: linear-gradient(145deg, #eff6ff, #fff);
-    border-color: #93c5fd;
+    background: linear-gradient(145deg, #fdfbf7, #fff);
+    border-color: rgba(11, 77, 60, 0.22);
 
     .fund-card__label {
-      color: var(--av-link-primary);
-      background: #dbeafe;
+      color: #063828;
+      background: rgba(11, 77, 60, 0.1);
     }
   }
 
   &:last-child {
-    background: linear-gradient(145deg, #fff7ed, #fff);
-    border-color: #fdba74;
+    background: linear-gradient(145deg, rgba(197, 160, 89, 0.1), #fff);
+    border-color: rgba(197, 160, 89, 0.35);
 
     .fund-card__label {
-      color: #c2410c;
-      background: #ffedd5;
+      color: #063828;
+      background: rgba(197, 160, 89, 0.2);
     }
   }
 
@@ -474,7 +474,7 @@
   p {
     margin: 0;
     line-height: 1.68;
-    color: #475569;
+    color: #1a2e24;
     white-space: pre-line;
   }
 }
@@ -486,21 +486,26 @@
   text-align: center;
   padding: 1.5rem;
   border-radius: 20px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #e0f2fe 100%);
-  border: 2px solid #fde68a;
+  background: linear-gradient(
+    135deg,
+    rgba(11, 77, 60, 0.06) 0%,
+    rgba(197, 160, 89, 0.14) 50%,
+    #fdfbf7 100%
+  );
+  border: 2px solid rgba(197, 160, 89, 0.35);
 
   h2 {
     margin: 0 0 0.85rem;
     font-size: clamp(1.35rem, 2.8vw, 1.75rem);
     font-weight: 800;
-    color: #9a3412;
+    color: #063828;
   }
 
   &__text {
     margin: 0;
     font-size: 1.03rem;
     line-height: 1.72;
-    color: #44403c;
+    color: #1a2e24;
     white-space: pre-line;
   }
 }

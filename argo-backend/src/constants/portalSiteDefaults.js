@@ -53,18 +53,10 @@ function paginasDefault(nav = {}) {
   };
 }
 
+const { PORTAL_TEMA_EDUCARTE } = require('./portalTemaEducarte');
+
 const SITE_DEFAULTS = {
-  tema: {
-    colorPrimario: '#3b82f6',
-    colorPrimarioOscuro: '#1d4ed8',
-    colorAcento: '#22d3ee',
-    colorFondo: '#0b1224',
-    colorSuperficie: '#121c33',
-    colorTexto: '#eef3ff',
-    colorTextoSecundario: '#9fb0d0',
-    fuente: 'Plus Jakarta Sans',
-    urlHero: '',
-  },
+  tema: { ...PORTAL_TEMA_EDUCARTE },
   marca: {
     textoCopyright: '',
     ocultarMarcaDesarrollador: true,

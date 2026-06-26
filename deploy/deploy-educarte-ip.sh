@@ -39,6 +39,16 @@ else
   echo "pendiente — revise: docker compose -f docker-compose.educarte.yml logs argo-backend --tail 50"
 fi
 
+echo ""
+echo "==> Plantilla Educarte (tema + landing en MongoDB)..."
+sleep 3
+if "${COMPOSE[@]}" exec -T argo-backend node scripts/aplicarPlantillaEducartePortal.js; then
+  echo "    OK — portal servirá skin Educarte sin cambios manuales en el ERP."
+else
+  echo "    ⚠ No se pudo aplicar — reintente cuando Mongo esté listo:"
+  echo "    docker compose -f docker-compose.educarte.yml exec -T argo-backend node scripts/aplicarPlantillaEducartePortal.js"
+fi
+
 VPS_IP="$(grep '^PORTAL_SITE_URL=' deploy/.env | sed -E 's|^PORTAL_SITE_URL=http://([^:/]+).*|\1|')"
 if [[ -n "$VPS_IP" ]]; then
   echo ""

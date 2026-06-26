@@ -1,7 +1,10 @@
 import { PortalDisenoPack } from '../utils/portal-diseno.helpers';
 import { EDUCARTE_ACERCA_HTML, PORTAL_LANDING_DEFAULTS } from './portal-landing-defaults';
 import { PORTAL_HOME_SECCIONES_ORDEN, PortalSiteConfig } from './portal-site-defaults';
-import { PORTAL_TEMA_EDUCARTE, PORTAL_TEMA_FINSTRUVIAL } from '../utils/portal-theme-css-base.util';
+import {
+  PORTAL_TEMA_EDUCARTE,
+  PORTAL_TEMA_FINSTRUVIAL,
+} from '../utils/portal-theme-css-base.util';
 import {
   PortalPlantilla,
   PortalPlantillaFamilia,
@@ -108,14 +111,14 @@ export const PORTAL_PLANTILLAS: PortalPlantilla[] = [
     const tpl = crearPlantilla(
       'educarte',
       'Plantilla Educarte',
-      'Fundación Educarte Colombia: textos del objeto social, estilo índigo + teal y tipografía Outfit.',
+      'Fundación Educarte Colombia: verde institucional, crema y dorado (referencia MISIÓN) + textura FONDO_HERO.',
       'cliente',
       {
         heroTitulo: 'Educación y oportunidades que transforman comunidades.',
         heroSubtitulo:
           'Formación virtual, proyectos sociales y acompañamiento para personas y familias, con énfasis en poblaciones vulnerables y el departamento del Cauca.',
         secciones: SECCIONES_COMPLETAS,
-        tema: { ...PORTAL_TEMA_EDUCARTE },
+        tema: { ...PORTAL_TEMA_EDUCARTE, urlHero: '' },
       },
     );
     tpl.diseno.acercaDeHtml = EDUCARTE_ACERCA_HTML;

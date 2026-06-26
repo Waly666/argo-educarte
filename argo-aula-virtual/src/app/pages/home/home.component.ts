@@ -69,7 +69,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   infoCardsVisibles = computed(() => seccionHomeVisible(this.config(), 'infoCards'));
 
-  heroImg = computed(() => this.theme.heroImageUrl(this.config()) || '/images/hero-estudiante.png');
+  heroImg = computed(() => this.theme.heroImageUrl(this.config()));
+
+  educarteHero = computed(() => {
+    this.config();
+    return this.theme.educarteBrandingActive();
+  });
 
   apkDownloadUrl = computed(() => this.landing().appMobile.apkUrl || '/apk/aula-virtual-finstruvial.apk');
 

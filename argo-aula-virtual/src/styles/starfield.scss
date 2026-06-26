@@ -8,8 +8,8 @@
   color: var(--av-text);
 }
 
-/* Hero home: fondo oscuro Educarte fijo — no usar --av-starfield-bg claro del tema */
-.hero.section-starfield {
+/* Hero home (solo si NO es skin Educarte; Educarte usa tema-educarte.scss) */
+html:not([data-portal-skin='educarte']) .hero.section-starfield {
   position: relative;
   overflow: visible;
   padding: 4.2rem 0 3.25rem;
@@ -70,12 +70,12 @@
     font-size: clamp(1.6rem, 3.4vw, 2.35rem);
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: var(--av-text, #063828);
   }
 
   .section-lead,
   .fund-section__lead {
-    color: var(--av-starfield-section-lead);
+    color: var(--av-starfield-section-lead, #1a2e24);
   }
 
   .kicker,
@@ -98,18 +98,18 @@
   .starfield-head {
     h2,
     .title-reveal--h2 {
-      color: #0f172a;
+      color: #063828;
     }
 
     .section-lead,
     .fund-section__lead {
-      color: #475569;
+      color: #1a2e24;
     }
 
     .kicker {
-      color: #4338ca;
-      background: rgba(99, 102, 241, 0.1);
-      border-color: rgba(99, 102, 241, 0.22);
+      color: #0b4d3c;
+      background: rgba(197, 160, 89, 0.16);
+      border-color: rgba(197, 160, 89, 0.35);
     }
   }
 }

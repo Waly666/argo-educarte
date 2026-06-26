@@ -5,10 +5,10 @@
 }
 
 .consulta {
-  --c-ink: #0f172a;
-  --c-blue: var(--av-primary-dark);
-  --c-cyan: var(--av-accent);
-  --c-violet: var(--av-primary);
+  --c-ink: #063828;
+  --c-blue: #0b4d3c;
+  --c-cyan: #c5a059;
+  --c-violet: #063828;
   min-height: calc(100vh - 12rem);
   background: var(--av-page-body-light-bg);
 }
@@ -76,7 +76,7 @@
   font-size: clamp(1.6rem, 3.5vw, 2.15rem);
   font-weight: 800;
   font-family: var(--av-font-display);
-  color: #fff;
+  color: #063828;
   letter-spacing: -0.02em;
 }
 
@@ -86,7 +86,7 @@
   font-size: 1.02rem;
   line-height: 1.65;
   font-weight: 500;
-  color: #e2e8f0;
+  color: #1a2e24;
 }
 
 /* —— Cuerpo —— */
@@ -383,7 +383,7 @@
       font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      color: #4338ca;
+      color: #0b4d3c;
       flex-shrink: 0;
     }
   }

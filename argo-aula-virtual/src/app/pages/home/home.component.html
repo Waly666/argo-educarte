@@ -14,8 +14,11 @@
 </div>
     }
     @case ('hero') {
-<section class="hero section-starfield">
+<section class="hero section-starfield" [class.hero--educarte]="educarteHero()">
 
+  @if (educarteHero()) {
+    <div class="educarte-hero-bg" aria-hidden="true"></div>
+  }
   <div class="starfield-bg" aria-hidden="true"></div>
 
   <div class="container hero-container">
@@ -48,7 +51,9 @@
 
       <figure class="hero-visual hero-in hero-in--5">
 
-        <img [src]="heroImg()" [alt]="landing().hero.imagenAlt" />
+        @if (heroImg(); as src) {
+          <img [src]="src" [alt]="landing().hero.imagenAlt" />
+        }
 
       </figure>
 

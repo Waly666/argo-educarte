@@ -4,17 +4,42 @@ import { inject, Injectable } from '@angular/core';
 import { PortalConfig } from './models';
 import {
   buildPortalThemeCssVars,
+  EDUCARTE_HERO_PERSONA,
   isEducarteTema,
   PORTAL_TEMA_EDUCARTE,
 } from './portal-theme-css.util';
 import { resolveUploadUrl } from './upload-url.util';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PortalThemeService {
   private doc = inject(DOCUMENT);
 
+  /** En dev local previsualiza marca Educarte MISIÓN (localhost o IP LAN). */
+  localEducartePreview(): boolean {
+    if (environment.production) return false;
+    const host = this.doc.defaultView?.location?.hostname ?? '';
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    const parts = host.split('.').map((n) => parseInt(n, 10));
+    if (parts.length === 4 && !parts.some(Number.isNaN)) {
+      const [a, b] = parts;
+      if (a === 10) return true;
+      if (a === 172 && b >= 16 && b <= 31) return true;
+      if (a === 192 && b === 168) return true;
+    }
+    return false;
+  }
+
+  educarteBrandingActive(): boolean {
+    return (
+      this.localEducartePreview() ||
+      this.doc.documentElement.dataset['portalSkin'] === 'educarte'
+    );
+  }
+
   apply(config: PortalConfig | null) {
-    const tema = config?.site?.tema ?? PORTAL_TEMA_EDUCARTE;
+    const preview = this.localEducartePreview();
+    const tema = preview ? PORTAL_TEMA_EDUCARTE : (config?.site?.tema ?? PORTAL_TEMA_EDUCARTE);
     const root = this.doc.documentElement;
 
     const vars = buildPortalThemeCssVars(tema);
@@ -22,7 +47,7 @@ export class PortalThemeService {
       if (val) root.style.setProperty(key, val);
     }
 
-    if (isEducarteTema(tema) || !config?.site?.tema) {
+    if (preview || isEducarteTema(tema) || !config?.site?.tema) {
       root.dataset['portalSkin'] = 'educarte';
     } else {
       delete root.dataset['portalSkin'];
@@ -41,7 +66,14 @@ export class PortalThemeService {
     const resolved = resolveUploadUrl(t?.urlHero);
     if (resolved) return resolved;
     const rel = t?.urlHero?.trim();
-    if (rel && (rel.startsWith('http') || rel.startsWith('/'))) return rel;
+    if (rel && (rel.startsWith('http') || rel.startsWith('/'))) {
+      // FONDO_HERO es textura de fondo (CSS), no foto lateral.
+      if (rel.includes('fondo-hero-educarte')) return EDUCARTE_HERO_PERSONA;
+      return rel;
+    }
+    if (this.localEducartePreview() || isEducarteTema(t ?? null) || !t) {
+      return EDUCARTE_HERO_PERSONA;
+    }
     return null;
   }
 }

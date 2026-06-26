@@ -237,7 +237,7 @@
   overflow: visible;
   padding: 4.2rem 0 3.25rem;
   border-bottom: none;
-  color: #f8fafc;
+  color: var(--av-text, #f8fafc);
 
   &.section-starfield {
     padding: 4.2rem 0 3.25rem;

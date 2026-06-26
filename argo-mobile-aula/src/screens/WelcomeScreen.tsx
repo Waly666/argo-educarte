@@ -109,7 +109,7 @@ export default function WelcomeScreen() {
             resizeMode="cover"
             onError={() => setHeroRemoteFailed(true)}
           >
-            <LinearGradient colors={['rgba(7,5,26,0.15)', 'rgba(7,5,26,0.92)']} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient colors={['rgba(253,251,247,0.15)', 'rgba(253,251,247,0.88)']} style={StyleSheet.absoluteFillObject} />
             <View style={styles.heroBadgeRow}>
               <View style={[styles.heroBadge, { backgroundColor: `${c.primary}33`, borderColor: `${c.primary}55` }]}>
                 <ScaledText baseSize={10} style={{ color: c.accent, fontWeight: '700', letterSpacing: 0.8 }}>
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.xl,
     borderBottomRightRadius: radius.xl,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(99, 102, 241, 0.22)',
+    borderBottomColor: 'rgba(197, 160, 89, 0.28)',
   },
   heroImageBand: {
     width: '100%',

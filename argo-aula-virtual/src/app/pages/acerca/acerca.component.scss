@@ -4,10 +4,10 @@
 }
 
 .acerca-page {
-  --a-ink: #0f172a;
-  --a-muted: #475569;
-  --a-border: #e2e8f0;
-  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 35%, #fff 100%);
+  --a-ink: #063828;
+  --a-muted: #4a6358;
+  --a-border: rgba(11, 77, 60, 0.14);
+  background: linear-gradient(180deg, #fdfbf7 0%, #fff 35%, #fff 100%);
   color: var(--a-ink);
 }
 
@@ -60,9 +60,9 @@
   border: 1px solid var(--av-page-hero-kicker-border);
 
   &--light {
-    color: #4338ca;
-    background: linear-gradient(135deg, #ede9fe, #e0e7ff);
-    border-color: #c7d2fe;
+    color: #0b4d3c;
+    background: rgba(197, 160, 89, 0.16);
+    border-color: rgba(197, 160, 89, 0.35);
   }
 }
 
@@ -72,7 +72,7 @@
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: #063828;
 }
 
 .acerca-hero__lead {
@@ -80,7 +80,7 @@
   max-width: 36rem;
   font-size: clamp(0.98rem, 2vw, 1.08rem);
   line-height: 1.65;
-  color: #cbd5e1;
+  color: #1a2e24;
 }
 
 .acerca-hero__logo {
@@ -133,11 +133,11 @@
   }
 
   &--main {
-    border-top: 4px solid #6366f1;
+    border-top: 4px solid #0b4d3c;
   }
 
   &--side {
-    border-top: 4px solid #10b981;
+    border-top: 4px solid #c5a059;
     align-self: start;
   }
 }
@@ -184,7 +184,7 @@
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #6366f1;
+    color: #0b4d3c;
     margin-bottom: 0.15rem;
   }
 
@@ -198,7 +198,7 @@
   }
 
   a:hover {
-    color: #4338ca;
+    color: #063828;
     text-decoration: underline;
   }
 }
@@ -220,9 +220,10 @@
   margin-top: 1rem;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #4338ca;
+  color: #0b4d3c;
 
   &:hover {
+    color: #063828;
     text-decoration: underline;
   }
 }
@@ -296,50 +297,50 @@
   }
 
   &--0 {
-    border-top: 3px solid #6366f1;
+    border-top: 3px solid #0b4d3c;
 
     .acerca-valor__icon {
-      background: #eef2ff;
+      background: rgba(11, 77, 60, 0.1);
     }
   }
 
   &--1 {
-    border-top: 3px solid #10b981;
+    border-top: 3px solid #063828;
 
     .acerca-valor__icon {
-      background: #ecfdf5;
+      background: rgba(11, 77, 60, 0.08);
     }
   }
 
   &--2 {
-    border-top: 3px solid var(--av-accent);
+    border-top: 3px solid #c5a059;
 
     .acerca-valor__icon {
-      background: #ecfeff;
+      background: rgba(197, 160, 89, 0.14);
     }
   }
 
   &--3 {
-    border-top: 3px solid #f59e0b;
+    border-top: 3px solid #0b4d3c;
 
     .acerca-valor__icon {
-      background: #fffbeb;
+      background: rgba(197, 160, 89, 0.12);
     }
   }
 
   &--4 {
-    border-top: 3px solid #ec4899;
+    border-top: 3px solid #c5a059;
 
     .acerca-valor__icon {
-      background: #fdf2f8;
+      background: rgba(197, 160, 89, 0.16);
     }
   }
 
   &--5 {
-    border-top: 3px solid #8b5cf6;
+    border-top: 3px solid #063828;
 
     .acerca-valor__icon {
-      background: #f5f3ff;
+      background: rgba(11, 77, 60, 0.1);
     }
   }
 }

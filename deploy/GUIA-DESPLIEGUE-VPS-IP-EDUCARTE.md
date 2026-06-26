@@ -94,9 +94,17 @@ sudo ./deploy/setup-firewall-educarte-ip.sh
 
 ## Paso 5 — Datos iniciales
 
+El script `deploy-educarte-ip.sh` aplica automáticamente la **plantilla Educarte** en MongoDB (tema verde/crema/dorado, landing y textos). No hace falta elegir plantilla en el ERP para ver el mismo diseño que en local.
+
 1. **ERP** → crear usuario administrador (primer arranque / seed según su BD).
-2. **Aula virtual** → configurar logo, hero, textos (ERP → Aula virtual → Sitio).
+2. **Opcional** → logo y datos de contacto (ERP → Aula virtual → Sitio); el tema ya queda montado.
 3. **APK móvil** → ERP → Aula virtual → App móvil (subir APK). El archivo queda en el backend; opcionalmente copie a `./apk/` en el VPS para descarga estática en `:8085/apk/`.
+
+Reaplicar solo la plantilla (sin rebuild):
+
+```bash
+docker compose -f docker-compose.educarte.yml exec -T argo-backend node scripts/aplicarPlantillaEducartePortal.js
+```
 
 Carpetas persistentes en el host:
 

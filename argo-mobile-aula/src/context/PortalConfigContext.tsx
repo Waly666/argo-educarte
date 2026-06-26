@@ -8,13 +8,13 @@ import { loadCachedPortalConfig, saveCachedPortalConfig } from '../storage/porta
 import { useAuth } from './AuthContext';
 
 const DEFAULT_TEMA: PortalTemaConfig = {
-  colorPrimario: '#1565c0',
-  colorPrimarioOscuro: '#0d47a1',
-  colorAcento: '#00acc1',
-  colorFondo: '#f5f7fa',
-  colorSuperficie: '#ffffff',
-  colorTexto: '#1a237e',
-  colorTextoSecundario: '#5c6bc0',
+  colorPrimario: '#0B4D3C',
+  colorPrimarioOscuro: '#063828',
+  colorAcento: '#C5A059',
+  colorFondo: '#FDFBF7',
+  colorSuperficie: '#FFFFFF',
+  colorTexto: '#1A2E24',
+  colorTextoSecundario: '#4A6358',
 };
 
 type PortalConfigContextValue = {

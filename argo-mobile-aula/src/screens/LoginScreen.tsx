@@ -200,7 +200,7 @@ export default function LoginScreen() {
             <IconInput
               value={servidor}
               onChangeText={setServidorLocal}
-              placeholder="https://app.educarte.edu.co"
+              placeholder="https://app.educartecolombia.com"
               icon="globe-outline"
               keyboardType="email-address"
               autoCapitalize="none"

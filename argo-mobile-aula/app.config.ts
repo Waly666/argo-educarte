@@ -1,23 +1,24 @@
 import type { ExpoConfig } from 'expo/config';
 
-const AZUL = '#6366F1';
+const BRAND_GREEN = '#0B4D3C';
+const BRAND_CREAM = '#FDFBF7';
 const LOGO = './assets/branding/logo.png';
 const ICON = './assets/branding/icon-app.png';
 const SPLASH_IOS = './assets/branding/splash-full.png';
 
 const splashPlugin = {
-  backgroundColor: AZUL,
+  backgroundColor: BRAND_CREAM,
   image: LOGO,
   imageWidth: 240,
   resizeMode: 'contain' as const,
   android: {
-    backgroundColor: AZUL,
+    backgroundColor: BRAND_CREAM,
     image: LOGO,
     imageWidth: 240,
     resizeMode: 'contain' as const,
   },
   ios: {
-    backgroundColor: AZUL,
+    backgroundColor: BRAND_CREAM,
     image: SPLASH_IOS,
     resizeMode: 'cover' as const,
     enableFullScreenImage_legacy: true,
@@ -28,30 +29,31 @@ const config: ExpoConfig = {
   owner: 'nis00227',
   name: 'Educarte Aula',
   slug: 'argo-aula-educarte',
-  version: '0.1.0',
+  version: '0.1.1',
   orientation: 'portrait',
   icon: ICON,
-  backgroundColor: AZUL,
-  primaryColor: AZUL,
+  backgroundColor: BRAND_CREAM,
+  primaryColor: BRAND_GREEN,
   userInterfaceStyle: 'light',
   scheme: 'educarteaula',
   splash: {
     image: LOGO,
     resizeMode: 'contain',
-    backgroundColor: AZUL,
+    backgroundColor: BRAND_CREAM,
   },
   android: {
     icon: ICON,
     splash: {
       image: LOGO,
       resizeMode: 'contain',
-      backgroundColor: AZUL,
+      backgroundColor: BRAND_CREAM,
     },
     adaptiveIcon: {
       foregroundImage: ICON,
-      backgroundColor: AZUL,
+      backgroundColor: BRAND_CREAM,
     },
     package: 'co.educarte.aula',
+    versionCode: 2,
     softwareKeyboardLayoutMode: 'resize',
   },
   plugins: [
