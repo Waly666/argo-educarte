@@ -118,7 +118,7 @@ export const PORTAL_PLANTILLAS: PortalPlantilla[] = [
         heroSubtitulo:
           'Formación virtual, proyectos sociales y acompañamiento para personas y familias, con énfasis en poblaciones vulnerables y el departamento del Cauca.',
         secciones: SECCIONES_COMPLETAS,
-        tema: { ...PORTAL_TEMA_EDUCARTE, urlHero: '' },
+        tema: { ...PORTAL_TEMA_EDUCARTE },
       },
     );
     tpl.diseno.acercaDeHtml = EDUCARTE_ACERCA_HTML;
