@@ -4,12 +4,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
-import { AulaApiService } from '../../core/aula-api.service';
+import { PortalConfigStore } from '../../core/portal-config.store';
 import { CardWaveService } from '../../core/card-wave.service';
 import { resolveUploadUrl } from '../../core/upload-url.util';
 import { PortalBrandingService } from '../../core/portal-branding.service';
 import { etiquetaPagina, paginaActiva, type PortalPaginaKey } from '../../core/portal-site';
-import { PortalThemeService } from '../../core/portal-theme.service';
 import { PortalConfig } from '../../core/models';
 import { PortalAuthService } from '../../core/portal-auth.service';
 import { mergePortalLanding } from '../../core/portal-landing';
@@ -52,9 +51,8 @@ export interface FooterServicioEnlace {
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent implements OnInit, AfterViewInit {
-  private api = inject(AulaApiService);
+  private store = inject(PortalConfigStore);
   private branding = inject(PortalBrandingService);
-  private theme = inject(PortalThemeService);
   private router = inject(Router);
   private cardWaves = inject(CardWaveService);
   private destroyRef = inject(DestroyRef);
@@ -62,7 +60,7 @@ export class ShellComponent implements OnInit, AfterViewInit {
   private menuToggle = viewChild<ElementRef<HTMLButtonElement>>('menuToggle');
   auth = inject(PortalAuthService);
 
-  config = signal<PortalConfig | null>(null);
+  config = this.store.config;
   menuAbierto = signal(false);
 
   logoUrl = computed(() => resolveUploadUrl(this.config()?.urlLogoAbsoluta || this.config()?.urlLogo));
@@ -191,24 +189,23 @@ export class ShellComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => this.cerrarMenu());
 
-    this.api.config().subscribe({
-      next: (c) => {
-        this.config.set(c);
-        this.branding.apply(c);
-        this.theme.apply(c);
-      },
-      error: () => {
-        const fallback = {
-          nombreCea: 'Fundación Finstruvial',
-          heroTitulo: 'Educación virtual',
-          heroSubtitulo: 'Capacitación en línea',
-          acercaDeHtml: ACERCA_DEFAULT,
-        };
-        this.config.set(fallback);
-        this.branding.apply(fallback);
-        this.theme.apply(fallback);
-      },
-    });
+    const c = this.config();
+    if (c) {
+      this.branding.apply(c);
+    } else {
+      this.store.load().then((cfg) => {
+        if (cfg) this.branding.apply(cfg);
+        else {
+          const fallback = {
+            nombreCea: 'Fundación Educarte Colombia',
+            heroTitulo: 'Educación virtual',
+            heroSubtitulo: 'Capacitación en línea',
+            acercaDeHtml: ACERCA_DEFAULT,
+          };
+          this.branding.apply(fallback);
+        }
+      });
+    }
   }
 
   ngAfterViewInit(): void {

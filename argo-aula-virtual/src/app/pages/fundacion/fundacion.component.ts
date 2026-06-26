@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AulaApiService } from '../../core/aula-api.service';
 import { mergePortalLanding } from '../../core/portal-landing';
+import { PortalConfigStore } from '../../core/portal-config.store';
 import { PortalSeoService } from '../../core/portal-seo.service';
-import { PortalConfig } from '../../core/models';
-import { resolveUploadUrl } from '../../core/upload-url.util';
+import { resolveUploadUrl, withUploadCacheBust } from '../../core/upload-url.util';
 import { ContactoFormComponent } from '../../shared/contacto-form/contacto-form.component';
 import { FUNDACION_CONTACTO } from './fundacion-content';
 
@@ -17,10 +16,11 @@ import { FUNDACION_CONTACTO } from './fundacion-content';
   styleUrl: './fundacion.component.scss',
 })
 export class FundacionComponent implements OnInit {
-  private api = inject(AulaApiService);
+  private store = inject(PortalConfigStore);
   private seo = inject(PortalSeoService);
 
-  config = signal<PortalConfig | null>(null);
+  config = this.store.config;
+  heroImgLoaded = signal(false);
 
   landing = computed(() => mergePortalLanding(this.config()?.landing));
   fund = computed(() => this.landing().fundacion);
@@ -30,10 +30,17 @@ export class FundacionComponent implements OnInit {
   heroTitulo = computed(() => this.fund().hero.titulo?.trim() || this.nombreCea());
 
   heroImagen = computed(() => {
+    if (!this.config()) return null;
     const url = this.fund().hero.imagenUrl?.trim();
-    if (!url) return '/images/fundacion-equipo.png';
-    if (url.startsWith('http') || url.startsWith('//')) return url;
-    return url.startsWith('/') ? url : `/${url}`;
+    if (!url) return null;
+    const resolved =
+      resolveUploadUrl(url) ||
+      (url.startsWith('http') || url.startsWith('//')
+        ? url
+        : url.startsWith('/')
+          ? url
+          : `/${url}`);
+    return withUploadCacheBust(resolved);
   });
 
   telefono = computed(() => this.config()?.telefono?.trim() || FUNDACION_CONTACTO.telefono);
@@ -49,14 +56,15 @@ export class FundacionComponent implements OnInit {
     return resolveUploadUrl(cfg?.urlLogoAbsoluta || cfg?.urlLogo);
   });
 
-  ngOnInit() {
-    this.api.config().subscribe({
-      next: (c) => {
-        this.config.set(c);
-        this.seo.applyFundacion(c);
-      },
-      error: () => this.seo.applyFundacion(null),
+  constructor() {
+    effect(() => {
+      this.heroImagen();
+      this.heroImgLoaded.set(false);
     });
+  }
+
+  ngOnInit() {
+    this.seo.applyFundacion(this.config());
   }
 
   telHref() {

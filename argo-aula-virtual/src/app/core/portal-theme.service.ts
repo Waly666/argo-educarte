@@ -8,7 +8,7 @@ import {
   isEducarteTema,
   PORTAL_TEMA_EDUCARTE,
 } from './portal-theme-css.util';
-import { resolveUploadUrl } from './upload-url.util';
+import { resolveUploadUrl, withUploadCacheBust } from './upload-url.util';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -66,22 +66,23 @@ export class PortalThemeService {
   }
 
   heroImageUrl(config: PortalConfig | null): string | null {
-    const t = config?.site?.tema;
+    if (!config) return null;
+
+    const t = config.site?.tema;
     const abs = t?.urlHeroAbsoluta?.trim();
-    if (abs) return abs;
+    if (abs) return withUploadCacheBust(abs);
     const resolved = resolveUploadUrl(t?.urlHero);
-    if (resolved) return resolved;
+    if (resolved) return withUploadCacheBust(resolved);
     const rel = t?.urlHero?.trim();
     if (rel && (rel.startsWith('http') || rel.startsWith('/'))) {
       // FONDO_HERO es textura de fondo (CSS), no foto lateral.
       if (rel.includes('fondo-hero-educarte')) return EDUCARTE_HERO_PERSONA;
-      return rel;
+      return withUploadCacheBust(rel);
     }
     if (
       this.localEducartePreview() ||
       (environment as { forceEducarteSkin?: boolean }).forceEducarteSkin ||
-      isEducarteTema(t ?? null) ||
-      !t
+      isEducarteTema(t ?? null)
     ) {
       return EDUCARTE_HERO_PERSONA;
     }

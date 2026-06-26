@@ -248,7 +248,7 @@ export class PortalSeoService {
       description: this.truncate(FUNDACION_SEO_DESCRIPTION),
       keywords: FUNDACION_SEO_KEYWORDS,
       url,
-      image: this.defaultImage(config, '/images/fundacion-equipo.png'),
+      image: this.defaultImage(config),
       siteName: SEO_BRAND,
       themeColor: this.themeColor(config),
       jsonLd: [

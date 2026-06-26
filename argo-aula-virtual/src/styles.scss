@@ -418,6 +418,15 @@ textarea {
   background: var(--av-title-underline-light);
 }
 
+.portal-img-reveal {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.portal-img-reveal--shown {
+  opacity: 1;
+}
+
 .section-head.center .title-reveal--h2::after {
   margin-inline: auto;
 }

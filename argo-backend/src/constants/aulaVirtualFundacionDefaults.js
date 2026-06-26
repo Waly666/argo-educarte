@@ -5,7 +5,7 @@ const FUNDACION_LANDING_DEFAULTS = {
     titulo: '',
     lead:
       'Promovemos formación, proyectos comunitarios y oportunidades de desarrollo para personas y familias, con énfasis en el Cauca y en quienes más lo necesitan.',
-    imagenUrl: '/images/fundacion-equipo.png',
+    imagenUrl: '',
     imagenAlt: 'Equipo de la Fundación Educarte Colombia',
     imagenCaption: 'Trabajo comunitario y formación',
     btnSitioUrl: 'https://educartecolombia.com/',

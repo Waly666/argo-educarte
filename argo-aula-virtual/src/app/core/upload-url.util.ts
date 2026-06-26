@@ -43,3 +43,12 @@ function extractUploadsPath(raw: string): string | null {
 
   return raw.replace(/^\/+/, '') || null;
 }
+
+/** Evita caché del navegador/CDN cuando se reemplaza un archivo en /uploads/ con el mismo nombre. */
+export function withUploadCacheBust(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const m = url.match(/\/(\d{10,})_/);
+  const token = m?.[1];
+  if (!token) return url;
+  return url.includes('?') ? url : `${url}?v=${token}`;
+}

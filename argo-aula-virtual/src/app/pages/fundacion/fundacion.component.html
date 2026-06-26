@@ -15,7 +15,16 @@
         </div>
       </div>
       <figure class="fund-hero__visual">
-        <img [src]="heroImagen()" [alt]="fund().hero.imagenAlt" loading="eager" />
+        @if (heroImagen(); as src) {
+          <img
+            [src]="src"
+            [alt]="fund().hero.imagenAlt"
+            loading="eager"
+            class="portal-img-reveal"
+            [class.portal-img-reveal--shown]="heroImgLoaded()"
+            (load)="heroImgLoaded.set(true)"
+          />
+        }
         @if (fund().hero.imagenCaption) {
           <figcaption class="fund-hero__caption">{{ fund().hero.imagenCaption }}</figcaption>
         }

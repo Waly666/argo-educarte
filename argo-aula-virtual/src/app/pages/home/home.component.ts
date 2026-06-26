@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
@@ -15,11 +16,12 @@ import { RouterLink } from '@angular/router';
 import { AulaApiService } from '../../core/aula-api.service';
 import { AnimateTitleDirective } from '../../core/animate-title.directive';
 import { RevealOnScrollDirective } from '../../core/reveal-on-scroll.directive';
-import { CursoVirtual, PortalConfig } from '../../core/models';
+import { CursoVirtual } from '../../core/models';
 import { CursoCardComponent } from '../../shared/curso-card/curso-card.component';
 import { resolveUploadUrl } from '../../core/upload-url.util';
 import { mergePortalLanding } from '../../core/portal-landing';
 import { ordenSeccionesHome, seccionHomeVisible } from '../../core/portal-site';
+import { PortalConfigStore } from '../../core/portal-config.store';
 import { PortalSeoService } from '../../core/portal-seo.service';
 import { PortalThemeService } from '../../core/portal-theme.service';
 import { HERO_DEFAULT } from './home-content';
@@ -35,12 +37,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroH1') heroH1?: ElementRef<HTMLElement>;
 
   private api = inject(AulaApiService);
+  private store = inject(PortalConfigStore);
   private seo = inject(PortalSeoService);
   private theme = inject(PortalThemeService);
   private typeTimer?: ReturnType<typeof setInterval>;
   private typeRun = 0;
 
-  config = signal<PortalConfig | null>(null);
+  config = this.store.config;
+  heroImgLoaded = signal(false);
   cursos = signal<CursoVirtual[]>([]);
   tabPilar = signal<'capacitacion' | 'campanas'>('capacitacion');
   faqAbierta = signal<number | null>(null);
@@ -80,17 +84,22 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   apkDownloadName = computed(() => this.landing().appMobile.apkNombre || 'aula-virtual-finstruvial.apk');
 
-  ngOnInit() {
-    this.api.config().subscribe({
-      next: (c) => {
-        this.config.set(c);
-        this.seo.applyHome(c, this.cursos());
-        const titulo = (c.heroTitulo || HERO_DEFAULT.titulo).trim();
-        if (titulo !== HERO_DEFAULT.titulo.trim()) {
-          this.startTypewriter(titulo);
-        }
-      },
+  constructor() {
+    effect(() => {
+      this.heroImg();
+      this.heroImgLoaded.set(false);
     });
+  }
+
+  ngOnInit() {
+    const c = this.config();
+    if (c) {
+      this.seo.applyHome(c, this.cursos());
+      const titulo = (c.heroTitulo || HERO_DEFAULT.titulo).trim();
+      if (titulo !== HERO_DEFAULT.titulo.trim()) {
+        this.startTypewriter(titulo);
+      }
+    }
     this.api.cursos().subscribe({
       next: (rows) => {
         this.cursos.set(rows);

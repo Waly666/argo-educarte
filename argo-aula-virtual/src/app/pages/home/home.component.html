@@ -52,7 +52,13 @@
       <figure class="hero-visual hero-in hero-in--5">
 
         @if (heroImg(); as src) {
-          <img [src]="src" [alt]="landing().hero.imagenAlt" />
+          <img
+            [src]="src"
+            [alt]="landing().hero.imagenAlt"
+            class="portal-img-reveal"
+            [class.portal-img-reveal--shown]="heroImgLoaded()"
+            (load)="heroImgLoaded.set(true)"
+          />
         }
 
       </figure>
