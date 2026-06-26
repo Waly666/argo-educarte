@@ -68,6 +68,8 @@ services:
     build:
       context: ./argo-aula-virtual
       dockerfile: Dockerfile
+      args:
+        PORTAL_BUILD_ID: ${PORTAL_BUILD_ID:-unknown}
     container_name: argo-educarte-aula
     restart: unless-stopped
     ports:

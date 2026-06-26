@@ -14,6 +14,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile --network-concurrency 2
 
 COPY . .
+
+ARG PORTAL_BUILD_ID=unknown
+RUN printf '%s\n' "$PORTAL_BUILD_ID" > public/portal-build-marker.txt
+
 RUN pnpm run build
 
 FROM nginx:alpine
