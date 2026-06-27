@@ -17,7 +17,7 @@ const env = {
 
 const result = spawnSync(
   'pnpm',
-  ['dlx', 'eas-cli@18.13.0', 'build', '--platform', 'android', '--profile', profile, '--non-interactive'],
+  ['dlx', 'eas-cli@20.4.0', 'build', '--platform', 'android', '--profile', profile, '--non-interactive', '--clear-cache'],
   { cwd: appRoot, env, stdio: 'inherit', shell: true },
 );
 
