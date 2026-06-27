@@ -1,6 +1,8 @@
 node_modules/
 .expo/
 .expo-check-bundle/
+.expo-test-bundle/
+dist/
 android/
 ios/
 *.zip

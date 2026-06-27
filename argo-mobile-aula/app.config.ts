@@ -31,7 +31,7 @@ const config: ExpoConfig = {
   owner: 'nis00227',
   name: 'Educarte Aula',
   slug: 'argo-aula-educarte',
-  version: '0.1.1',
+  version: '0.1.2',
   orientation: 'portrait',
   icon: ICON,
   backgroundColor: BRAND_CREAM,
@@ -55,7 +55,7 @@ const config: ExpoConfig = {
       backgroundColor: BRAND_CREAM,
     },
     package: 'co.educarte.aula',
-    versionCode: 2,
+    versionCode: 3,
     softwareKeyboardLayoutMode: 'resize',
   },
   plugins: [
