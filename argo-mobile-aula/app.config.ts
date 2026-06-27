@@ -69,6 +69,7 @@ const config: ExpoConfig = {
           usesCleartextTraffic: true,
           enableMinifyInReleaseBuilds: false,
           enableShrinkResourcesInReleaseBuilds: false,
+          newArchEnabled: false,
         },
       },
     ],
