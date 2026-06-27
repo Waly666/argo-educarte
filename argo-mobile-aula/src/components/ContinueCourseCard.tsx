@@ -29,14 +29,14 @@ export function ContinueCourseCard({ curso, onPress }: Props) {
       style={({ pressed }) => [
         styles.card,
         shadow.md,
-        { backgroundColor: c.card, borderColor: `${c.accent}33`, borderLeftWidth: 3, borderLeftColor: c.accent, opacity: pressed ? 0.95 : 1 },
+        { backgroundColor: c.card, borderColor: `${c.sky}44`, borderLeftWidth: 3, borderLeftColor: c.sky, opacity: pressed ? 0.95 : 1 },
       ]}
     >
       <View style={styles.row}>
         {img ? (
           <Image source={{ uri: img }} style={styles.thumb} resizeMode="cover" />
         ) : (
-          <LinearGradient colors={c.gradientHero} style={styles.thumb}>
+          <LinearGradient colors={c.gradientCourse} style={styles.thumb}>
             <Ionicons name="book-outline" size={28} color="#fff" />
           </LinearGradient>
         )}
@@ -49,7 +49,7 @@ export function ContinueCourseCard({ curso, onPress }: Props) {
           </View>
         </View>
         <View style={[styles.play, { overflow: 'hidden' }]}>
-          <LinearGradient colors={c.gradientHero} style={StyleSheet.absoluteFill} />
+          <LinearGradient colors={c.gradientWarm} style={StyleSheet.absoluteFill} />
           <Ionicons name="play" size={18} color="#fff" />
         </View>
       </View>

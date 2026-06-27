@@ -158,10 +158,10 @@ export default function TableroPanel() {
       ) : null}
 
       <View style={styles.stats}>
-        <StatTile label="Cursos" value={cursos.length} icon="book-outline" color={c.primary} softColor={c.accentSoft} />
-        <StatTile label="En progreso" value={enCurso.length} icon="play-circle-outline" color={c.accent} softColor={c.foroSoft} />
-        <StatTile label="Completados" value={completados.length} icon="checkmark-circle-outline" color={c.ok} softColor={c.okSoft} />
-        <StatTile label="Certificados" value={certs} icon="ribbon-outline" color={c.gold} softColor={c.goldSoft} />
+        <StatTile label="Cursos" value={cursos.length} icon="book-outline" color={c.violet} softColor={c.violetSoft} />
+        <StatTile label="En progreso" value={enCurso.length} icon="play-circle-outline" color={c.sky} softColor={c.skySoft} />
+        <StatTile label="Completados" value={completados.length} icon="checkmark-circle-outline" color={c.mint} softColor={c.mintSoft} />
+        <StatTile label="Certificados" value={certs} icon="ribbon-outline" color={c.coral} softColor={c.coralSoft} />
       </View>
 
       <View style={{ marginBottom: space.lg }}>
@@ -174,13 +174,13 @@ export default function TableroPanel() {
       </View>
 
       {continuar.length > 0 ? (
-        <SurfaceCard style={{ marginTop: space.lg }} tint={c.accentSoft} accentLeft={c.accent}>
+        <SurfaceCard style={{ marginTop: space.lg }} tint={c.skySoft} accentLeft={c.sky}>
           <SectionHeader
             title="Continuar aprendiendo"
             subtitle="Retoma donde lo dejaste"
             icon="flash-outline"
-            iconColor={c.accent}
-            iconBg={c.foroSoft}
+            iconColor={c.primary}
+            iconBg={c.violetSoft}
           />
           {continuar.map((curso) => (
             <ContinueCourseCard key={String(curso.idPrograma)} curso={curso} onPress={() => abrir(curso)} />

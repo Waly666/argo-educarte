@@ -9,7 +9,7 @@ export function DashboardHeaderBackground() {
   const c = useTheme();
   return (
     <LinearGradient
-      colors={[c.headerBg, c.primaryDark]}
+      colors={c.gradientHero.length >= 2 ? [c.gradientHero[0], c.gradientHero[1] ?? c.primary] : [c.headerBg, c.primaryDark]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={StyleSheet.absoluteFill}

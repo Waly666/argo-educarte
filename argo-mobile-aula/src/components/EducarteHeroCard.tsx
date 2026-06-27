@@ -11,7 +11,7 @@ type Props = {
   style?: ViewStyle;
 };
 
-/** Tarjeta hero verde+dorado Educarte (misma que el tablero tras login). */
+/** Tarjeta hero índigo + morado + menta (misma que el tablero tras login). */
 export function EducarteHeroCard({ children, style }: Props) {
   const c = useTheme();
 

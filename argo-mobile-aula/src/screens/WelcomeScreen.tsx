@@ -77,7 +77,7 @@ export default function WelcomeScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + space.xxl }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary, c.violet, c.sky, c.coral]} />
         }
       >
         <View style={styles.body}>
@@ -111,16 +111,22 @@ export default function WelcomeScreen() {
               icon="heart-outline"
               title="Impacto social"
               text="Proyectos y formación para comunidades del Cauca y Colombia."
+              tint={c.coral}
+              tintSoft={c.coralSoft}
             />
             <HeroInfoCard
               icon="phone-portrait-outline"
               title="100% en línea"
               text="Estudie desde su celular, a su ritmo y con acompañamiento."
+              tint={c.sky}
+              tintSoft={c.skySoft}
             />
             <HeroInfoCard
               icon="ribbon-outline"
               title="Certificados"
               text="Consulte y descargue sus certificados al instante."
+              tint={c.mint}
+              tintSoft={c.mintSoft}
             />
           </View>
 
@@ -129,7 +135,7 @@ export default function WelcomeScreen() {
               label="Certificados"
               subtitle="Consulta por documento"
               icon="ribbon-outline"
-              tint={c.accent}
+              tint={c.violet}
               onPress={() => nav.navigate('ConsultaCertificados')}
             />
             {config?.registroAbierto !== false ? (
@@ -137,7 +143,7 @@ export default function WelcomeScreen() {
                 label="Registrarse"
                 subtitle="Crea tu cuenta gratis"
                 icon="person-add-outline"
-                tint={c.ok}
+                tint={c.coral}
                 onPress={() => nav.navigate('Registro')}
               />
             ) : (
@@ -145,7 +151,7 @@ export default function WelcomeScreen() {
                 label="Catálogo"
                 subtitle="Todos los programas"
                 icon="library-outline"
-                tint={c.primary}
+                tint={c.sky}
                 onPress={() => nav.navigate('Catalogo')}
               />
             )}
@@ -157,8 +163,8 @@ export default function WelcomeScreen() {
                 title="Cursos destacados"
                 subtitle="Empieza hoy mismo"
                 icon="star-outline"
-                iconColor={c.accent}
-                iconBg={c.accentSoft}
+                iconColor={c.gold}
+                iconBg={c.goldSoft}
               />
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.hScroll} nestedScrollEnabled>
                 {destacados.map((curso) => (
@@ -183,7 +189,7 @@ export default function WelcomeScreen() {
             <ScaledText baseSize={13} style={{ color: c.textSoft, textAlign: 'center', marginTop: 6, marginBottom: space.md }}>
               Ingrese al aula virtual y continúe su formación donde la dejó.
             </ScaledText>
-            <PrimaryButton label="Ver todos los cursos" variant="accent" onPress={() => nav.navigate('Catalogo')} fullWidth icon="library-outline" />
+            <PrimaryButton label="Ver todos los cursos" variant="warm" onPress={() => nav.navigate('Catalogo')} fullWidth icon="library-outline" />
           </SurfaceCard>
         </View>
       </ScrollView>

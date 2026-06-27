@@ -25,6 +25,8 @@ const splashPlugin = {
   },
 };
 
+const PRODUCTION_API = 'https://educartecolombia.com/api';
+
 const config: ExpoConfig = {
   owner: 'nis00227',
   name: 'Educarte Aula',
@@ -72,7 +74,7 @@ const config: ExpoConfig = {
     ],
   ],
   extra: {
-    apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:3000/api',
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? PRODUCTION_API,
     eas: {
       projectId: '4a60b9ae-8f00-4ac1-91bb-5cf381d1b741',
     },

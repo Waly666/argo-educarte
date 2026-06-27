@@ -91,15 +91,17 @@ export function CatalogoContent({ intro }: Props) {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary]} />
+        <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary, c.violet, c.sky, c.accent]} />
       }
     >
       <SectionHeader
         title="Cursos"
         subtitle={loading && !refreshing ? 'Cargando…' : `${cursos.length} programa(s) disponibles`}
         icon="library-outline"
+        iconColor={c.primary}
+        iconBg={c.violetSoft}
       />
-      <SurfaceCard padding="md" style={{ marginBottom: space.md }} tint={c.accentSoft} accentLeft={c.accent}>
+      <SurfaceCard padding="md" style={{ marginBottom: space.md }} tint={c.mintSoft} accentLeft={c.mint}>
         <ScaledText baseSize={13} style={{ color: c.textSoft, lineHeight: 20 }}>
           {intro ??
             'La mayoría de cursos son gratuitos: matricúlese y estudie sin pagar. El valor del programa aplica cuando necesita el certificado.'}
@@ -107,12 +109,13 @@ export function CatalogoContent({ intro }: Props) {
       </SurfaceCard>
       <SearchField value={q} onChangeText={setQ} placeholder="Buscar curso…" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} nestedScrollEnabled>
-        <FilterChip label="Todos" active={catId == null} onPress={() => setCatId(null)} />
-        {cats.map((cat) => (
+        <FilterChip label="Todos" active={catId == null} tone={0} onPress={() => setCatId(null)} />
+        {cats.map((cat, i) => (
           <FilterChip
             key={cat.idCategoria}
             label={cat.nombre}
             active={catId === cat.idCategoria}
+            tone={i + 1}
             onPress={() => setCatId(cat.idCategoria)}
           />
         ))}

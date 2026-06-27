@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScaledText } from './ScaledText';
 import { useTheme } from '../context/ThemeContext';
@@ -28,23 +29,18 @@ export function ProgressBar({ pct, label, height = 8, showPct = true }: Props) {
             <View />
           )}
           {showPct ? (
-            <ScaledText baseSize={12} style={{ color: c.primary, fontWeight: '700' }}>
+            <ScaledText baseSize={12} style={{ color: c.violet, fontWeight: '700' }}>
               {Math.round(v)}%
             </ScaledText>
           ) : null}
         </View>
       ) : null}
       <View style={[styles.track, { height, backgroundColor: c.borderLight }]}>
-        <View
-          style={[
-            styles.fill,
-            {
-              width: `${v}%`,
-              height,
-              backgroundColor: c.primary,
-              borderRadius: radius.pill,
-            },
-          ]}
+        <LinearGradient
+          colors={c.gradientSky}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={[styles.fill, { width: `${v}%`, height, borderRadius: radius.pill }]}
         />
       </View>
     </View>

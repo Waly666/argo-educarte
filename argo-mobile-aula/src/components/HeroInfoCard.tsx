@@ -14,10 +14,14 @@ type Props = {
   icon: IonName;
   title: string;
   text: string;
+  tint?: string;
+  tintSoft?: string;
 };
 
-export function HeroInfoCard({ icon, title, text }: Props) {
+export function HeroInfoCard({ icon, title, text, tint, tintSoft }: Props) {
   const c = useTheme();
+  const iconColor = tint ?? c.violet;
+  const iconBg = tintSoft ?? c.violetSoft;
 
   return (
     <View
@@ -26,12 +30,12 @@ export function HeroInfoCard({ icon, title, text }: Props) {
         shadow.md,
         {
           backgroundColor: c.cardElevated,
-          borderColor: 'rgba(56, 189, 248, 0.22)',
+          borderColor: c.borderLight,
         },
       ]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: `${c.accent}22` }]}>
-        <Ionicons name={icon} size={20} color={c.accent} />
+      <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+        <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       <ScaledText baseSize={14} style={{ color: c.text, fontWeight: '800', marginBottom: 4 }}>
         {title}

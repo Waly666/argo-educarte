@@ -3,16 +3,21 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { ScaledText } from './ScaledText';
 import { useTheme } from '../context/ThemeContext';
+import { accentSwatch } from '../theme/colors';
 import { radius, space } from '../theme/spacing';
 
 type Props = {
   label: string;
   active?: boolean;
   onPress: () => void;
+  /** Índice para variar el color activo (0 = índigo, 1 = morado, 2 = cielo…). */
+  tone?: number;
 };
 
-export function FilterChip({ label, active, onPress }: Props) {
+export function FilterChip({ label, active, onPress, tone = 0 }: Props) {
   const c = useTheme();
+  const sw = accentSwatch(tone, c);
+  const activeColor = sw.color;
   return (
     <Pressable
       onPress={onPress}
@@ -20,8 +25,8 @@ export function FilterChip({ label, active, onPress }: Props) {
         styles.chip,
         shadowIf(active),
         {
-          backgroundColor: active ? c.primary : c.card,
-          borderColor: active ? c.primary : c.border,
+          backgroundColor: active ? activeColor : c.card,
+          borderColor: active ? activeColor : c.border,
           opacity: pressed ? 0.88 : 1,
         },
       ]}

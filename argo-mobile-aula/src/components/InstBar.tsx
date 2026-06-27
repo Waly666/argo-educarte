@@ -14,7 +14,7 @@ export function InstBar() {
   const { nombreEmpresa } = usePortalBranding();
 
   return (
-    <View style={[styles.bar, { backgroundColor: c.primaryDark, paddingTop: insets.top > 0 ? 0 : space.xs }]}>
+    <View style={[styles.bar, { backgroundColor: c.headerBg, paddingTop: insets.top > 0 ? 0 : space.xs }]}>
       <ScaledText baseSize={11} style={styles.text} numberOfLines={1}>
         {nombreEmpresa} · Aula virtual
       </ScaledText>

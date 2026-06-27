@@ -27,14 +27,14 @@ function ForoHeader({ insetsTop = 0 }: { insetsTop?: number }) {
       ]}
     >
       <View style={styles.headerRow}>
-        <View style={[styles.headerIcon, { backgroundColor: c.accentSoft }]}>
-          <Ionicons name="chatbubbles" size={22} color={c.primary} />
+        <View style={[styles.headerIcon, { backgroundColor: c.coralSoft }]}>
+          <Ionicons name="chatbubbles" size={22} color={c.coral} />
         </View>
         <View>
-          <ScaledText baseSize={20} style={{ color: c.text, fontWeight: '800' }}>
+          <ScaledText baseSize={20} style={{ color: c.headerTitle, fontWeight: '800' }}>
             Foro de cursos
           </ScaledText>
-          <ScaledText baseSize={13} style={{ color: c.textSoft, marginTop: 4 }}>
+          <ScaledText baseSize={13} style={{ color: c.headerSubtitle, marginTop: 4 }}>
             Preguntas y discusión con instructores
           </ScaledText>
         </View>
@@ -78,7 +78,7 @@ export default function ForoPanel() {
       <ForoHeader insetsTop={insets.top} />
       <View style={[styles.chipsWrap, { backgroundColor: c.card, borderBottomColor: c.border }]}>
         <View style={styles.chips}>
-          {cursos.map((curso) => {
+          {cursos.map((curso, i) => {
             const id = String(curso.idPrograma);
             const active = sel === id;
             return (
@@ -86,6 +86,7 @@ export default function ForoPanel() {
                 key={id}
                 label={curso.nombreProg.length > 22 ? `${curso.nombreProg.slice(0, 20)}…` : curso.nombreProg}
                 active={active}
+                tone={i + 1}
                 onPress={() => {
                   setSel(id);
                   setNombre(curso.nombreProg);

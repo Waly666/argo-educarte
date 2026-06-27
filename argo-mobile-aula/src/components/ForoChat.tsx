@@ -76,7 +76,7 @@ export function ForoChat({ token, idPrograma, nombreCurso = '' }: Props) {
           multiline
         />
         <Pressable onPress={onEnviar} style={styles.sendWrap}>
-          <LinearGradient colors={[c.primary, c.accent]} style={styles.send}>
+          <LinearGradient colors={c.gradientSky} style={styles.send}>
             <Ionicons name="send" size={18} color="#fff" />
           </LinearGradient>
         </Pressable>

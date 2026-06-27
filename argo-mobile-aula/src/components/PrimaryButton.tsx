@@ -15,7 +15,7 @@ type Props = {
   label: string;
   onPress: () => void;
   icon?: IonName;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'light' | 'accent';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'light' | 'accent' | 'warm';
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
@@ -41,6 +41,7 @@ export function PrimaryButton({
   const isDanger = variant === 'danger';
   const isSecondary = variant === 'secondary';
   const isAccent = variant === 'accent';
+  const isWarm = variant === 'warm';
 
   const textColor =
     isGhost || isSecondary ? c.primary : isLight ? '#fff' : isAccent ? '#042f2e' : '#fff';
@@ -61,8 +62,9 @@ export function PrimaryButton({
     { opacity: pressed || disabled || loading ? 0.86 : 1 },
   ];
 
-  if ((variant === 'primary' || variant === 'accent') && !disabled && !loading) {
-    const colors = variant === 'accent' ? c.gradientAccent : c.gradientPrimary;
+  if ((variant === 'primary' || variant === 'accent' || variant === 'warm') && !disabled && !loading) {
+    const colors =
+      variant === 'accent' ? c.gradientAccent : variant === 'warm' ? c.gradientWarm : c.gradientPrimary;
     return (
       <Pressable onPress={onPress} disabled={disabled || loading} style={pressedStyle}>
         <LinearGradient

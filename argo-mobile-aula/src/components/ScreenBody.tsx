@@ -30,7 +30,7 @@ export function ScreenBody({ children, refreshing, onRefresh, noPadding, style }
               void Promise.resolve(onRefresh()).finally(() => setPulling(false));
             }}
             tintColor={c.primary}
-            colors={[c.primary]}
+            colors={[c.primary, c.violet, c.sky, c.coral]}
           />
         ) : undefined
       }

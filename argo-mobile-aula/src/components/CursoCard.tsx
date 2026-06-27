@@ -41,7 +41,7 @@ export function CursoCard({ curso, onPress, pct, layout = 'vertical' }: Props) {
         {img ? (
           <Image source={{ uri: img }} style={styles.hImg} resizeMode="cover" />
         ) : (
-          <LinearGradient colors={['#1e3a8a', '#0e7490']} style={styles.hImg} />
+          <LinearGradient colors={c.gradientCourse} style={styles.hImg} />
         )}
         <View style={styles.hBody}>
           <ScaledText baseSize={14} style={{ color: c.text, fontWeight: '700' }} numberOfLines={2}>
@@ -76,7 +76,7 @@ export function CursoCard({ curso, onPress, pct, layout = 'vertical' }: Props) {
         {img ? (
           <Image source={{ uri: img }} style={styles.img} resizeMode="cover" />
         ) : (
-          <LinearGradient colors={['#1e3a8a', '#0e7490']} style={[styles.img, styles.imgPh]}>
+          <LinearGradient colors={c.gradientCourse} style={[styles.img, styles.imgPh]}>
             <Ionicons name="school-outline" size={36} color="rgba(255,255,255,0.9)" />
           </LinearGradient>
         )}
