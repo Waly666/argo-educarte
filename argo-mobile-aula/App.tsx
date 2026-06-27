@@ -141,7 +141,7 @@ function AppShell() {
           {state.status !== 'loading' ? <WhatsAppFloatButton extraBottom={waExtraBottom} /> : null}
         </View>
       </SplashGate>
-      <StatusBar style={variant === 'public' ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

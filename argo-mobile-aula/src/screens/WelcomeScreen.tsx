@@ -1,31 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ImageBackground,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-  type ImageSourcePropType,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useEffect, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CursoCard } from '../components/CursoCard';
+import { EducarteHeroCard } from '../components/EducarteHeroCard';
 import { HeroInfoCard } from '../components/HeroInfoCard';
 import { InstBar } from '../components/InstBar';
+import { PortalLogo } from '../components/PortalLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { QuickAction } from '../components/QuickAction';
 import { ScaledText } from '../components/ScaledText';
 import { SectionHeader } from '../components/SectionHeader';
+import { SurfaceCard } from '../components/SurfaceCard';
 import { APP_BRANDING } from '../config/appBranding';
 import { usePortalBranding } from '../hooks/usePortalBranding';
 import { usePortalConfig } from '../context/PortalConfigContext';
 import { useTheme } from '../context/ThemeContext';
 import { fetchCursos } from '../api/aulaApi';
 import type { CursoVirtual } from '../api/types';
-import { resolveUploadUrl } from '../utils/uploadUrl';
 import type { RootStackParamList } from '../navigation/types';
 import { radius, space } from '../theme/spacing';
 import { shadow } from '../theme/shadows';
@@ -38,7 +32,6 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const [destacados, setDestacados] = useState<CursoVirtual[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [heroRemoteFailed, setHeroRemoteFailed] = useState(false);
 
   const load = useCallback(async () => {
     await Promise.all([
@@ -73,22 +66,8 @@ export default function WelcomeScreen() {
     }
   }
 
-  const heroRemote =
-    resolveUploadUrl(config?.site?.tema?.urlHeroAbsoluta) || resolveUploadUrl(config?.site?.tema?.urlHero);
   const heroTitle = config?.heroTitulo?.trim() || APP_BRANDING.heroTitulo;
   const heroSub = config?.heroSubtitulo?.trim() || APP_BRANDING.heroSubtitulo;
-
-  const heroSource = useMemo((): ImageSourcePropType => {
-    if (heroRemote && !heroRemoteFailed) {
-      return { uri: heroRemote };
-    }
-    return APP_BRANDING.heroLocal;
-  }, [heroRemote, heroRemoteFailed]);
-
-  const heroColors =
-    c.gradientHero.length >= 3
-      ? (c.gradientHero as [string, string, string])
-      : ([c.gradientHero[0], c.gradientHero[1], c.bg] as [string, string, string]);
 
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -101,32 +80,18 @@ export default function WelcomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={c.primary} colors={[c.primary]} />
         }
       >
-        <View style={styles.heroBlock}>
-          <ImageBackground
-            source={heroSource}
-            style={styles.heroImageBand}
-            imageStyle={styles.heroImage}
-            resizeMode="cover"
-            onError={() => setHeroRemoteFailed(true)}
-          >
-            <LinearGradient colors={['rgba(253,251,247,0.15)', 'rgba(253,251,247,0.88)']} style={StyleSheet.absoluteFillObject} />
-            <View style={styles.heroBadgeRow}>
-              <View style={[styles.heroBadge, { backgroundColor: `${c.primary}33`, borderColor: `${c.primary}55` }]}>
-                <ScaledText baseSize={10} style={{ color: c.accent, fontWeight: '700', letterSpacing: 0.8 }}>
-                  AULA VIRTUAL
-                </ScaledText>
-              </View>
+        <View style={styles.body}>
+          <EducarteHeroCard style={styles.heroCard}>
+            <View style={styles.heroBrand}>
+              <PortalLogo width={112} height={52} hideLetterFallback />
+              <ScaledText baseSize={11} style={styles.heroKicker}>
+                AULA VIRTUAL · {nombreEmpresa.toUpperCase()}
+              </ScaledText>
             </View>
-          </ImageBackground>
-
-          <LinearGradient colors={heroColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroPanel}>
-            <ScaledText baseSize={11} style={[styles.kicker, { color: c.accent }]}>
-              {nombreEmpresa}
-            </ScaledText>
-            <ScaledText baseSize={26} style={[styles.heroTitle, { color: c.text }]}>
+            <ScaledText baseSize={24} style={styles.heroTitle}>
               {heroTitle}
             </ScaledText>
-            <ScaledText baseSize={15} style={[styles.heroLead, { color: c.textSoft }]}>
+            <ScaledText baseSize={15} style={styles.heroLead}>
               {heroSub}
             </ScaledText>
             <View style={styles.heroCtas}>
@@ -139,28 +104,26 @@ export default function WelcomeScreen() {
                 size="lg"
               />
             </View>
-          </LinearGradient>
-        </View>
+          </EducarteHeroCard>
 
-        <View style={[styles.infoRow, { marginTop: space.lg }]}>
-          <HeroInfoCard
-            icon="heart-outline"
-            title="Impacto social"
-            text="Proyectos y formación para comunidades del Cauca y Colombia."
-          />
-          <HeroInfoCard
-            icon="phone-portrait-outline"
-            title="100% en línea"
-            text="Estudie desde su celular, a su ritmo y con acompañamiento."
-          />
-          <HeroInfoCard
-            icon="ribbon-outline"
-            title="Certificados"
-            text="Consulte y descargue sus certificados al instante."
-          />
-        </View>
+          <View style={styles.infoRow}>
+            <HeroInfoCard
+              icon="heart-outline"
+              title="Impacto social"
+              text="Proyectos y formación para comunidades del Cauca y Colombia."
+            />
+            <HeroInfoCard
+              icon="phone-portrait-outline"
+              title="100% en línea"
+              text="Estudie desde su celular, a su ritmo y con acompañamiento."
+            />
+            <HeroInfoCard
+              icon="ribbon-outline"
+              title="Certificados"
+              text="Consulte y descargue sus certificados al instante."
+            />
+          </View>
 
-        <View style={styles.body}>
           <View style={styles.actions}>
             <QuickAction
               label="Certificados"
@@ -213,7 +176,7 @@ export default function WelcomeScreen() {
             </>
           ) : null}
 
-          <View style={[styles.footerBand, { backgroundColor: c.cardElevated, borderColor: c.border }]}>
+          <SurfaceCard style={[styles.footerBand, shadow.sm]}>
             <ScaledText baseSize={15} style={{ color: c.text, fontWeight: '700', textAlign: 'center' }}>
               ¿Listo para aprender con Educarte?
             </ScaledText>
@@ -221,7 +184,7 @@ export default function WelcomeScreen() {
               Ingrese al aula virtual y continúe su formación donde la dejó.
             </ScaledText>
             <PrimaryButton label="Ver todos los cursos" variant="accent" onPress={() => nav.navigate('Catalogo')} fullWidth icon="library-outline" />
-          </View>
+          </SurfaceCard>
         </View>
       </ScrollView>
     </View>
@@ -232,51 +195,31 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
-  heroBlock: {
-    overflow: 'hidden',
-    borderBottomLeftRadius: radius.xl,
-    borderBottomRightRadius: radius.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(197, 160, 89, 0.28)',
-  },
-  heroImageBand: {
-    width: '100%',
-    height: 200,
-    justifyContent: 'flex-end',
-  },
-  heroImage: {
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  heroBadgeRow: {
-    paddingHorizontal: space.lg,
-    paddingBottom: space.sm,
-  },
-  heroBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: space.sm,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-  },
-  heroPanel: {
+  body: {
     paddingHorizontal: space.lg,
     paddingTop: space.lg,
-    paddingBottom: space.xxl,
   },
-  kicker: {
+  heroCard: {
+    marginBottom: space.lg,
+  },
+  heroBrand: {
+    marginBottom: space.md,
+    gap: space.sm,
+  },
+  heroKicker: {
+    color: 'rgba(255,255,255,0.78)',
     fontWeight: '700',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: space.sm,
+    letterSpacing: 1.1,
   },
   heroTitle: {
+    color: '#fff',
     fontWeight: '800',
-    lineHeight: 34,
-    letterSpacing: -0.5,
+    lineHeight: 32,
+    letterSpacing: -0.4,
     marginBottom: space.sm,
   },
   heroLead: {
+    color: 'rgba(255,255,255,0.88)',
     lineHeight: 23,
     marginBottom: space.lg,
   },
@@ -287,11 +230,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: space.sm,
-    paddingHorizontal: space.lg,
     marginBottom: space.lg,
-  },
-  body: {
-    paddingHorizontal: space.lg,
   },
   actions: {
     flexDirection: 'row',
@@ -304,9 +243,6 @@ const styles = StyleSheet.create({
   hItem: { width: 280, marginRight: space.md },
   footerBand: {
     borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: space.lg,
     marginBottom: space.lg,
-    ...shadow.sm,
   },
 });

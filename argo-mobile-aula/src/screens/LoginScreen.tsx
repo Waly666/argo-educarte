@@ -18,7 +18,7 @@ import { InstBar } from '../components/InstBar';
 import { PortalLogo } from '../components/PortalLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScaledText } from '../components/ScaledText';
-import { StarfieldHero } from '../components/StarfieldHero';
+import { EducarteHeroCard } from '../components/EducarteHeroCard';
 import { SurfaceCard } from '../components/SurfaceCard';
 import { useAuth } from '../context/AuthContext';
 import { usePortalConfig } from '../context/PortalConfigContext';
@@ -112,20 +112,22 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <StarfieldHero minHeight={200} includeSafeTop={false} roundedBottom={false}>
-          <Pressable onPress={() => nav.goBack()} style={styles.back} hitSlop={12}>
-            <Ionicons name="arrow-back" size={22} color={c.accent} />
-          </Pressable>
-          <PortalLogo width={120} height={56} hideLetterFallback />
-          <ScaledText baseSize={14} style={[styles.brandAula, { color: c.accent }]}>
-            {tituloApp}
-          </ScaledText>
-          <ScaledText baseSize={16} style={[styles.brandEmpresa, { color: c.text }]}>
-            {nombreEmpresa}
-          </ScaledText>
-        </StarfieldHero>
+        <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
+          <EducarteHeroCard>
+            <Pressable onPress={() => nav.goBack()} style={styles.back} hitSlop={12}>
+              <Ionicons name="arrow-back" size={22} color="#fff" />
+            </Pressable>
+            <PortalLogo width={120} height={56} hideLetterFallback />
+            <ScaledText baseSize={14} style={styles.brandAula}>
+              {tituloApp}
+            </ScaledText>
+            <ScaledText baseSize={16} style={styles.brandEmpresa}>
+              {nombreEmpresa}
+            </ScaledText>
+          </EducarteHeroCard>
+        </View>
 
-        <SurfaceCard style={{ marginHorizontal: space.lg, marginTop: -32, borderRadius: radius.xl, ...shadow.lg }}>
+        <SurfaceCard style={{ marginHorizontal: space.lg, marginTop: space.lg, borderRadius: radius.xl, ...shadow.lg }}>
           <ScaledText baseSize={22} style={{ color: c.text, fontWeight: '800', marginBottom: 4 }}>
             Iniciar sesión
           </ScaledText>
@@ -248,12 +250,13 @@ function LinkRow({
 const styles = StyleSheet.create({
   scroll: { flexGrow: 1 },
   back: { alignSelf: 'flex-start', marginBottom: space.md },
-  brandEmpresa: { fontWeight: '700', textAlign: 'center', marginTop: 4 },
+  brandEmpresa: { fontWeight: '700', textAlign: 'center', marginTop: 4, color: 'rgba(255,255,255,0.92)' },
   brandAula: {
     fontWeight: '800',
     textAlign: 'center',
     marginTop: space.sm,
     letterSpacing: 1.5,
+    color: 'rgba(255,255,255,0.78)',
   },
   remember: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.lg },
   check: {

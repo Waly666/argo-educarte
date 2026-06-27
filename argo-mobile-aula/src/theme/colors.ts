@@ -52,7 +52,7 @@ export const EDUCARTE_PUBLIC: ThemeColors = {
   primaryDark: '#063828',
   accent: '#C5A059',
   brand: '#0B4D3C',
-  bg: '#FDFBF7',
+  bg: '#F8FAFC',
   bgSoft: '#F5F0E8',
   card: '#FFFFFF',
   cardElevated: '#FFFFFF',
@@ -74,7 +74,7 @@ export const EDUCARTE_PUBLIC: ThemeColors = {
   inputBg: '#FFFFFF',
   inputText: '#1A2E24',
   inputPlaceholder: '#4A6358',
-  tabBar: '#FDFBF7',
+  tabBar: '#FFFFFF',
   tabBarActive: '#0B4D3C',
   overlay: 'rgba(26, 46, 36, 0.45)',
   gold: '#C5A059',
@@ -82,8 +82,8 @@ export const EDUCARTE_PUBLIC: ThemeColors = {
   violet: '#0B4D3C',
   violetSoft: 'rgba(11, 77, 60, 0.1)',
   foroSoft: 'rgba(197, 160, 89, 0.1)',
-  gradient: ['#F5F0E8', '#FDFBF7'],
-  gradientHero: ['#FDFBF7', '#F5F0E8', '#EBE4D6'],
+  gradient: ['#F5F0E8', '#F8FAFC'],
+  gradientHero: ['#FDFBF7', '#F5F0E8', '#F8FAFC'],
   gradientGold: ['#F5F0E8', '#FDFBF7'],
   gradientViolet: ['#E8F0EC', '#FDFBF7'],
   gradientForo: ['#F5F0E8', '#FFFFFF'],
@@ -147,22 +147,21 @@ export const FINSTRUVIAL_DASHBOARD = EDUCARTE_DASHBOARD;
 
 function mergePortalColors(base: ThemeColors, tema?: PortalTemaConfig): ThemeColors {
   if (!tema) return base;
+  const primary = tema.colorPrimario || base.primary;
+  const primaryDark = tema.colorPrimarioOscuro || base.primaryDark;
+  const accent = tema.colorAcento || base.accent;
   return {
     ...base,
-    primary: tema.colorPrimario || base.primary,
-    primaryDark: tema.colorPrimarioOscuro || base.primaryDark,
-    accent: tema.colorAcento || base.accent,
+    primary,
+    primaryDark,
+    accent,
     bg: tema.colorFondo || base.bg,
     card: tema.colorSuperficie || base.card,
     text: tema.colorTexto || base.text,
     textSoft: tema.colorTextoSecundario || base.textSoft,
-    brand: tema.colorPrimario || base.brand,
-    gradientPrimary: [tema.colorPrimario || base.primary, tema.colorPrimarioOscuro || base.primaryDark],
-    gradientHero: [
-      tema.colorPrimarioOscuro || base.gradientHero[0],
-      tema.colorPrimario || base.gradientHero[1],
-      base.gradientHero[2] || base.bg,
-    ],
+    brand: primary,
+    gradientPrimary: [primary, primaryDark],
+    // Mantener gradientes crema/verde Educarte del tablero (no oscurecer el hero público).
   };
 }
 
